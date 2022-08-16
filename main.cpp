@@ -2,6 +2,8 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <string.h>
+#include <chrono>
+#include <thread>
 
 #include "Shader.h"
 #include "Camera.h"
@@ -59,8 +61,13 @@ float lastX = 800.0f / 2.0;
 float lastY = 600.0 / 2.0;
 
 // Time
-float deltaTime = 0.0f;	// Time between current frame and last frame
-float lastFrame = 0.0f; // Time of last frame
+float deltaTime = 0.0f;   // Time between current frame and last frame
+float lastFrame = 0.0f;   // Time of last frame
+float secondFrame = 0.0f; // Count seconds
+float fpsCounter = 0.0f;  // Count frames per second
+float fpsLimit = 120.0f;   // MAX FPS
+float frame_time = (1.0f / fpsLimit) * 1000;
+float sleep_time = 0.0f;
 
 void processInput(GLFWwindow* window)
 {
@@ -206,6 +213,25 @@ int main(int argc, char** argv)
     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
+    float hexagon_vertices[] = {
+        -0.5f,  1.0f, 0.0f,  0.0f, 0.0f,  // top left
+         0.5f,  1.0f, 0.0f,  1.0f, 0.0f,  // top right
+         1.0f,  0.0f, 0.0f,  1.0f, 1.0f,  // center right
+         0.5f, -1.0f, 0.0f,  1.0f, 1.0f,  // bottom right
+        -0.5f, -1.0f, 0.0f,  0.0f, 1.0f,  // bottom left
+        -1.0f,  0.0f, 0.0f,  0.0f, 0.0f,  // center left
+         0.0f,  0.0f, 0.0f,  1.0f, 0.0f   // center
+    };
+
+    unsigned int hexagon_indices[] = {
+        20, 0, 1, // top
+        20, 1, 2, // top right
+        20, 2, 3, // bottom right
+        20, 3, 4, // bottom
+        20, 4, 5, // bottom left
+        20, 5, 0  // top left
+    };
+
     float vertices2[] = {
         // Triangle1
         // Positions         // colors          // textures
@@ -248,9 +274,19 @@ int main(int argc, char** argv)
 
     glBindVertexArray(VAOs[0]);
 
+    // hexagon
     glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(hexagon_vertices), hexagon_vertices, GL_STATIC_DRAW);
 
+    // original
+    //glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // hexagon
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(hexagon_indices), hexagon_indices, GL_STATIC_DRAW);
+
+    // original
     //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
@@ -369,6 +405,9 @@ int main(int argc, char** argv)
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        sleep_time = frame_time - ( deltaTime * 1000);
+        std::this_thread::sleep_for(std::chrono::microseconds(static_cast<int>(sleep_time)));
+
         processInput(window);
 
 
@@ -398,20 +437,26 @@ int main(int argc, char** argv)
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         
+        // orig
+        //int ptr = 0;
+        //for (unsigned int i = 0; i < 10; i++)
+        //{
+        //    glm::mat4 model = glm::mat4(1.0f);
+        //    model = glm::translate(model, cubePositions[i]);
+        //    float angle = 20.0f * i;
+        //    if (i % 3 == 0) {
+        //        model = glm::rotate(model, glm::radians(angle + ((float)glfwGetTime()*10)), glm::vec3(1.0f, 0.3f, 0.5f));
+        //    }
+        //    ourShader.setMat4("model", model);
+        //
+        //    glDrawArrays(GL_TRIANGLES, 0, 36);
+        //}
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-0.5f, 0.0f, 0.0f));
+        ourShader.setMat4("model", model);
 
-        int ptr = 0;
-        for (unsigned int i = 0; i < 10; i++)
-        {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
-            if (i % 3 == 0) {
-                model = glm::rotate(model, glm::radians(angle + ((float)glfwGetTime()*10)), glm::vec3(1.0f, 0.3f, 0.5f));
-            }
-            ourShader.setMat4("model", model);
-
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glDrawElements(GL_TRIANGLES, 21, GL_UNSIGNED_INT, 0);
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         ourShader.setMat4("projection", projection);
@@ -419,7 +464,16 @@ int main(int argc, char** argv)
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("view", view);
 
+        
+        secondFrame += deltaTime;
+        fpsCounter++;
 
+        if (secondFrame >= 1.0f) {
+            secondFrame = 0.0f;
+            std::cout << "deltaTime: " << deltaTime << std::endl;
+            std::cout << "FPS: " << fpsCounter << std::endl;
+            fpsCounter = 0.0f;
+        }
         
         //trans = glm::mat4(1.0f);
         //trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));

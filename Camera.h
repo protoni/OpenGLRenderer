@@ -78,6 +78,9 @@ public:
             Position += Up * velocity;
         if (direction == DOWN)
             Position -= Up * velocity;
+
+        // Set FPS camera
+        //Position.y = 0.0f;
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
