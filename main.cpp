@@ -128,7 +128,16 @@ int main(int argc, char** argv)
 {
     std::cout << "Init OpenGLRenderer" << std::endl;
 
+    
+
     glfwInit();
+
+    // Disable window borders
+    //glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+    
+    // Make window background transparent
+    //glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
+    
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -397,6 +406,11 @@ int main(int argc, char** argv)
     // Set mouse scroll callback
     glfwSetScrollCallback(window, scroll_callback);
 
+    // Enable blending
+    glEnable(GL_BLEND);
+
+    int faceCounter = 3;
+
     // Render loop
     while (!glfwWindowShouldClose(window))
     {
@@ -411,9 +425,10 @@ int main(int argc, char** argv)
         processInput(window);
 
 
-        glClearColor(.2f, .3f, .3f, 1.0f);
+        glClearColor(.01f, .01f, .01f, 0.001f);
         glClear(GL_COLOR_BUFFER_BIT);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
         ourShader.use();
         glActiveTexture(GL_TEXTURE0);
@@ -456,7 +471,9 @@ int main(int argc, char** argv)
         ourShader.setMat4("model", model);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glDrawElements(GL_TRIANGLES, 21, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, faceCounter, GL_UNSIGNED_INT, 0);
+
+        
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         ourShader.setMat4("projection", projection);
@@ -473,6 +490,11 @@ int main(int argc, char** argv)
             std::cout << "deltaTime: " << deltaTime << std::endl;
             std::cout << "FPS: " << fpsCounter << std::endl;
             fpsCounter = 0.0f;
+
+            faceCounter += 3;
+            if (faceCounter >= 21) {
+                faceCounter = 3;
+            }
         }
         
         //trans = glm::mat4(1.0f);
