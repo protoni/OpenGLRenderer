@@ -57,20 +57,6 @@ void Mesh::render(int& faceCounter)
         return;
     }
 
-    m_shader->use();
-
-    // Apply texture #1
-    if (m_texture1 != -1) {
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_texture1);
-    }
-
-    // Apply texture #2
-    if (m_texture2 != -1) {
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, m_texture2);
-    }
-
     glBindVertexArray(m_VAO);
 
     glm::mat4 model = glm::mat4(1.0f);
