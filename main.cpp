@@ -9,6 +9,7 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "Input.h"
+#include "Window.h"
 
 #include "stb_image.h"
 
@@ -74,42 +75,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 int main(int argc, char** argv)
 {
-    std::cout << "Init OpenGLRenderer" << std::endl;
-
-    glfwInit();
-
-    // Disable window borders
-    //glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-    
-    // Make window background transparent
-    //glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
-    
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    // Create a window
-    GLFWwindow *window = glfwCreateWindow(800, 600, "OpenGLRenderer", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-
-    // Init GLAD
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD!" << std::endl;
-        return -1;
-    }
-
-    // Set window viewport dimensions
-    glViewport(0, 0, 800, 600);
-
-    // Set window resize callback
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    // Create main window
+    Window* window = new Window(SCR_WIDTH, SCR_HEIGHT);
+    window->init();
 
     // Check how many vertex attributes are supported
     int nrAttributes;
@@ -118,15 +86,13 @@ int main(int argc, char** argv)
 
     // Create camera
     camera = new Camera();
+    window->setCamera(camera);
 
     // Create scene
     Scene *scene = new Scene(camera, SCR_WIDTH, SCR_HEIGHT);
 
     // Create input handler
-    Input *input = new Input(window, camera);
-
-    // Camera rotation radius
-    const float radius = 10.0f;
+    Input *input = new Input(window->get(), camera);
 
     // Enable depth buffer
     glEnable(GL_DEPTH_TEST);
@@ -134,20 +100,11 @@ int main(int argc, char** argv)
     // Enable wireframe mode
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    // Disable cursor
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    // Set mouse input callback
-    glfwSetCursorPosCallback(window, mouse_callback);
-
-    // Set mouse scroll callback
-    glfwSetScrollCallback(window, scroll_callback);
-
     // Enable blending
     //glEnable(GL_BLEND);
 
     // Render loop
-    while (!glfwWindowShouldClose(window))
+    while (!window->shouldExit())
     {
         // Calculate delta time
         float currentFrame = glfwGetTime();
@@ -159,7 +116,7 @@ int main(int argc, char** argv)
         std::this_thread::sleep_for(std::chrono::microseconds(static_cast<int>(sleep_time)));
 
         // Update inputs
-        input->processInput(window, deltaTime);
+        input->processInput(window->get(), deltaTime);
 
         // Clear background
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -186,7 +143,7 @@ int main(int argc, char** argv)
             scene->update();
         }
 
-        glfwSwapBuffers(window);
+        window->swapBuffers();
         glfwPollEvents();
     }
 
