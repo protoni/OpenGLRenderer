@@ -1,6 +1,5 @@
 #include "Scene.h"
 
-
 #include "stb_image.h"
 
 float hexagon_vertices[] = {
@@ -24,7 +23,7 @@ unsigned int hexagon_indices[] = {
 
 Scene::Scene(Camera *camera, unsigned int SCR_WIDTH, unsigned int SCR_HEIGHT) :
     m_camera(camera), m_screenWidth(SCR_WIDTH), m_screenHeight(SCR_HEIGHT), m_faceCounter(3),
-    m_ourShader(NULL), m_texture1(0), m_texture2(0), m_VAO(0), m_EBO(0)
+    m_ourShader(NULL), m_texture1(0), m_texture2(0), m_VAO(0), m_EBO(0), m_hexagon_mesh(NULL)
 {
     m_ourShader = new Shader("./shader.vs", "./shader.fs");
 
@@ -35,38 +34,13 @@ Scene::~Scene()
 {
 }
 
-
-
 void Scene::createHexagon()
 {
-    unsigned int VBO;
-    glGenVertexArrays(1, &m_VAO);
 
-    // Create Buffers
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &m_EBO);
-
-    // Use vertex array
-    glBindVertexArray(m_VAO);
-
-    // hexagon
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(hexagon_vertices), hexagon_vertices, GL_STATIC_DRAW);
-
-    // hexagon
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(hexagon_indices), hexagon_indices, GL_STATIC_DRAW);
-
-    // Link vertex attributes
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    glBindVertexArray(0);
-
+    m_hexagon_mesh = new Mesh(m_ourShader, hexagon_vertices, hexagon_indices,
+        sizeof(hexagon_vertices) / sizeof(hexagon_vertices[0]),
+        sizeof(hexagon_indices)  / sizeof(hexagon_indices[0]));
+    
     // Generate and load textures
     glGenTextures(1, &m_texture1);
     glGenTextures(1, &m_texture2);
@@ -106,34 +80,14 @@ void Scene::createHexagon()
     m_ourShader->use();
     glUniform1i(glGetUniformLocation(m_texture1, "texture1"), 0);
     m_ourShader->setInt("texture2", 1);
-}
 
-void Scene::renderHexagon()
-{
-    if (!m_ourShader || !m_texture1 || !m_texture2 || !m_VAO || !m_EBO)
-        return;
-
-    m_ourShader->use();
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_texture1);
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m_texture2);
-
-    glBindVertexArray(m_VAO);
-
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(-0.5f, 0.0f, 0.0f));
-    m_ourShader->setMat4("model", model);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-    glDrawElements(GL_TRIANGLES, m_faceCounter, GL_UNSIGNED_INT, 0);
-    
+   m_hexagon_mesh->setTexture1(m_texture1);
+   m_hexagon_mesh->setTexture2(m_texture2);
 }
 
 void Scene::renderScene()
 {
-    renderHexagon();
+    m_hexagon_mesh->render(m_faceCounter);
 
     if (!m_ourShader)
         return;
