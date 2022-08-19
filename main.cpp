@@ -17,18 +17,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-float ratio = 0.2f;
-
-Camera *camera;
-
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-
-// Mouse
-bool firstMouse = true;
-float lastX = 800.0f / 2.0;
-float lastY = 600.0 / 2.0;
 
 // Time
 float deltaTime = 0.0f;   // Time between current frame and last frame
@@ -39,39 +30,6 @@ float fpsLimit = 120.0f;   // MAX FPS
 float frame_time = (1.0f / fpsLimit) * 1000;
 float sleep_time = 0.0f;
 
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
-{
-    if (camera) {
-        float xpos = static_cast<float>(xposIn);
-        float ypos = static_cast<float>(yposIn);
-
-        if (firstMouse) // initially set to true
-        {
-            lastX = xpos;
-            lastY = ypos;
-            firstMouse = false;
-        }
-
-        float xoffset = xpos - lastX;
-        float yoffset = lastY - ypos; // reversed since y-coordinates range from bottom to top
-        lastX = xpos;
-        lastY = ypos;
-
-        camera->ProcessMouseMovement(xoffset, yoffset);
-    }
-}
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    if (camera) {
-        camera->ProcessMouseScroll(static_cast<float>(yoffset));
-    }
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-}
 
 int main(int argc, char** argv)
 {
@@ -85,7 +43,7 @@ int main(int argc, char** argv)
     std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << std::endl;
 
     // Create camera
-    camera = new Camera();
+    Camera* camera = new Camera();
     window->setCamera(camera);
 
     // Create scene
@@ -120,7 +78,6 @@ int main(int argc, char** argv)
 
         // Clear background
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        //glClear(GL_COLOR_BUFFER_BIT);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 120fps -> 130fps
 
         // Update frame counter
