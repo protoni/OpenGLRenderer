@@ -4,7 +4,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-DebugUi::DebugUi(Window* window) : m_window(window)
+DebugUi::DebugUi(Window* window) : m_window(window), m_debugModeOn(false)
 {
     init();
 }
@@ -25,22 +25,28 @@ void DebugUi::init()
 
 void DebugUi::newWindow()
 {
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
+    if (m_debugModeOn) {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+    }
 }
 
 void DebugUi::draw()
 {
-    ImGui::Begin("Test title");
-    ImGui::Text("Test text");
-    ImGui::End();
+    if (m_debugModeOn) {
+        ImGui::Begin("Test title");
+        ImGui::Text("Test text");
+        ImGui::End();
+    }
 }
 
 void DebugUi::render()
 {
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    if (m_debugModeOn) {
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
 }
 
 void DebugUi::cleanup()
@@ -48,4 +54,9 @@ void DebugUi::cleanup()
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+}
+
+void DebugUi::debugMode()
+{
+    m_debugModeOn = !m_debugModeOn;
 }

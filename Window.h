@@ -17,6 +17,7 @@ public:
     GLFWwindow* get();
     bool shouldExit();
     void swapBuffers();
+    void debugMode();
 
     Camera* m_camera;
 
@@ -28,6 +29,7 @@ private:
 
     GLFWwindow* m_window;
     
+    bool m_debugModeOn;
 
     unsigned int m_windowWidth;
     unsigned int m_windowHeight;

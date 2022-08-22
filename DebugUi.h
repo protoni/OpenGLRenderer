@@ -13,11 +13,13 @@ public:
     void draw();
     void render();
     void cleanup();
+    void debugMode();
 
 private:
     void init();
 
     Window* m_window;
+    bool m_debugModeOn;
 };
 
 

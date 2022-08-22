@@ -54,11 +54,11 @@ int main(int argc, char** argv)
     // Create scene
     Scene* scene = new Scene(camera, SCR_WIDTH, SCR_HEIGHT);
 
-    // Create input handler
-    Input* input = new Input(window->get(), camera);
-
     // Create debug window
     DebugUi* debugUi = new DebugUi(window);
+
+    // Create input handler
+    Input* input = new Input(window, camera, debugUi);
 
     // Enable depth buffer
     glEnable(GL_DEPTH_TEST);
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
         std::this_thread::sleep_for(std::chrono::microseconds(static_cast<int>(sleep_time)));
 
         // Update inputs
-        input->processInput(window->get(), deltaTime);
+        input->processInput(deltaTime);
 
         // Clear background
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
