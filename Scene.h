@@ -6,6 +6,8 @@
 
 #include "Shader.h"
 #include "Camera.h"
+#include "Mesh.h"
+#include "Texture.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -26,6 +28,9 @@ private:
 
     Camera *m_camera;
     Shader *m_ourShader;
+    Mesh* m_hexagon_mesh;
+    Texture* m_smiley_texture;
+
     unsigned int m_screenWidth;
     unsigned int m_screenHeight;
     unsigned int m_VAO;
