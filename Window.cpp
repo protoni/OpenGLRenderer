@@ -6,7 +6,8 @@
 
 Window::Window(unsigned int WINDOW_WIDTH, unsigned int WINDOW_HEIGHT) : 
     m_window(NULL), m_camera(NULL), m_windowWidth(WINDOW_WIDTH), m_windowHeight(WINDOW_HEIGHT),
-    m_firstMouse(true), m_lastX(m_windowWidth / 2.0), m_lastY(m_windowHeight / 2.0)
+    m_firstMouse(true), m_lastX(m_windowWidth / 2.0), m_lastY(m_windowHeight / 2.0),
+    m_debugModeOn(false), m_wireframeModeOn(false)
 {
 
 }
@@ -25,6 +26,7 @@ bool Window::init()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     // Create a window
     m_window = glfwCreateWindow(m_windowWidth, m_windowHeight, "OpenGLRenderer", NULL, NULL);
@@ -73,6 +75,11 @@ void Window::mouseCallback(GLFWwindow* window, double xposIn, double yposIn)
 {
     Window* windowObject = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
+    if (windowObject->m_debugModeOn) {
+        windowObject->m_firstMouse = true;
+        return;
+    }
+
     if (windowObject->m_camera) {
         float xpos = static_cast<float>(xposIn);
         float ypos = static_cast<float>(yposIn);
@@ -120,4 +127,33 @@ void Window::framebufferSizeCallback(GLFWwindow* window, int width, int height)
 GLFWwindow* Window::get()
 {
     return m_window;
+}
+
+void Window::debugMode()
+{
+    m_debugModeOn = !m_debugModeOn;
+
+    if (m_debugModeOn) {
+        glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+    else {
+        glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
+}
+
+bool Window::getWireframeMode()
+{
+    return m_wireframeModeOn;
+}
+
+void Window::setWireframeMode(bool state)
+{
+    m_wireframeModeOn = state;
+
+    if (m_wireframeModeOn) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+    else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 }

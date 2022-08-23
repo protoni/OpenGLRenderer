@@ -135,6 +135,9 @@ ipch/
 *.VC.db
 *.VC.VC.opendb
 
+# ImGUI
+imgui.ini
+
 # Visual Studio profiler
 *.psess
 *.vsp

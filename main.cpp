@@ -1,3 +1,7 @@
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -10,6 +14,7 @@
 #include "Camera.h"
 #include "Input.h"
 #include "Window.h"
+#include "DebugUi.h"
 
 #include "stb_image.h"
 
@@ -47,16 +52,16 @@ int main(int argc, char** argv)
     window->setCamera(camera);
 
     // Create scene
-    Scene *scene = new Scene(camera, SCR_WIDTH, SCR_HEIGHT);
+    Scene* scene = new Scene(camera, SCR_WIDTH, SCR_HEIGHT);
+
+    // Create debug window
+    DebugUi* debugUi = new DebugUi(window);
 
     // Create input handler
-    Input *input = new Input(window->get(), camera);
+    Input* input = new Input(window, camera, debugUi);
 
     // Enable depth buffer
     glEnable(GL_DEPTH_TEST);
-
-    // Enable wireframe mode
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Enable blending
     //glEnable(GL_BLEND);
@@ -74,11 +79,14 @@ int main(int argc, char** argv)
         std::this_thread::sleep_for(std::chrono::microseconds(static_cast<int>(sleep_time)));
 
         // Update inputs
-        input->processInput(window->get(), deltaTime);
+        input->processInput(deltaTime);
 
         // Clear background
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 120fps -> 130fps
+
+        // Draw new ImGui debug window
+        debugUi->newWindow();
 
         // Update frame counter
         secondFrame += deltaTime;
@@ -100,11 +108,15 @@ int main(int argc, char** argv)
             scene->update();
         }
 
+        // Draw debug UI
+        debugUi->update();
+
         window->swapBuffers();
         glfwPollEvents();
     }
 
     // Cleanup
+    debugUi->cleanup();
     glfwTerminate();
 
     return 0;

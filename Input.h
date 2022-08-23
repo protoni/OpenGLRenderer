@@ -5,20 +5,24 @@
 #include <GLFW/glfw3.h>
 
 #include "Camera.h"
+#include "DebugUi.h"
 
 
 class Input
 {
 public:
 
-    Input(GLFWwindow *window, Camera *camera);
+    Input(Window *window, Camera *camera, DebugUi* debugUi);
     ~Input();
 
-    void processInput(GLFWwindow* window, float deltaTime);
+    void processInput(float deltaTime);
 
 private:
-    GLFWwindow *m_window;
-    Camera *m_camera;
+    Window* m_window;
+    Camera* m_camera;
+    DebugUi* m_debugUi;
+
+    float m_debounceCounter;
     
 };
 
