@@ -18,6 +18,9 @@ public:
     bool shouldExit();
     void swapBuffers();
     void debugMode();
+    void wireframeMode();
+    bool getWireframeMode();
+    void setWireframeMode(bool state);
 
     Camera* m_camera;
 
@@ -30,6 +33,7 @@ private:
     GLFWwindow* m_window;
     
     bool m_debugModeOn;
+    bool m_wireframeModeOn;
 
     unsigned int m_windowWidth;
     unsigned int m_windowHeight;

@@ -63,9 +63,6 @@ int main(int argc, char** argv)
     // Enable depth buffer
     glEnable(GL_DEPTH_TEST);
 
-    // Enable wireframe mode
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
     // Enable blending
     //glEnable(GL_BLEND);
 
@@ -112,8 +109,7 @@ int main(int argc, char** argv)
         }
 
         // Draw debug UI
-        debugUi->draw();
-        debugUi->render();
+        debugUi->update();
 
         window->swapBuffers();
         glfwPollEvents();

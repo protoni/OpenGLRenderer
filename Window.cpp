@@ -7,7 +7,7 @@
 Window::Window(unsigned int WINDOW_WIDTH, unsigned int WINDOW_HEIGHT) : 
     m_window(NULL), m_camera(NULL), m_windowWidth(WINDOW_WIDTH), m_windowHeight(WINDOW_HEIGHT),
     m_firstMouse(true), m_lastX(m_windowWidth / 2.0), m_lastY(m_windowHeight / 2.0),
-    m_debugModeOn(false)
+    m_debugModeOn(false), m_wireframeModeOn(false)
 {
 
 }
@@ -138,5 +138,22 @@ void Window::debugMode()
     }
     else {
         glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
+}
+
+bool Window::getWireframeMode()
+{
+    return m_wireframeModeOn;
+}
+
+void Window::setWireframeMode(bool state)
+{
+    m_wireframeModeOn = state;
+
+    if (m_wireframeModeOn) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+    else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 }

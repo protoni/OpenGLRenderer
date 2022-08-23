@@ -10,16 +10,19 @@ public:
     ~DebugUi();
 
     void newWindow();
-    void draw();
-    void render();
+    void update();
     void cleanup();
     void debugMode();
 
 private:
     void init();
+    void draw();
+    void render();
+    void updateWireframeMode();
 
     Window* m_window;
     bool m_debugModeOn;
+    bool m_wireframeModeOn;
 };
 
 

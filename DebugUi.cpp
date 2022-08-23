@@ -4,7 +4,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-DebugUi::DebugUi(Window* window) : m_window(window), m_debugModeOn(false)
+DebugUi::DebugUi(Window* window) : m_window(window), m_debugModeOn(false), m_wireframeModeOn(false)
 {
     init();
 }
@@ -35,8 +35,9 @@ void DebugUi::newWindow()
 void DebugUi::draw()
 {
     if (m_debugModeOn) {
-        ImGui::Begin("Test title");
+        ImGui::Begin("Settings");
         ImGui::Text("Test text");
+        ImGui::Checkbox("Wireframe Mode", &m_wireframeModeOn);
         ImGui::End();
     }
 }
@@ -59,4 +60,18 @@ void DebugUi::cleanup()
 void DebugUi::debugMode()
 {
     m_debugModeOn = !m_debugModeOn;
+}
+
+void DebugUi::updateWireframeMode()
+{
+    if (m_wireframeModeOn != m_window->getWireframeMode()) {
+        m_window->setWireframeMode(m_wireframeModeOn);
+    }
+}
+
+void DebugUi::update()
+{
+    draw();
+    render();
+    updateWireframeMode();
 }
