@@ -21,6 +21,8 @@ public:
 
     void renderScene();
     void update();
+    void resizeHexagon(float multiplier);
+    float getMultiplier();
 
 private:
     void createHexagon();
@@ -40,6 +42,8 @@ private:
 
     unsigned int m_texture1;
     unsigned int m_texture2;
+
+    float m_multiplier;
     
 };
 

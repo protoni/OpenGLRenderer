@@ -2,11 +2,12 @@
 #define DEBUG_UI_H
 
 #include "Window.h"
+#include "Scene.h"
 
 class DebugUi
 {
 public:
-    DebugUi(Window* window);
+    DebugUi(Window* window, Scene* scene);
     ~DebugUi();
 
     void newWindow();
@@ -19,10 +20,14 @@ private:
     void draw();
     void render();
     void updateWireframeMode();
+    void updatePlaneSize();
 
     Window* m_window;
+    Scene* m_scene;
     bool m_debugModeOn;
     bool m_wireframeModeOn;
+
+    float m_planeSize;
 };
 
 

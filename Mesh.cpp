@@ -64,7 +64,7 @@ void Mesh::render(int& faceCounter)
     m_shader->setMat4("model", model);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-    glDrawElements(GL_TRIANGLES, faceCounter, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 void Mesh::setTexture1(unsigned int& texture)

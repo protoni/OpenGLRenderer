@@ -4,7 +4,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-DebugUi::DebugUi(Window* window) : m_window(window), m_debugModeOn(false), m_wireframeModeOn(false)
+DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene),
+    m_debugModeOn(false), m_wireframeModeOn(false), m_planeSize(1.0)
 {
     init();
 }
@@ -36,8 +37,12 @@ void DebugUi::draw()
 {
     if (m_debugModeOn) {
         ImGui::Begin("Settings");
-        ImGui::Text("Test text");
-        ImGui::Checkbox("Wireframe Mode", &m_wireframeModeOn);
+        ImGui::Text("");
+        ImGui::Text("Wireframe Mode");
+        ImGui::Checkbox("## ", &m_wireframeModeOn);
+        ImGui::Text("");
+        ImGui::Text("Plane size");
+        ImGui::SliderFloat("## ", &m_planeSize, 0.01f, 10.0f);
         ImGui::End();
     }
 }
@@ -69,9 +74,17 @@ void DebugUi::updateWireframeMode()
     }
 }
 
+void DebugUi::updatePlaneSize()
+{
+    if (m_planeSize != m_scene->getMultiplier()) {
+        m_scene->resizeHexagon(m_planeSize);
+    }
+}
+
 void DebugUi::update()
 {
     draw();
     render();
     updateWireframeMode();
+    updatePlaneSize();
 }
