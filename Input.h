@@ -6,6 +6,7 @@
 
 #include "Camera.h"
 #include "DebugUi.h"
+#include "Scene.h"
 
 
 class Input

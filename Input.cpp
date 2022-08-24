@@ -1,7 +1,7 @@
 #include "Input.h"
 #include <iostream>
 
-Input::Input(Window* window, Camera* camera, DebugUi* debugUi) : 
+Input::Input(Window* window, Camera* camera, DebugUi* debugUi) :
     m_window(window), m_camera(camera), m_debugUi(debugUi),
     m_debounceCounter(0)
 {
@@ -35,8 +35,11 @@ void Input::processInput(float deltaTime)
     if (glfwGetKey(m_window->get(), GLFW_KEY_X) == GLFW_PRESS)
         m_camera->ProcessKeyboard(DOWN, deltaTime);
 
-    // Toggle debug UI
+    
+    // Limit actions to 500ms
     if (m_debounceCounter >= .5) {
+
+        // Toggle debug UI
         if (glfwGetKey(m_window->get(), GLFW_KEY_TAB) == GLFW_PRESS) {
         
             m_window->debugMode();
@@ -44,8 +47,6 @@ void Input::processInput(float deltaTime)
             std::cout << "dbg mode!" << std::endl;
             m_debounceCounter = 0;
         }
-
-        
     }
 }
 

@@ -7,12 +7,21 @@ class Mesh
 {
 
 public:
-    Mesh(Shader* shader, float* vertices, unsigned int* indices, unsigned int verticeCount, unsigned int indiceCount);
+    Mesh(Shader* shader,
+        float* vertices,
+        unsigned int* indices,
+        unsigned int verticeCount,
+        unsigned int indiceCount,
+        unsigned int triangeCount
+    );
     ~Mesh();
 
-    void render(int& faceCounter);
+    void render(int xPos, int yPos, float scale);
     void setTexture1(unsigned int& texture);
     void setTexture2(unsigned int& texture);
+
+    void activate();
+    void deactivate();
 
 private:
     Shader* m_shader;
@@ -29,6 +38,8 @@ private:
 
     unsigned int m_texture1;
     unsigned int m_texture2;
+
+    unsigned int m_triangleCount;
 
     void create();
     

@@ -55,7 +55,7 @@ int main(int argc, char** argv)
     Scene* scene = new Scene(camera, SCR_WIDTH, SCR_HEIGHT);
 
     // Create debug window
-    DebugUi* debugUi = new DebugUi(window);
+    DebugUi* debugUi = new DebugUi(window, scene);
 
     // Create input handler
     Input* input = new Input(window, camera, debugUi);
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
         }
 
         // Draw debug UI
-        debugUi->update();
+        debugUi->update(deltaTime);
 
         window->swapBuffers();
         glfwPollEvents();

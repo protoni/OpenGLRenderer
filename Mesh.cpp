@@ -7,10 +7,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-Mesh::Mesh(Shader* shader, float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indiceCount) :
+Mesh::Mesh(Shader* shader, float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indiceCount, unsigned int triangleCount) :
     m_shader(shader), m_vertices(vertices), m_indices(indices), 
     m_vertexCount(vertexCount), m_indiceCount(indiceCount),
-    m_VAO(0), m_VBO(0), m_EBO(0), m_texture1(-1), m_texture2(-1)
+    m_VAO(0), m_VBO(0), m_EBO(0), m_texture1(-1), m_texture2(-1),
+    m_triangleCount(triangleCount)
 {
     create();
 }
@@ -50,21 +51,30 @@ void Mesh::create()
     glBindVertexArray(0);
 }
 
-void Mesh::render(int& faceCounter)
+void Mesh::activate()
+{
+    glBindVertexArray(m_VAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+}
+
+void Mesh::deactivate()
+{
+    glBindVertexArray(0);
+}
+
+void Mesh::render(int xPos, int yPos, float scale)
 {
     if (!m_shader || !m_VAO || !m_EBO) {
         std::cout << "Mesh render error!" << std::endl;
         return;
     }
 
-    glBindVertexArray(m_VAO);
-
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(-0.5f, 0.0f, 0.0f));
+    model = glm::translate(model, glm::vec3(((0.5f) * scale) * xPos, 0.0f, 0.0f - (0.5 * scale) * yPos));
+    model = glm::scale(model, glm::vec3(0.5f * scale, 0.0f, 0.5f * scale));
     m_shader->setMat4("model", model);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-    glDrawElements(GL_TRIANGLES, faceCounter, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, m_triangleCount, GL_UNSIGNED_INT, 0);
 }
 
 void Mesh::setTexture1(unsigned int& texture)

@@ -8,10 +8,13 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "Texture.h"
+#include "Plane.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include <vector>
 
 class Scene
 {
@@ -21,14 +24,15 @@ public:
 
     void renderScene();
     void update();
+    void updatePlane(int rows, int columns, float scale);
 
 private:
-    void createHexagon();
-    void renderHexagon();
+    void createPlane();
+    void renderPlane();
 
     Camera *m_camera;
     Shader *m_ourShader;
-    Mesh* m_hexagon_mesh;
+    Plane* m_plane_mesh;
     Texture* m_smiley_texture;
 
     unsigned int m_screenWidth;
@@ -40,6 +44,12 @@ private:
 
     unsigned int m_texture1;
     unsigned int m_texture2;
+
+    int m_columns;
+    int m_rows;
+    float m_scale;
+
+    std::vector<Mesh*> m_meshList;
     
 };
 
