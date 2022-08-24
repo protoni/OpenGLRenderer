@@ -109,7 +109,7 @@ int main(int argc, char** argv)
         }
 
         // Draw debug UI
-        debugUi->update();
+        debugUi->update(deltaTime);
 
         window->swapBuffers();
         glfwPollEvents();

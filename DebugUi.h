@@ -11,7 +11,7 @@ public:
     ~DebugUi();
 
     void newWindow();
-    void update();
+    void update(float deltaTime);
     void cleanup();
     void debugMode();
 
@@ -27,7 +27,10 @@ private:
     bool m_debugModeOn;
     bool m_wireframeModeOn;
 
-    float m_planeSize;
+    int m_planeSize;
+    int m_planeSizeZ;
+    float m_debounceCounter;
+    float m_planeScale;
 };
 
 

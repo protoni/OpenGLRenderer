@@ -5,7 +5,8 @@
 #include "imgui_impl_opengl3.h"
 
 DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene),
-    m_debugModeOn(false), m_wireframeModeOn(false), m_planeSize(1.0)
+    m_debugModeOn(false), m_wireframeModeOn(false), m_planeSize(1), m_debounceCounter(0.0),
+    m_planeScale(1.0f), m_planeSizeZ(1)
 {
     init();
 }
@@ -38,11 +39,13 @@ void DebugUi::draw()
     if (m_debugModeOn) {
         ImGui::Begin("Settings");
         ImGui::Text("");
-        ImGui::Text("Wireframe Mode");
-        ImGui::Checkbox("## ", &m_wireframeModeOn);
+        ImGui::Checkbox("Wireframe Mode", &m_wireframeModeOn);
         ImGui::Text("");
-        ImGui::Text("Plane size");
-        ImGui::SliderFloat("## ", &m_planeSize, 0.01f, 10.0f);
+        ImGui::SliderInt("Plane size", &m_planeSize, 1, 1000);
+        ImGui::Text("");
+        ImGui::SliderInt("Plane size Z", &m_planeSizeZ, 1, 1000);
+        ImGui::Text("");
+        ImGui::SliderFloat("Plane scale", &m_planeScale, 0.01f, 10.0f);
         ImGui::End();
     }
 }
@@ -76,13 +79,18 @@ void DebugUi::updateWireframeMode()
 
 void DebugUi::updatePlaneSize()
 {
-    if (m_planeSize != m_scene->getMultiplier()) {
-        m_scene->resizeHexagon(m_planeSize);
+    if (m_debugModeOn) {
+        if (m_debounceCounter >= 0.1f) {
+            m_debounceCounter = 0;
+
+            m_scene->updatePlane(m_planeSize, m_planeSizeZ, m_planeScale);
+        }
     }
 }
 
-void DebugUi::update()
+void DebugUi::update(float deltaTime)
 {
+    m_debounceCounter += deltaTime;
     draw();
     render();
     updateWireframeMode();
