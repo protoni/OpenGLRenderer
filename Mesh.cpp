@@ -66,7 +66,9 @@ void Mesh::deactivate()
 
 void Mesh::render(int xPos, int yPos, float scale)
 {
-    getMesh(xPos, yPos, scale);
+    glm::mat4 model = *getMesh(xPos, yPos, scale);
+    m_shader->setMat4("model", model);
+
     glDrawElements(GL_TRIANGLES, m_triangleCount, GL_UNSIGNED_INT, 0);
 }
 

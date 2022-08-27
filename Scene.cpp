@@ -27,14 +27,16 @@ unsigned int hexagon_indices[] = {
 Scene::Scene(Camera *camera, unsigned int SCR_WIDTH, unsigned int SCR_HEIGHT) :
     m_camera(camera), m_screenWidth(SCR_WIDTH), m_screenHeight(SCR_HEIGHT), m_faceCounter(3),
     m_ourShader(NULL), m_texture1(0), m_texture2(0), m_VAO(0), m_EBO(0), m_plane_mesh(NULL),
-    m_smiley_texture(NULL), m_columns(1), m_meshList(NULL), m_scale(1.0), m_rows(1), m_instanced(true)
+    m_smiley_texture(NULL), m_columns(1), m_meshList(NULL), m_scale(1.0), m_rows(1), m_instanced(false),
+    m_ourShaderInstanced(NULL)
 {
+    m_ourShaderInstanced = new Shader("./shaderInstanced.vs", "./shader.fs");
     m_ourShader = new Shader("./shader.vs", "./shader.fs");
-
+    
     createPlane();
 
     // Load texture
-    m_smiley_texture = new Texture(m_ourShader, "awesomeface.png");
+    m_smiley_texture = new Texture("awesomeface.png");
 
     // Create mesh list
     std::vector<Mesh*> m_meshList;
@@ -48,7 +50,29 @@ Scene::~Scene()
 
 void Scene::createPlane()
 {
-    m_plane_mesh = new Plane(m_ourShader);
+    if (m_instanced) {
+        std::cout << "using instanced plane shader!" << std::endl;
+        m_plane_mesh = new Plane(m_ourShaderInstanced, m_instanced);
+    }
+    else {
+        std::cout << "using non instanced plane shader!" << std::endl;
+        m_plane_mesh = new Plane(m_ourShader, m_instanced);
+    }
+}
+
+void Scene::changePlaneInstanced(bool instanced)
+{
+    m_instanced = instanced;
+
+    if(m_plane_mesh)
+        delete(m_plane_mesh);
+
+    createPlane();
+}
+
+bool Scene::getPlaneInstanceMode()
+{
+    return m_instanced;
 }
 
 void Scene::updatePlane(int rows, int columns, float scale)
@@ -59,22 +83,28 @@ void Scene::updatePlane(int rows, int columns, float scale)
 
 void Scene::renderScene()
 {
-    if (!m_ourShader)
+    if (!m_ourShader || !m_ourShaderInstanced) {
+        std::cout << "Scene::renderScene::shader error!" << std::endl;
         return;
+    }
 
-    m_ourShader->use();
     m_smiley_texture->use();
 
-    if (m_instanced)
-        m_plane_mesh->drawInstanced();
-    else
-        m_plane_mesh->draw();
-
     glm::mat4 projection = glm::perspective(glm::radians(m_camera->Zoom), (float)m_screenWidth / (float)m_screenHeight, 0.1f, 100.0f);
-    m_ourShader->setMat4("projection", projection);
-
     glm::mat4 view = m_camera->GetViewMatrix();
-    m_ourShader->setMat4("view", view);
+
+    if (m_instanced) {
+        m_ourShaderInstanced->use();
+        m_plane_mesh->drawInstanced();
+        m_ourShaderInstanced->setMat4("projection", projection);
+        m_ourShaderInstanced->setMat4("view", view);
+    }
+    else {
+        m_ourShader->use();
+        m_plane_mesh->drawNonInstanced();
+        m_ourShader->setMat4("projection", projection);
+        m_ourShader->setMat4("view", view);
+    }
 }
 
 void Scene::update()

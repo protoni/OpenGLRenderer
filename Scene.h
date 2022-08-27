@@ -25,6 +25,8 @@ public:
     void renderScene();
     void update();
     void updatePlane(int rows, int columns, float scale);
+    void changePlaneInstanced(bool instanced);
+    bool getPlaneInstanceMode();
 
 private:
     void createPlane();
@@ -32,6 +34,7 @@ private:
 
     Camera *m_camera;
     Shader *m_ourShader;
+    Shader * m_ourShaderInstanced;
     Plane* m_plane_mesh;
     Texture* m_smiley_texture;
 

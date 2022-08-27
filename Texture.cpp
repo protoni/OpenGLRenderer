@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include "stb_image.h"
 
-Texture::Texture(Shader* shader, const char* path) : m_shader(shader), m_path(path), m_texture(0)
+Texture::Texture(const char* path) : m_path(path), m_texture(0)
 {
     load();
 }

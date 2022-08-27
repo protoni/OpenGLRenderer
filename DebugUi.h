@@ -21,11 +21,14 @@ private:
     void render();
     void updateWireframeMode();
     void updatePlaneSize();
+    void updateInstancedPlaneMode();
 
     Window* m_window;
     Scene* m_scene;
     bool m_debugModeOn;
     bool m_wireframeModeOn;
+    bool m_instancedPlaneOn;
+    bool m_instancedPlaneOn_old;
 
     int m_planeSize;
     int m_planeSizeZ;

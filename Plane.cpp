@@ -17,23 +17,25 @@ unsigned int plane_indices[] = {
     2, 3, 0
 };
 
-Plane::Plane(Shader* shader)
+Plane::Plane(Shader* shader, bool instanced)
 : Mesh(shader,
     plane_vertices,
     plane_indices,
     sizeof(plane_vertices) / sizeof(plane_vertices[0]),
     sizeof(plane_indices) / sizeof(plane_indices[0]),
     6
-  ), m_rows(1), m_columns(1), m_scale(1.0), m_buffer(0), m_matrices(NULL), m_shader(shader)
+  ), m_rows(1), m_columns(1), m_scale(1.0), m_buffer(0), m_matrices(NULL), m_shader(shader), m_instanced(instanced)
 {
     // Init instance buffer
     
-    
-    createBuffer();
+    if(m_instanced)
+        createBuffer();
 }
 
 Plane::~Plane()
 {
+    if(m_matrices)
+        delete[] m_matrices;
 }
 
 // Create instanced buffer on the GPU
@@ -81,10 +83,11 @@ void Plane::update(int rows, int columns, float scale)
     m_columns = columns;
     m_scale = scale;
 
-    createBuffer();
+    if (m_instanced)
+        createBuffer();
 }
 
-void Plane::draw()
+void Plane::drawNonInstanced()
 {
     activate();
 
@@ -93,10 +96,13 @@ void Plane::draw()
             render(i, j, m_scale);
         }
     }
+
+    deactivate();
 }
 
 void Plane::drawInstanced()
 {
     activate();
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, (m_rows * m_columns));
+    deactivate();
 }

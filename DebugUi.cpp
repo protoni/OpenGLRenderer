@@ -6,7 +6,8 @@
 
 DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene),
     m_debugModeOn(false), m_wireframeModeOn(false), m_planeSize(1), m_debounceCounter(0.0),
-    m_planeScale(1.0f), m_planeSizeZ(1), m_planeSize_old(1), m_planeScale_old(1.0f), m_planeSizeZ_old(1)
+    m_planeScale(1.0f), m_planeSizeZ(1), m_planeSize_old(1), m_planeScale_old(1.0f), m_planeSizeZ_old(1),
+    m_instancedPlaneOn(false), m_instancedPlaneOn_old(false)
 {
     init();
 }
@@ -42,6 +43,7 @@ void DebugUi::draw()
         ImGui::Checkbox("Wireframe Mode", &m_wireframeModeOn);
         ImGui::Text("");
         ImGui::Text("Plane");
+        ImGui::Checkbox("Instanced Plane", &m_instancedPlaneOn);
         ImGui::SliderInt("Plane Columns", &m_planeSize, 1, 500);
         ImGui::SliderInt("Plane Rows", &m_planeSizeZ, 1, 500);
         ImGui::SliderFloat("Plane scale", &m_planeScale, 0.01f, 10.0f);
@@ -78,6 +80,12 @@ void DebugUi::updateWireframeMode()
     }
 }
 
+void DebugUi::updateInstancedPlaneMode()
+{
+    if (m_instancedPlaneOn != m_scene->getPlaneInstanceMode())
+        m_scene->changePlaneInstanced(m_instancedPlaneOn);
+}
+
 void DebugUi::updatePlaneSize()
 {
     if (m_debugModeOn) {
@@ -104,4 +112,5 @@ void DebugUi::update(float deltaTime)
     render();
     updateWireframeMode();
     updatePlaneSize();
+    updateInstancedPlaneMode();
 }
