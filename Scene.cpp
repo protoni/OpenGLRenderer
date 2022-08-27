@@ -27,7 +27,7 @@ unsigned int hexagon_indices[] = {
 Scene::Scene(Camera *camera, unsigned int SCR_WIDTH, unsigned int SCR_HEIGHT) :
     m_camera(camera), m_screenWidth(SCR_WIDTH), m_screenHeight(SCR_HEIGHT), m_faceCounter(3),
     m_ourShader(NULL), m_texture1(0), m_texture2(0), m_VAO(0), m_EBO(0), m_plane_mesh(NULL),
-    m_smiley_texture(NULL), m_columns(1), m_meshList(NULL), m_scale(1.0), m_rows(1)
+    m_smiley_texture(NULL), m_columns(1), m_meshList(NULL), m_scale(1.0), m_rows(1), m_instanced(true)
 {
     m_ourShader = new Shader("./shader.vs", "./shader.fs");
 
@@ -65,7 +65,10 @@ void Scene::renderScene()
     m_ourShader->use();
     m_smiley_texture->use();
 
-    m_plane_mesh->draw();
+    if (m_instanced)
+        m_plane_mesh->drawInstanced();
+    else
+        m_plane_mesh->draw();
 
     glm::mat4 projection = glm::perspective(glm::radians(m_camera->Zoom), (float)m_screenWidth / (float)m_screenHeight, 0.1f, 100.0f);
     m_ourShader->setMat4("projection", projection);

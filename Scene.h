@@ -49,6 +49,8 @@ private:
     int m_rows;
     float m_scale;
 
+    bool m_instanced;
+
     std::vector<Mesh*> m_meshList;
     
 };

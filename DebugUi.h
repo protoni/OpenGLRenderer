@@ -29,8 +29,14 @@ private:
 
     int m_planeSize;
     int m_planeSizeZ;
-    float m_debounceCounter;
     float m_planeScale;
+
+    int m_planeSize_old;
+    int m_planeSizeZ_old;
+    float m_planeScale_old;
+
+    float m_debounceCounter;
+    
 };
 
 
