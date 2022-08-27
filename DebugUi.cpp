@@ -7,7 +7,7 @@
 DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene),
     m_debugModeOn(false), m_wireframeModeOn(false), m_planeSize(1), m_debounceCounter(0.0),
     m_planeScale(1.0f), m_planeSizeZ(1), m_planeSize_old(1), m_planeScale_old(1.0f), m_planeSizeZ_old(1),
-    m_instancedPlaneOn(false), m_instancedPlaneOn_old(false)
+    m_instancedPlaneOn(false)
 {
     init();
 }
