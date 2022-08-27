@@ -28,7 +28,6 @@ private:
     bool m_debugModeOn;
     bool m_wireframeModeOn;
     bool m_instancedPlaneOn;
-    bool m_instancedPlaneOn_old;
 
     int m_planeSize;
     int m_planeSizeZ;
