@@ -17,6 +17,7 @@ public:
     ~Mesh();
 
     void render(int xPos, int yPos, float scale);
+    glm::mat4* getMesh(int xPos, int yPos, float scale);
     void setTexture1(unsigned int& texture);
     void setTexture2(unsigned int& texture);
 

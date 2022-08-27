@@ -6,7 +6,8 @@
 
 DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene),
     m_debugModeOn(false), m_wireframeModeOn(false), m_planeSize(1), m_debounceCounter(0.0),
-    m_planeScale(1.0f), m_planeSizeZ(1)
+    m_planeScale(1.0f), m_planeSizeZ(1), m_planeSize_old(1), m_planeScale_old(1.0f), m_planeSizeZ_old(1),
+    m_instancedPlaneOn(false), m_instancedPlaneOn_old(false)
 {
     init();
 }
@@ -41,11 +42,13 @@ void DebugUi::draw()
         ImGui::Text("");
         ImGui::Checkbox("Wireframe Mode", &m_wireframeModeOn);
         ImGui::Text("");
-        ImGui::SliderInt("Plane size", &m_planeSize, 1, 1000);
-        ImGui::Text("");
-        ImGui::SliderInt("Plane size Z", &m_planeSizeZ, 1, 1000);
-        ImGui::Text("");
+        ImGui::Text("Plane");
+        ImGui::Checkbox("Instanced Plane", &m_instancedPlaneOn);
+        ImGui::SliderInt("Plane Columns", &m_planeSize, 1, 500);
+        ImGui::SliderInt("Plane Rows", &m_planeSizeZ, 1, 500);
         ImGui::SliderFloat("Plane scale", &m_planeScale, 0.01f, 10.0f);
+        ImGui::Text("");
+        ImGui::Text("Cube");
         ImGui::End();
     }
 }
@@ -77,13 +80,27 @@ void DebugUi::updateWireframeMode()
     }
 }
 
+void DebugUi::updateInstancedPlaneMode()
+{
+    if (m_instancedPlaneOn != m_scene->getPlaneInstanceMode())
+        m_scene->changePlaneInstanced(m_instancedPlaneOn);
+}
+
 void DebugUi::updatePlaneSize()
 {
     if (m_debugModeOn) {
         if (m_debounceCounter >= 0.1f) {
             m_debounceCounter = 0;
 
-            m_scene->updatePlane(m_planeSize, m_planeSizeZ, m_planeScale);
+            if (m_planeSize != m_planeSize_old ||
+                m_planeSizeZ != m_planeSizeZ_old ||
+                m_planeScale != m_planeScale_old) {
+                m_scene->updatePlane(m_planeSize, m_planeSizeZ, m_planeScale);
+
+                m_planeSize_old = m_planeSize;
+                m_planeSizeZ_old = m_planeSizeZ;
+                m_planeScale_old = m_planeScale;
+            }
         }
     }
 }
@@ -95,4 +112,5 @@ void DebugUi::update(float deltaTime)
     render();
     updateWireframeMode();
     updatePlaneSize();
+    updateInstancedPlaneMode();
 }

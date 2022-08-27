@@ -43,6 +43,7 @@ void Mesh::create()
     // Link vertex attributes
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
@@ -53,6 +54,7 @@ void Mesh::create()
 
 void Mesh::activate()
 {
+    //glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
     glBindVertexArray(m_VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
 }
@@ -64,17 +66,25 @@ void Mesh::deactivate()
 
 void Mesh::render(int xPos, int yPos, float scale)
 {
+    glm::mat4 model = *getMesh(xPos, yPos, scale);
+    m_shader->setMat4("model", model);
+
+    glDrawElements(GL_TRIANGLES, m_triangleCount, GL_UNSIGNED_INT, 0);
+}
+
+glm::mat4* Mesh::getMesh(int xPos, int yPos, float scale)
+{
     if (!m_shader || !m_VAO || !m_EBO) {
-        std::cout << "Mesh render error!" << std::endl;
-        return;
+        std::cout << "getMesh error!" << std::endl;
+        return NULL;
     }
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(((0.5f) * scale) * xPos, 0.0f, 0.0f - (0.5 * scale) * yPos));
     model = glm::scale(model, glm::vec3(0.5f * scale, 0.0f, 0.5f * scale));
-    m_shader->setMat4("model", model);
+    //m_shader->setMat4("model", model);
 
-    glDrawElements(GL_TRIANGLES, m_triangleCount, GL_UNSIGNED_INT, 0);
+    return &model;
 }
 
 void Mesh::setTexture1(unsigned int& texture)
