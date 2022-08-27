@@ -66,18 +66,7 @@ void Mesh::deactivate()
 
 void Mesh::render(int xPos, int yPos, float scale)
 {
-    //if (!m_shader || !m_VAO || !m_EBO) {
-    //    std::cout << "Mesh render error!" << std::endl;
-    //    return;
-    //}
-    //
-    //glm::mat4 model = glm::mat4(1.0f);
-    //model = glm::translate(model, glm::vec3(((0.5f) * scale) * xPos, 0.0f, 0.0f - (0.5 * scale) * yPos));
-    //model = glm::scale(model, glm::vec3(0.5f * scale, 0.0f, 0.5f * scale));
-    //m_shader->setMat4("model", model);
-
     getMesh(xPos, yPos, scale);
-
     glDrawElements(GL_TRIANGLES, m_triangleCount, GL_UNSIGNED_INT, 0);
 }
 

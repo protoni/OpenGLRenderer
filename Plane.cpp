@@ -40,41 +40,15 @@ Plane::~Plane()
 void Plane::createBuffer()
 {   
     int ptr = 0;
-    
-    
+
     delete[] m_matrices;
-    //for (int i = 0; i < m_matrices.size(); i++) {
-    //    delete(m_matrices[i]);
-    //}
-    
 
-    //glBufferData(GL_ARRAY_BUFFER, (m_rows * m_columns) * sizeof(glm::mat4), NULL, GL_STREAM_DRAW);
-    //std::cout << "Buffered object count: " << sizeof(m_matrices) / sizeof(m_matrices[0]) << std::endl;
-
-    //m_matrices = (glm::mat4*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     m_matrices = new glm::mat4[m_rows * m_columns];
-    //m_matrices = new glm::mat4[10];
-
-    //for (int i = 0; i < 10; i++) {
-    //    m_matrices[ptr++] = *getMesh(i, 1, m_scale);
-    //}
-
-    ptr = 0;
     for (int j = 0; j < m_rows; j++) { // rows
         for (int i = 0; i < m_columns; i++) { // columns
-    
-            //glm::mat4 model = glm::mat4(1.0f);
-            //model = glm::translate(model, glm::vec3(((0.5f) * m_scale) * i, 0.0f, 0.0f - (0.5 * m_scale) * j));
-            //model = glm::scale(model, glm::vec3(0.5f * m_scale, 0.0f, 0.5f * m_scale));
-            //m_shader->setMat4("model", model);
-            //getMesh(i, j, m_scale);
             glm::mat4* model = getMesh(i, j, m_scale);
-            if (model) {
+            if (model)
                 m_matrices[ptr++] = *model;
-                //m_matrices.push_back(model);
-            }
-            else
-                std::cout << "Error" << std::endl;
         }
     }
 
@@ -82,7 +56,7 @@ void Plane::createBuffer()
 
     glGenBuffers(1, &m_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
-    glBufferData(GL_ARRAY_BUFFER, m_rows * m_columns * sizeof(glm::mat4), &m_matrices[0], GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, m_rows * m_columns * sizeof(glm::mat4), &m_matrices[0], GL_STATIC_DRAW);
 
     activate();
     glEnableVertexAttribArray(2);
