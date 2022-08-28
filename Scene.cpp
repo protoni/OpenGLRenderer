@@ -162,17 +162,30 @@ void Scene::renderScene()
             m_ourShaderInstanced->use();
             m_ourShaderInstanced->setMat4("projection", projection);
             m_ourShaderInstanced->setMat4("view", view);
+
+            if (m_meshList->at(i)->selected) {
+                m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
+            }
+            else
+                m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
         }
         else {
             m_ourShader->use();
             m_ourShader->setMat4("projection", projection);
             m_ourShader->setMat4("view", view);
+
+            if (m_meshList->at(i)->selected)
+                m_ourShader->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
+            else
+                m_ourShader->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
         }
 
         if (m_meshList->at(i)->name.find("Cube") != std::string::npos)
             m_meshList->at(i)->mesh->draw(6);
         else
             m_meshList->at(i)->mesh->draw();
+
+        
 
     }
 }

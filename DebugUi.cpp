@@ -71,6 +71,11 @@ void DebugUi::objectLayout(bool* p_open)
         {
             std::vector<MeshObject*>* meshList = m_scene->getMeshList();
 
+            // Unselect all first
+            for (int i = 0; i < meshList->size(); i++) {
+                meshList->at(i)->selected = false;
+            }
+
             ImGui::BeginGroup();
             ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
 
@@ -88,6 +93,9 @@ void DebugUi::objectLayout(bool* p_open)
             
                 ImGui::Separator();
                 
+                // Set selected
+                meshList->at(selected)->selected = true;
+
                 // Load current values
                 RepeaterState* state = meshList->at(selected)->mesh->getState();
                 m_planeState->instanced = state->instanced;

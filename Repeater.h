@@ -6,18 +6,26 @@
 
 struct RepeaterState
 {
+    // Repeater settings
     int rowCount;
     int columnCount;
     int stackCount;
-    float scale;
     float padding;
+
+    // Object size
+    float scale;
+
+    // Translation offsets
     float xOffset;
     float yOffset;
     float zOffset;
+
+    // Rotation
     float angle;
     float xRotation;
     float yRotation;
     float zRotation;
+
     bool instanced;
 
     RepeaterState() :

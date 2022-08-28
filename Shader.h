@@ -122,6 +122,11 @@ public:
     {
         glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
+
+    void setVec4(const std::string& name, const glm::vec4& vec) const
+    {
+        glUniform4f(glGetUniformLocation(ID, name.c_str()), vec[0], vec[1], vec[2], vec[3]);
+    }
 };
 
 #endif

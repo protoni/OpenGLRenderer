@@ -22,6 +22,7 @@ struct MeshObject
 {
     Repeater* mesh;
     std::string name;
+    bool selected = false;
 };
 
 class Scene
