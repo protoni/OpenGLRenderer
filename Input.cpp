@@ -12,7 +12,7 @@ Input::~Input()
 {
 }
 
-void Input::processInput(float deltaTime)
+void Input::processInput(double deltaTime)
 {
     m_debounceCounter += deltaTime;
 
@@ -21,19 +21,19 @@ void Input::processInput(float deltaTime)
         glfwSetWindowShouldClose(m_window->get(), true);
 
     // Handle camera movement input
-    const float cameraSpeed = 2.5f * deltaTime;
+    const float cameraSpeed = 2.5f * (float)deltaTime;
     if (glfwGetKey(m_window->get(), GLFW_KEY_W) == GLFW_PRESS)
-        m_camera->ProcessKeyboard(FORWARD, deltaTime);
+        m_camera->ProcessKeyboard(CameraMovement::FORWARD, deltaTime);
     if (glfwGetKey(m_window->get(), GLFW_KEY_S) == GLFW_PRESS)
-        m_camera->ProcessKeyboard(BACKWARD, deltaTime);
+        m_camera->ProcessKeyboard(CameraMovement::BACKWARD, deltaTime);
     if (glfwGetKey(m_window->get(), GLFW_KEY_A) == GLFW_PRESS)
-        m_camera->ProcessKeyboard(LEFT, deltaTime);
+        m_camera->ProcessKeyboard(CameraMovement::LEFT, deltaTime);
     if (glfwGetKey(m_window->get(), GLFW_KEY_D) == GLFW_PRESS)
-        m_camera->ProcessKeyboard(RIGHT, deltaTime);
+        m_camera->ProcessKeyboard(CameraMovement::RIGHT, deltaTime);
     if (glfwGetKey(m_window->get(), GLFW_KEY_SPACE) == GLFW_PRESS)
-        m_camera->ProcessKeyboard(UP, deltaTime);
+        m_camera->ProcessKeyboard(CameraMovement::UP, deltaTime);
     if (glfwGetKey(m_window->get(), GLFW_KEY_X) == GLFW_PRESS)
-        m_camera->ProcessKeyboard(DOWN, deltaTime);
+        m_camera->ProcessKeyboard(CameraMovement::DOWN, deltaTime);
 
     
     // Limit actions to 500ms

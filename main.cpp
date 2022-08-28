@@ -24,13 +24,13 @@
 
 
 // Time
-float deltaTime = 0.0f;   // Time between current frame and last frame
-float lastFrame = 0.0f;   // Time of last frame
-float secondFrame = 0.0f; // Count seconds
-float fpsCounter = 0.0f;  // Count frames per second
-float fpsLimit = 120.0f;   // MAX FPS
-float frame_time = (1.0f / fpsLimit) * 1000;
-float sleep_time = 0.0f;
+double deltaTime = 0.0f;   // Time between current frame and last frame
+double lastFrame = 0.0f;   // Time of last frame
+double secondFrame = 0.0f; // Count seconds
+double fpsCounter = 0.0f;  // Count frames per second
+double fpsLimit = 120.0f;   // MAX FPS
+double frame_time = (1.0f / fpsLimit) * 1000;
+double sleep_time = 0.0f;
 
 
 int main(int argc, char** argv)
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
     while (!window->shouldExit())
     {
         // Calculate delta time
-        float currentFrame = glfwGetTime();
+        double currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 

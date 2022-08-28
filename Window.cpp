@@ -42,7 +42,7 @@ bool Window::init()
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD!" << std::endl;
-        return -1;
+        return false;
     }
 
     // Set window viewport dimensions
@@ -91,8 +91,8 @@ void Window::mouseCallback(GLFWwindow* window, double xposIn, double yposIn)
             windowObject->m_firstMouse = false;
         }
 
-        float xoffset = xpos - windowObject->m_lastX;
-        float yoffset = windowObject->m_lastY - ypos; // reversed since y-coordinates range from bottom to top
+        float xoffset = xpos - (float)windowObject->m_lastX;
+        float yoffset = (float)windowObject->m_lastY - ypos; // reversed since y-coordinates range from bottom to top
         windowObject->m_lastX = xpos;
         windowObject->m_lastY = ypos;
 

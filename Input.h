@@ -16,14 +16,14 @@ public:
     Input(Window *window, Camera *camera, DebugUi* debugUi);
     ~Input();
 
-    void processInput(float deltaTime);
+    void processInput(double deltaTime);
 
 private:
     Window* m_window;
     Camera* m_camera;
     DebugUi* m_debugUi;
 
-    float m_debounceCounter;
+    double m_debounceCounter;
     
 };
 

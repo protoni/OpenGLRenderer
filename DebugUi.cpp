@@ -179,9 +179,9 @@ void DebugUi::updateCubeCount()
     }
 }
 
-void DebugUi::update(float deltaTime)
+void DebugUi::update(double deltaTime)
 {
-    m_debounceCounter += deltaTime;
+    m_debounceCounter += (float)deltaTime;
     draw();
     render();
     updateWireframeMode();

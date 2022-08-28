@@ -11,7 +11,7 @@ public:
     ~DebugUi();
 
     void newWindow();
-    void update(float deltaTime);
+    void update(double deltaTime);
     void cleanup();
     void debugMode();
 

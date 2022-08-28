@@ -45,9 +45,7 @@ void Repeater::createBuffer()
     for (int y = 0; y < m_state->stackCount; y++) {          // stacks  ( y-axis )
         for (int z = 0; z < m_state->rowCount; z++) {        // rows    ( z axis )
             for (int x = 0; x < m_state->columnCount; x++) { // columns ( x axis )
-                glm::mat4* model = getMesh(x, y, z, m_state->scale, m_state->padding);
-                if (model)
-                    m_matrices[ptr++] = *model;
+                m_matrices[ptr++] = *getMesh(x, y, z, m_state->scale, m_state->padding);
             }
         }
     }

@@ -8,7 +8,7 @@
 #include <vector>
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
-enum Camera_Movement {
+enum class CameraMovement {
     FORWARD,
     BACKWARD,
     LEFT,
@@ -63,20 +63,20 @@ public:
         return glm::lookAt(Position, Position + Front, Up);
     }
 
-    void ProcessKeyboard(Camera_Movement direction, float deltaTime)
+    void ProcessKeyboard(CameraMovement direction, double deltaTime)
     {
-        float velocity = MovementSpeed * deltaTime;
-        if (direction == FORWARD)
+        float velocity = MovementSpeed * (float)deltaTime;
+        if (direction == CameraMovement::FORWARD)
             Position += Front * velocity;
-        if (direction == BACKWARD)
+        if (direction == CameraMovement::BACKWARD)
             Position -= Front * velocity;
-        if (direction == LEFT)
+        if (direction == CameraMovement::LEFT)
             Position -= Right * velocity;
-        if (direction == RIGHT)
+        if (direction == CameraMovement::RIGHT)
             Position += Right * velocity;
-        if (direction == UP)
+        if (direction == CameraMovement::UP)
             Position += Up * velocity;
-        if (direction == DOWN)
+        if (direction == CameraMovement::DOWN)
             Position -= Up * velocity;
 
         // Set FPS camera

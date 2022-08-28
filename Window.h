@@ -47,8 +47,8 @@ private:
 
     // Mouse
     bool m_firstMouse;
-    float m_lastX;
-    float m_lastY;
+    double m_lastX;
+    double m_lastY;
 };
 
 #endif // WINDOW_H
