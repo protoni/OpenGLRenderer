@@ -69,7 +69,7 @@ unsigned int cube_indices[] = {
 };
 
 Cube::Cube(Shader* shader, bool instanced)
-    : Plane(shader,
+    : Repeater(shader,
         instanced,
         cube_vertices,
         cube_indices,

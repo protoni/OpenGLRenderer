@@ -32,29 +32,8 @@ private:
     bool m_instancedPlaneOn;
     bool m_instancedCubeOn;
 
-    // Plane
-    int m_planeSize;
-    int m_planeSizeZ;
-    int m_planeSizeY;
-    float m_planeScale;
-    float m_planePadding;
-    int m_planeSize_old;
-    int m_planeSizeZ_old;
-    int m_planeSizeY_old;
-    float m_planeScale_old;
-    float m_planePadding_old;
-
-    // Cube
-    int m_cubeCount;
-    int m_cubeCountZ;
-    int m_cubeCountY;
-    float m_cubeScale;
-    float m_cubePadding;
-    int m_cubeCount_old;
-    int m_cubeCountZ_old;
-    int m_cubeCountY_old;
-    float m_cubeScale_old;
-    float m_cubePadding_old;
+    RepeaterState* m_planeState;
+    RepeaterState* m_cubeState;
 
     float m_debounceCounter;
     

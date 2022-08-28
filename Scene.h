@@ -25,17 +25,21 @@ public:
 
     void renderScene();
     void update();
-    void updatePlane(int rows, int columns, int stacks, float scale, float padding);
-    void updateCube(int rows, int columns, int stacks, float scale, float padding);
-    void changePlaneInstanced(bool instanced);
-    void changeCubeInstanced(bool instanced);
-    bool getPlaneInstanceMode();
-    bool getCubeInstanceMode();
+    void updatePlane();
+    void updateCube();
+
+    // Delete and recreate instanced with a different shader if changing instanced rendering state
+    void updatePlaneInstanced(bool state);
+    void updateCubeInstanced(bool state);
+
+    RepeaterState* getPlaneState();
+    RepeaterState* getCubeState();
 
 private:
     void createPlane();
     void createCube();
     void renderPlane();
+    int getTriangleCount();
 
     Camera *m_camera;
     Shader *m_ourShader;

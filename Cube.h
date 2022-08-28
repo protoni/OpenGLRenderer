@@ -1,9 +1,9 @@
 #ifndef CUBE_H
 #define CUBE_H
 
-#include "Plane.h"
+#include "Repeater.h"
 
-class Cube : public Plane
+class Cube : public Repeater
 {
 public:
     Cube(Shader* shader, bool instanced);

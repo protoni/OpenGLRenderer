@@ -33,7 +33,7 @@ Scene::Scene(Camera *camera, unsigned int SCR_WIDTH, unsigned int SCR_HEIGHT) :
     m_ourShaderInstanced = new Shader("./shaderInstanced.vs", "./shader.fs");
     m_ourShader = new Shader("./shader.vs", "./shader.fs");
     
-    //createPlane();
+    createPlane();
     createCube();
 
     // Load texture
@@ -76,9 +76,9 @@ void Scene::createCube()
     }
 }
 
-void Scene::changePlaneInstanced(bool instanced)
+void Scene::updatePlaneInstanced(bool state)
 {
-    m_instanced = instanced;
+    m_instanced = state;
 
     if(m_plane_mesh)
         delete(m_plane_mesh);
@@ -86,9 +86,9 @@ void Scene::changePlaneInstanced(bool instanced)
     createPlane();
 }
 
-void Scene::changeCubeInstanced(bool instanced)
+void Scene::updateCubeInstanced(bool state)
 {
-    m_instanced_cube = instanced;
+    m_instanced_cube = state;
 
     if (m_cube_mesh)
         delete(m_cube_mesh);
@@ -96,30 +96,35 @@ void Scene::changeCubeInstanced(bool instanced)
     createCube();
 }
 
-bool Scene::getPlaneInstanceMode()
+RepeaterState* Scene::getPlaneState()
 {
-    return m_instanced;
+    return m_plane_mesh->getState();
 }
 
-bool Scene::getCubeInstanceMode()
+RepeaterState* Scene::getCubeState()
 {
-    return m_instanced_cube;
+    return m_cube_mesh->getState();
 }
 
-void Scene::updatePlane(int rows, int columns, int stacks, float scale, float padding)
+void Scene::updatePlane()
 {
     if(m_plane_mesh)
-        m_plane_mesh->update(rows, columns, stacks, scale, padding);
+        m_plane_mesh->update();
 
-    std::cout << "Triangle count: " << (rows * columns * stacks) * 6 << std::endl;
+    std::cout << "Triangle count: " << getTriangleCount() << std::endl;
 }
 
-void Scene::updateCube(int rows, int columns, int stacks, float scale, float padding)
+void Scene::updateCube()
 {
     if (m_cube_mesh)
-        m_cube_mesh->update(rows, columns, stacks, scale, padding);
+        m_cube_mesh->update();
 
-    std::cout << "Triangle count: " << (rows * columns * stacks) * (6 * 6) << std::endl;
+    std::cout << "Triangle count: " << getTriangleCount() << std::endl;
+}
+
+int Scene::getTriangleCount()
+{
+    return (m_cube_mesh->getObjCount() * (6 * 6)) + (m_plane_mesh->getObjCount() * 6);
 }
 
 void Scene::renderScene()
