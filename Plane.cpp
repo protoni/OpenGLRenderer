@@ -38,7 +38,7 @@ Plane::Plane(Shader* shader, bool instanced, float* vertices, unsigned int* indi
         indices,
         verticeCount,
         indiceCount
-    ), m_rows(1), m_columns(1), m_scale(1.0), m_buffer(0), m_matrices(NULL), m_shader(shader), m_instanced(instanced)
+    ), m_rows(1), m_columns(1), m_stacks(1), m_scale(1.0), m_buffer(0), m_matrices(NULL), m_shader(shader), m_instanced(instanced)
 {
     std::cout << "vertex count: " << verticeCount << ", index count: " << indiceCount << std::endl;
 
@@ -60,20 +60,22 @@ void Plane::createBuffer()
 
     delete[] m_matrices;
 
-    m_matrices = new glm::mat4[m_rows * m_columns];
-    for (int j = 0; j < m_rows; j++) { // rows
-        for (int i = 0; i < m_columns; i++) { // columns
-            glm::mat4* model = getMesh(i, j, m_scale, m_padding);
-            if (model)
-                m_matrices[ptr++] = *model;
+    m_matrices = new glm::mat4[m_rows * m_columns * m_stacks];
+    for (int y = 0; y < m_stacks; y++) {          // stacks  ( y-axis )
+        for (int z = 0; z < m_rows; z++) {        // rows    ( z axis )
+            for (int x = 0; x < m_columns; x++) { // columns ( x axis )
+                glm::mat4* model = getMesh(x, y, z, m_scale, m_padding);
+                if (model)
+                    m_matrices[ptr++] = *model;
+            }
         }
     }
 
-    std::cout << "planes: " << m_rows * m_columns << std::endl;
+    std::cout << "planes: " << ( m_rows * m_columns * m_stacks ) << std::endl;
 
     glGenBuffers(1, &m_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
-    glBufferData(GL_ARRAY_BUFFER, m_rows * m_columns * sizeof(glm::mat4), &m_matrices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, (m_rows * m_columns * m_stacks) * sizeof(glm::mat4), &m_matrices[0], GL_STATIC_DRAW);
 
     activate();
     glEnableVertexAttribArray(2);
@@ -92,10 +94,11 @@ void Plane::createBuffer()
     deactivate();
 }
 
-void Plane::update(int rows, int columns, float scale, float padding)
+void Plane::update(int rows, int columns, int stacks, float scale, float padding)
 {
     m_rows = rows;
     m_columns = columns;
+    m_stacks = stacks;
     m_scale = scale;
     m_padding = padding;
 
@@ -107,9 +110,11 @@ void Plane::drawNonInstanced()
 {
     activate();
 
-    for (int j = 0; j < m_rows; j++) { // rows
-        for (int i = 0; i < m_columns; i++) { // columns
-            render(i, j, m_scale, m_padding);
+    for (int y = 0; y < m_stacks; y++) {          // stacks  ( y-axis )
+        for (int z = 0; z < m_rows; z++) {        // rows    ( z axis )
+            for (int x = 0; x < m_columns; x++) { // columns ( x axis )
+                render(x, y, z, m_scale, m_padding);
+            }
         }
     }
 
@@ -119,7 +124,7 @@ void Plane::drawNonInstanced()
 void Plane::drawInstanced(int faceCount)
 {
     activate();
-    glDrawElementsInstanced(GL_TRIANGLES, 6*6, GL_UNSIGNED_INT, 0, (m_rows * m_columns));
+    glDrawElementsInstanced(GL_TRIANGLES, (6 * faceCount), GL_UNSIGNED_INT, 0, (m_rows * m_columns * m_stacks));
     deactivate();
 }
 

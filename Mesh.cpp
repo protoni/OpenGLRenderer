@@ -63,15 +63,15 @@ void Mesh::deactivate()
     glBindVertexArray(0);
 }
 
-void Mesh::render(int xPos, int yPos, float scale, float padding)
+void Mesh::render(int xPos, int yPos, int zPos, float scale, float padding)
 {
-    glm::mat4 model = *getMesh(xPos, yPos, scale, padding);
+    glm::mat4 model = *getMesh(xPos, yPos, zPos, scale, padding);
     m_shader->setMat4("model", model);
 
     glDrawElements(GL_TRIANGLES, m_indiceCount, GL_UNSIGNED_INT, 0);
 }
 
-glm::mat4* Mesh::getMesh(int xPos, int yPos, float scale, float padding)
+glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, float scale, float padding)
 {
     if (!m_shader || !m_VAO || !m_EBO) {
         std::cout << "getMesh error!" << std::endl;
@@ -79,7 +79,11 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, float scale, float padding)
     }
 
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(((0.5f * scale) * xPos) + (padding* xPos), 0.0f, ((0.5 * scale) * yPos) + (padding*yPos)));
+    model = glm::translate(model,glm::vec3(
+        ((0.5f * scale) * xPos) + (padding * xPos),
+        ((0.5f * scale) * yPos) + (padding * yPos),
+        ((0.5f * scale) * zPos) + (padding * zPos))
+    );
     model = glm::scale(model, glm::vec3(0.5f * scale, 0.5f * scale, 0.5f * scale));
     //m_shader->setMat4("model", model);
 

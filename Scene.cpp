@@ -106,20 +106,20 @@ bool Scene::getCubeInstanceMode()
     return m_instanced_cube;
 }
 
-void Scene::updatePlane(int rows, int columns, float scale, float padding)
+void Scene::updatePlane(int rows, int columns, int stacks, float scale, float padding)
 {
     if(m_plane_mesh)
-        m_plane_mesh->update(rows, columns, scale, padding);
+        m_plane_mesh->update(rows, columns, stacks, scale, padding);
 
-    std::cout << "Triangle count: " << rows * columns * 6 << std::endl;
+    std::cout << "Triangle count: " << (rows * columns * stacks) * 6 << std::endl;
 }
 
-void Scene::updateCube(int rows, int columns, float scale, float padding)
+void Scene::updateCube(int rows, int columns, int stacks, float scale, float padding)
 {
     if (m_cube_mesh)
-        m_cube_mesh->update(rows, columns, scale, padding);
+        m_cube_mesh->update(rows, columns, stacks, scale, padding);
 
-    std::cout << "Triangle count: " << rows * columns * (6 * 6) << std::endl;
+    std::cout << "Triangle count: " << (rows * columns * stacks) * (6 * 6) << std::endl;
 }
 
 void Scene::renderScene()

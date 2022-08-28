@@ -25,8 +25,8 @@ public:
 
     void renderScene();
     void update();
-    void updatePlane(int rows, int columns, float scale, float padding);
-    void updateCube(int rows, int columns, float scale, float padding);
+    void updatePlane(int rows, int columns, int stacks, float scale, float padding);
+    void updateCube(int rows, int columns, int stacks, float scale, float padding);
     void changePlaneInstanced(bool instanced);
     void changeCubeInstanced(bool instanced);
     bool getPlaneInstanceMode();

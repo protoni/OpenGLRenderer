@@ -9,7 +9,8 @@ DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene
     m_planeScale(1.0f), m_planeSizeZ(1), m_planeSize_old(1), m_planeScale_old(1.0f), m_planeSizeZ_old(1),
     m_instancedPlaneOn(false), m_cubeCount(1), m_cubeCountZ(1), m_cubeScale(1.0f),
     m_cubeCount_old(1), m_cubeCountZ_old(1), m_cubeScale_old(1), m_instancedCubeOn(false),
-    m_cubePadding(0), m_cubePadding_old(0), m_planePadding(0), m_planePadding_old(0)
+    m_cubePadding(0), m_cubePadding_old(0), m_planePadding(0), m_planePadding_old(0),
+    m_planeSizeY(1), m_planeSizeY_old(1), m_cubeCountY(1), m_cubeCountY_old(1)
 {
     init();
 }
@@ -48,6 +49,7 @@ void DebugUi::draw()
         ImGui::Checkbox("Instanced Plane", &m_instancedPlaneOn);
         ImGui::SliderInt("Plane Columns", &m_planeSize, 1, 500);
         ImGui::SliderInt("Plane Rows", &m_planeSizeZ, 1, 500);
+        ImGui::SliderInt("Plane Stacks", &m_planeSizeY, 1, 500);
         ImGui::SliderFloat("Plane scale", &m_planeScale, 0.01f, 10.0f);
         ImGui::SliderFloat("Plane padding", &m_planePadding, 0.0f, 10.0f);
         ImGui::Text("");
@@ -55,6 +57,7 @@ void DebugUi::draw()
         ImGui::Checkbox("Instanced Cube", &m_instancedCubeOn);
         ImGui::SliderInt("Cube Columns", &m_cubeCount, 1, 500);
         ImGui::SliderInt("Cube Rows", &m_cubeCountZ, 1, 500);
+        ImGui::SliderInt("Cube stacks", &m_cubeCountY, 1, 500);
         ImGui::SliderFloat("Cube scale", &m_cubeScale, 0.01f, 10.0f);
         ImGui::SliderFloat("Cube padding", &m_cubePadding, 0.0f, 10.0f);
         ImGui::Text("");
@@ -108,12 +111,14 @@ void DebugUi::updatePlaneSize()
 
             if (m_planeSize != m_planeSize_old ||
                 m_planeSizeZ != m_planeSizeZ_old ||
+                m_planeSizeY != m_planeSizeY_old ||
                 m_planeScale != m_planeScale_old ||
                 m_planePadding != m_planePadding_old) {
-                m_scene->updatePlane(m_planeSize, m_planeSizeZ, m_planeScale, m_planePadding);
+                m_scene->updatePlane(m_planeSize, m_planeSizeZ, m_planeSizeY, m_planeScale, m_planePadding);
 
                 m_planeSize_old = m_planeSize;
                 m_planeSizeZ_old = m_planeSizeZ;
+                m_planeSizeY_old = m_planeSizeY;
                 m_planeScale_old = m_planeScale;
                 m_planePadding_old = m_planePadding;
 
@@ -131,12 +136,14 @@ void DebugUi::updateCubeCount()
 
             if (m_cubeCount != m_cubeCount_old ||
                 m_cubeCountZ != m_cubeCountZ_old ||
+                m_cubeCountY != m_cubeCountY_old ||
                 m_cubeScale != m_cubeScale_old ||
                 m_cubePadding != m_cubePadding_old) {
-                m_scene->updateCube(m_cubeCount, m_cubeCountZ, m_cubeScale, m_cubePadding);
+                m_scene->updateCube(m_cubeCount, m_cubeCountZ, m_cubeCountY, m_cubeScale, m_cubePadding);
 
                 m_cubeCount_old = m_cubeCount;
                 m_cubeCountZ_old = m_cubeCountZ;
+                m_cubeCountY_old = m_cubeCountY;
                 m_cubeScale_old = m_cubeScale;
                 m_cubePadding_old = m_cubePadding;
 

@@ -13,13 +13,14 @@ public:
 
     void drawNonInstanced();
     void drawInstanced(int faceCount = 0);
-    void update(int rows, int columns, float scale, float padding);
+    void update(int rows, int columns, int stacks, float scale, float padding);
     void createBuffer();
 
 private:
     Shader* m_shader;
     int m_rows;
     int m_columns;
+    int m_stacks;
     float m_scale;
     float m_padding;
     bool m_instanced;
