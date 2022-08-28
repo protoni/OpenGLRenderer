@@ -96,6 +96,14 @@ void DebugUi::objectLayout(bool* p_open)
                 m_planeState->stackCount = state->stackCount;
                 m_planeState->scale = state->scale;
                 m_planeState->padding = state->padding;
+                m_planeState->xOffset = state->xOffset;
+                m_planeState->yOffset = state->yOffset;
+                m_planeState->zOffset = state->zOffset;
+
+                m_planeState->angle = state->angle;
+                m_planeState->xRotation = state->xRotation;
+                m_planeState->yRotation = state->yRotation;
+                m_planeState->zRotation = state->zRotation;
                 
                 // Set current values and draw settings
                 ImGui::Checkbox("Instanced", &m_planeState->instanced);
@@ -105,32 +113,58 @@ void DebugUi::objectLayout(bool* p_open)
                 ImGui::SliderFloat("Scale", &m_planeState->scale, 0.01f, 10.0f);
                 ImGui::SliderFloat("Padding", &m_planeState->padding, 0.0f, 10.0f);
                 ImGui::Separator();
-                
+                ImGui::SliderFloat("X offset", &m_planeState->xOffset, -5.0f, 5.0f);
+                ImGui::SliderFloat("Y offset", &m_planeState->yOffset, -5.0f, 5.0f);
+                ImGui::SliderFloat("Z offset", &m_planeState->zOffset, -15.0f, 15.0f);
+                ImGui::Separator();
+                ImGui::SliderFloat("Rotation angle", &m_planeState->angle, 0.0f, 360.0f);
+                ImGui::SliderFloat("X Rotation", &m_planeState->xRotation, 0.0f, 1.0f);
+                ImGui::SliderFloat("Y Rotation", &m_planeState->yRotation, 0.0f, 1.0f);
+                ImGui::SliderFloat("Z Rotation", &m_planeState->zRotation, 0.0f, 1.0f);
+
                 // Check if settings changed
-                if (m_planeState->instanced != state->instanced) {
-                    state->instanced = m_planeState->instanced;
+                if (m_debounceCounter >= .1f) {
+                    if (m_planeState->instanced != state->instanced) {
+                        state->instanced = m_planeState->instanced;
 
-                    if (meshList->at(selected)->name.find("Cube") != std::string::npos)
-                        m_scene->updateCubeInstanced(m_planeState->instanced, selected);
-                    else if (meshList->at(selected)->name.find("Plane") != std::string::npos)
-                        m_scene->updatePlaneInstanced(m_planeState->instanced, selected);
+                        if (meshList->at(selected)->name.find("Cube") != std::string::npos)
+                            m_scene->updateCubeInstanced(m_planeState->instanced, selected);
+                        else if (meshList->at(selected)->name.find("Plane") != std::string::npos)
+                            m_scene->updatePlaneInstanced(m_planeState->instanced, selected);
 
-                    m_scene->updateObjectMesh(selected);
-                }
+                        m_debounceCounter = 0;
+                    }
 
-                if (m_planeState->columnCount != state->columnCount ||
-                    m_planeState->rowCount != state->rowCount ||
-                    m_planeState->stackCount != state->stackCount ||
-                    m_planeState->scale != state->scale ||
-                    m_planeState->padding != state->padding
-                ) {
-                    state->columnCount = m_planeState->columnCount;
-                    state->rowCount = m_planeState->rowCount;
-                    state->stackCount = m_planeState->stackCount;
-                    state->scale = m_planeState->scale;
-                    state->padding = m_planeState->padding;
+                    if (m_planeState->columnCount != state->columnCount ||
+                        m_planeState->rowCount != state->rowCount ||
+                        m_planeState->stackCount != state->stackCount ||
+                        m_planeState->scale != state->scale ||
+                        m_planeState->padding != state->padding ||
+                        m_planeState->xOffset != state->xOffset ||
+                        m_planeState->yOffset != state->yOffset ||
+                        m_planeState->angle != state->angle ||
+                        m_planeState->xRotation != state->xRotation ||
+                        m_planeState->yRotation != state->yRotation ||
+                        m_planeState->zRotation != state->zRotation
+                        ) {
+                        state->columnCount = m_planeState->columnCount;
+                        state->rowCount = m_planeState->rowCount;
+                        state->stackCount = m_planeState->stackCount;
+                        state->scale = m_planeState->scale;
+                        state->padding = m_planeState->padding;
+                        state->xOffset = m_planeState->xOffset;
+                        state->yOffset = m_planeState->yOffset;
+                        state->zOffset = m_planeState->zOffset;
+                        state->angle = m_planeState->angle;
+                        state->xRotation = m_planeState->xRotation;
+                        state->yRotation = m_planeState->yRotation;
+                        state->zRotation = m_planeState->zRotation;
 
-                    m_scene->updateObjectMesh(selected);
+                        std::cout << "Changed!" << std::endl;
+                        m_scene->updateObjectMesh(selected);
+
+                        m_debounceCounter = 0;
+                    }
                 }
             }
 
@@ -151,7 +185,7 @@ void DebugUi::draw()
 
         bool open;
         objectLayout(&open);
-
+ 
         ImGui::End();
     }
 }

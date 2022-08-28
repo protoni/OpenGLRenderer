@@ -63,15 +63,27 @@ void Mesh::deactivate()
     glBindVertexArray(0);
 }
 
-void Mesh::render(int xPos, int yPos, int zPos, float scale, float padding)
+void Mesh::render(
+    int xPos, int yPos, int zPos,
+    float scale, float padding,
+    float xOffset, float yOffset, float zOffset,
+    float angle, float xRotation, float yRotation, float zRotation)
 {
-    glm::mat4 model = *getMesh(xPos, yPos, zPos, scale, padding);
+    glm::mat4 model = *getMesh(
+        xPos, yPos, zPos, scale, padding, 
+        xOffset, yOffset, zOffset,
+        angle, xRotation, yRotation, zRotation);
     m_shader->setMat4("model", model);
 
     glDrawElements(GL_TRIANGLES, m_indiceCount, GL_UNSIGNED_INT, 0);
 }
 
-glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, float scale, float padding)
+glm::mat4* Mesh::getMesh(
+    int xPos, int yPos, int zPos,
+    float scale, float padding,
+    float xOffset, float yOffset, float zOffset,
+    float angle, float xRotation, float yRotation, float zRotation
+)
 {
     if (!m_shader || !m_VAO || !m_EBO) {
         std::cout << "getMesh error!" << std::endl;
@@ -80,11 +92,14 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, float scale, float paddin
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model,glm::vec3(
-        ((0.5f * scale) * xPos) + (padding * xPos),
-        ((0.5f * scale) * yPos) + (padding * yPos),
-        ((0.5f * scale) * zPos) + (padding * zPos))
+        ((0.5f * scale) * xPos) + (padding * xPos) + xOffset,
+        ((0.5f * scale) * yPos) + (padding * yPos) + yOffset,
+        ((0.5f * scale) * zPos) + (padding * zPos) + zOffset)
     );
     model = glm::scale(model, glm::vec3(0.5f * scale, 0.5f * scale, 0.5f * scale));
+    //model = glm::rotate(model, glm::radians(angle), glm::vec3(xRotation, yRotation, zRotation));
+    if(scale != 0 && xRotation != 0 && yRotation != 0 && zRotation != 0)
+        model = glm::rotate(model, glm::radians(angle), glm::vec3(xRotation, yRotation, zRotation));
     //m_shader->setMat4("model", model);
 
     return &model;

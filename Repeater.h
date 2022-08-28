@@ -11,6 +11,13 @@ struct RepeaterState
     int stackCount;
     float scale;
     float padding;
+    float xOffset;
+    float yOffset;
+    float zOffset;
+    float angle;
+    float xRotation;
+    float yRotation;
+    float zRotation;
     bool instanced;
 
     RepeaterState() :
@@ -19,6 +26,13 @@ struct RepeaterState
         stackCount(1),
         scale(0.5),
         padding(0.0),
+        xOffset(0.0),
+        yOffset(0.0),
+        zOffset(0.0),
+        angle(0.0),
+        xRotation(0.0),
+        yRotation(0.0),
+        zRotation(0.0),
         instanced(false) {}
 };
 
