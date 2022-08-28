@@ -118,9 +118,9 @@ void DebugUi::objectLayout(bool* p_open)
                 ImGui::SliderFloat("Z offset", &m_planeState->zOffset, -15.0f, 15.0f);
                 ImGui::Separator();
                 ImGui::SliderFloat("Rotation angle", &m_planeState->angle, 0.0f, 360.0f);
-                ImGui::SliderFloat("X Rotation", &m_planeState->xRotation, 0.0f, 1.0f);
-                ImGui::SliderFloat("Y Rotation", &m_planeState->yRotation, 0.0f, 1.0f);
-                ImGui::SliderFloat("Z Rotation", &m_planeState->zRotation, 0.0f, 1.0f);
+                ImGui::SliderFloat("X Rotation", &m_planeState->xRotation, 0.001f, 1.0f);
+                ImGui::SliderFloat("Y Rotation", &m_planeState->yRotation, 0.001f, 1.0f);
+                ImGui::SliderFloat("Z Rotation", &m_planeState->zRotation, 0.001f, 1.0f);
 
                 // Check if settings changed
                 if (m_debounceCounter >= .1f) {

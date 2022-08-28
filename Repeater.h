@@ -30,9 +30,9 @@ struct RepeaterState
         yOffset(0.0),
         zOffset(0.0),
         angle(0.0),
-        xRotation(0.0),
-        yRotation(0.0),
-        zRotation(0.0),
+        xRotation(0.001),
+        yRotation(0.001),
+        zRotation(0.001),
         instanced(false) {}
 };
 

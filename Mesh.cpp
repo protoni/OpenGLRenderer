@@ -96,10 +96,12 @@ glm::mat4* Mesh::getMesh(
         ((0.5f * scale) * yPos) + (padding * yPos) + yOffset,
         ((0.5f * scale) * zPos) + (padding * zPos) + zOffset)
     );
-    model = glm::scale(model, glm::vec3(0.5f * scale, 0.5f * scale, 0.5f * scale));
+    
     //model = glm::rotate(model, glm::radians(angle), glm::vec3(xRotation, yRotation, zRotation));
-    if(scale != 0 && xRotation != 0 && yRotation != 0 && zRotation != 0)
+    if (scale != 0 && xRotation != 0 && yRotation != 0 && zRotation != 0) {
         model = glm::rotate(model, glm::radians(angle), glm::vec3(xRotation, yRotation, zRotation));
+    }
+    model = glm::scale(model, glm::vec3(0.5f * scale, 0.5f * scale, 0.5f * scale));
     //m_shader->setMat4("model", model);
 
     return &model;
