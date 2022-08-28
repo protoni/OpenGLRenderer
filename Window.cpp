@@ -4,9 +4,9 @@
 
 
 
-Window::Window(unsigned int WINDOW_WIDTH, unsigned int WINDOW_HEIGHT) : 
-    m_window(NULL), m_camera(NULL), m_windowWidth(WINDOW_WIDTH), m_windowHeight(WINDOW_HEIGHT),
-    m_firstMouse(true), m_lastX(m_windowWidth / 2.0), m_lastY(m_windowHeight / 2.0),
+Window::Window(ScreenSettings* settings) :
+    m_window(NULL), m_camera(NULL), m_windowSettings(settings),
+    m_firstMouse(true), m_lastX(m_windowSettings->width / 2.0), m_lastY(m_windowSettings->height / 2.0),
     m_debugModeOn(false), m_wireframeModeOn(false)
 {
 
@@ -29,7 +29,7 @@ bool Window::init()
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     // Create a window
-    m_window = glfwCreateWindow(m_windowWidth, m_windowHeight, "OpenGLRenderer", NULL, NULL);
+    m_window = glfwCreateWindow(m_windowSettings->width, m_windowSettings->height, "OpenGLRenderer", NULL, NULL);
     if (m_window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -46,7 +46,7 @@ bool Window::init()
     }
 
     // Set window viewport dimensions
-    glViewport(0, 0, m_windowWidth, m_windowHeight);
+    glViewport(0, 0, m_windowSettings->width, m_windowSettings->height);
 
     // Set window resize callback
     glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback);
@@ -121,6 +121,11 @@ void Window::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 
 void Window::framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
+    Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+    theWindow->m_windowSettings->width = width;
+    theWindow->m_windowSettings->height = height;
+
     glViewport(0, 0, width, height);
 }
 

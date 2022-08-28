@@ -10,6 +10,7 @@
 #include "Texture.h"
 #include "Plane.h"
 #include "Cube.h"
+#include "Window.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,7 +21,7 @@
 class Scene
 {
 public:
-    Scene(Camera *camera, unsigned int SCR_WIDTH, unsigned int SCR_HEIGHT);
+    Scene(Camera *camera, ScreenSettings* screenSettings);
     ~Scene();
 
     void renderScene();
@@ -47,9 +48,8 @@ private:
     Plane* m_plane_mesh;
     Cube* m_cube_mesh;
     Texture* m_smiley_texture;
+    ScreenSettings* m_screenSettings;
 
-    unsigned int m_screenWidth;
-    unsigned int m_screenHeight;
     unsigned int m_VAO;
     unsigned int m_EBO;
 

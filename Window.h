@@ -6,10 +6,16 @@
 
 #include "Camera.h"
 
+struct ScreenSettings
+{
+    unsigned int width = 800;
+    unsigned int height = 600;
+};
+
 class Window
 {
 public:
-    Window(unsigned int WINDOW_WIDTH, unsigned int WINDOW_HEIGHT);
+    Window(ScreenSettings* settings);
     ~Window();
 
     bool init();
@@ -31,12 +37,10 @@ private:
     static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
     GLFWwindow* m_window;
-    
+    ScreenSettings* m_windowSettings;
+
     bool m_debugModeOn;
     bool m_wireframeModeOn;
-
-    unsigned int m_windowWidth;
-    unsigned int m_windowHeight;
 
     // Mouse
     bool m_firstMouse;

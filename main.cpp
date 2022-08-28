@@ -22,9 +22,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-// settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
 
 // Time
 float deltaTime = 0.0f;   // Time between current frame and last frame
@@ -39,7 +36,8 @@ float sleep_time = 0.0f;
 int main(int argc, char** argv)
 {
     // Create main window
-    Window* window = new Window(SCR_WIDTH, SCR_HEIGHT);
+    ScreenSettings screenSettings;
+    Window* window = new Window(&screenSettings);
     window->init();
 
     // Check how many vertex attributes are supported
@@ -52,7 +50,7 @@ int main(int argc, char** argv)
     window->setCamera(camera);
 
     // Create scene
-    Scene* scene = new Scene(camera, SCR_WIDTH, SCR_HEIGHT);
+    Scene* scene = new Scene(camera, &screenSettings);
 
     // Create debug window
     DebugUi* debugUi = new DebugUi(window, scene);
