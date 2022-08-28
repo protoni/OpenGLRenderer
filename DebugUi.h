@@ -14,6 +14,7 @@ public:
     void update(double deltaTime);
     void cleanup();
     void debugMode();
+    void objectLayout(bool* p_open);
 
 private:
     void init();
@@ -25,6 +26,7 @@ private:
     void updateInstancedPlaneMode();
     void updateInstancedCubeMode();
 
+
     Window* m_window;
     Scene* m_scene;
     bool m_debugModeOn;
@@ -33,7 +35,6 @@ private:
     bool m_instancedCubeOn;
 
     RepeaterState* m_planeState;
-    RepeaterState* m_cubeState;
 
     float m_debounceCounter;
     

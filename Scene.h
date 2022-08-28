@@ -18,6 +18,12 @@
 
 #include <vector>
 
+struct MeshObject
+{
+    Repeater* mesh;
+    std::string name;
+};
+
 class Scene
 {
 public:
@@ -26,27 +32,26 @@ public:
 
     void renderScene();
     void update();
-    void updatePlane();
-    void updateCube();
+    bool updateObjectMesh(int idx);
 
     // Delete and recreate instanced with a different shader if changing instanced rendering state
-    void updatePlaneInstanced(bool state);
-    void updateCubeInstanced(bool state);
+    void updatePlaneInstanced(bool instanced, int idx);
+    void updateCubeInstanced(bool instanced, int idx);
 
-    RepeaterState* getPlaneState();
-    RepeaterState* getCubeState();
+    void addCube();
+    void addPlane();
+
+    std::vector<MeshObject*>* getMeshList();
 
 private:
-    void createPlane();
-    void createCube();
+    Plane* createPlane(bool instanced);
+    Cube* createCube(bool instanced);
     void renderPlane();
     int getTriangleCount();
 
-    Camera *m_camera;
-    Shader *m_ourShader;
-    Shader * m_ourShaderInstanced;
-    Plane* m_plane_mesh;
-    Cube* m_cube_mesh;
+    Camera* m_camera;
+    Shader* m_ourShader;
+    Shader* m_ourShaderInstanced;
     Texture* m_smiley_texture;
     ScreenSettings* m_screenSettings;
 
@@ -65,7 +70,7 @@ private:
     bool m_instanced;
     bool m_instanced_cube;
 
-    std::vector<Mesh*> m_meshList;
+    std::vector<MeshObject*>* m_meshList;
     
 };
 

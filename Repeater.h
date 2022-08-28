@@ -31,6 +31,8 @@ public:
 
     void drawNonInstanced();
     void drawInstanced(int faceCount = 1);
+    void draw(int faceCount = 1);
+
     void update();
     void createBuffer();
     int getObjCount();

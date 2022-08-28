@@ -26,106 +26,122 @@ unsigned int hexagon_indices[] = {
 
 Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_camera(camera), m_screenSettings(screenSettings), m_faceCounter(3),
-    m_ourShader(NULL), m_texture1(0), m_texture2(0), m_VAO(0), m_EBO(0), m_plane_mesh(NULL),
-    m_smiley_texture(NULL), m_columns(1), m_meshList(NULL), m_scale(1.0), m_rows(1), m_instanced(false),
-    m_ourShaderInstanced(NULL), m_cube_mesh(NULL), m_instanced_cube(false)
+    m_ourShader(NULL), m_texture1(0), m_texture2(0), m_VAO(0), m_EBO(0),
+    m_smiley_texture(NULL), m_columns(1), m_meshList(), m_scale(1.0), m_rows(1), m_instanced(false),
+    m_ourShaderInstanced(NULL), m_instanced_cube(false)
 {
     m_ourShaderInstanced = new Shader("./shaderInstanced.vs", "./shader.fs");
     m_ourShader = new Shader("./shader.vs", "./shader.fs");
     
-    createPlane();
-    createCube();
+    //createPlane();
+    //createCube();
 
     // Load texture
     m_smiley_texture = new Texture("awesomeface.png");
 
-    // Create mesh list
-    std::vector<Mesh*> m_meshList;
+    // Create mesh vector
+    m_meshList = new std::vector<MeshObject*>;
 }
 
 Scene::~Scene()
 {
-    if (m_plane_mesh)
-        delete(m_plane_mesh);
-
-    if (m_cube_mesh)
-        delete(m_cube_mesh);
+    for (int i = 0; i < m_meshList->size(); i++) {
+        delete(m_meshList->at(i)->mesh);
+    }
 }
 
-void Scene::createPlane()
+Plane* Scene::createPlane(bool instanced)
 {
-    if (m_instanced) {
+    Plane* plane;
+
+    if (instanced) {
         std::cout << "using instanced plane shader!" << std::endl;
-        m_plane_mesh = new Plane(m_ourShaderInstanced, m_instanced);
+        plane = new Plane(m_ourShaderInstanced, instanced);
     }
     else {
         std::cout << "using non instanced plane shader!" << std::endl;
-        m_plane_mesh = new Plane(m_ourShader, m_instanced);
+        plane = new Plane(m_ourShader, instanced);
     }
+
+    return plane;
 }
 
-void Scene::createCube()
+Cube* Scene::createCube(bool instanced)
 {
-    if (m_instanced_cube) {
+    Cube* cube;
+
+    if (instanced) {
         std::cout << "using instanced cube shader!" << std::endl;
-        m_cube_mesh = new Cube(m_ourShaderInstanced, m_instanced_cube);
+        cube = new Cube(m_ourShaderInstanced, instanced);
     }
     else {
         std::cout << "using non instanced cube shader!" << std::endl;
-        m_cube_mesh = new Cube(m_ourShader, m_instanced_cube);
+        cube = new Cube(m_ourShader, instanced);
     }
+
+    return cube;
 }
 
-void Scene::updatePlaneInstanced(bool state)
+void Scene::updatePlaneInstanced(bool instanced, int idx)
 {
-    m_instanced = state;
-
-    if(m_plane_mesh)
-        delete(m_plane_mesh);
-
-    createPlane();
+    delete(m_meshList->at(idx)->mesh);
+    m_meshList->at(idx)->mesh = createPlane(instanced);
 }
 
-void Scene::updateCubeInstanced(bool state)
+void Scene::updateCubeInstanced(bool instanced, int idx)
 {
-    m_instanced_cube = state;
-
-    if (m_cube_mesh)
-        delete(m_cube_mesh);
-
-    createCube();
+    delete(m_meshList->at(idx)->mesh);
+    m_meshList->at(idx)->mesh = createCube(instanced);
 }
 
-RepeaterState* Scene::getPlaneState()
+void Scene::addCube()
 {
-    return m_plane_mesh->getState();
+    MeshObject* object = new MeshObject();
+    object->mesh = createCube(false);
+    object->name = std::string("Cube_") + std::to_string(m_meshList->size());
+
+    m_meshList->push_back(object);
 }
 
-RepeaterState* Scene::getCubeState()
+void Scene::addPlane()
 {
-    return m_cube_mesh->getState();
+    MeshObject* object = new MeshObject();
+    object->mesh = createPlane(false);
+    object->name = std::string("Plane_") + std::to_string(m_meshList->size());
+
+    m_meshList->push_back(object);
 }
 
-void Scene::updatePlane()
+std::vector<MeshObject*>* Scene::getMeshList()
 {
-    if(m_plane_mesh)
-        m_plane_mesh->update();
+    return m_meshList;
+}
+
+bool Scene::updateObjectMesh(int idx)
+{
+    if (!m_meshList->size() > idx) {
+        return false;
+    }
+    
+    m_meshList->at(idx)->mesh->update();
 
     std::cout << "Triangle count: " << getTriangleCount() << std::endl;
-}
 
-void Scene::updateCube()
-{
-    if (m_cube_mesh)
-        m_cube_mesh->update();
-
-    std::cout << "Triangle count: " << getTriangleCount() << std::endl;
+    return true;
 }
 
 int Scene::getTriangleCount()
 {
-    //                      6 plane indices * 6 faces of a cube                    6 indices of a plane
-    return (m_cube_mesh->getObjCount() * (6 * 6)) + (m_plane_mesh->getObjCount() * 6);
+    int count = 0;
+    
+    for (int i = 0; i < m_meshList->size(); i++) {
+        if (m_meshList->at(i)->name.find("Cube") != std::string::npos)
+            count += m_meshList->at(i)->mesh->getObjCount() * ( 6 * 6); // 6 plane indices * 6 faces of a cube
+        else
+            count += m_meshList->at(i)->mesh->getObjCount() * 6; // 6 indices of a plane
+    }
+
+    return count;
 }
 
 void Scene::renderScene()
@@ -140,23 +156,24 @@ void Scene::renderScene()
     glm::mat4 projection = glm::perspective(glm::radians(m_camera->Zoom), (float)m_screenSettings->width / (float)m_screenSettings->height, 0.1f, 100.0f);
     glm::mat4 view = m_camera->GetViewMatrix();
 
-    if (m_instanced || m_instanced_cube) {
-        m_ourShaderInstanced->use();
-        if( m_plane_mesh && m_instanced)
-            m_plane_mesh->drawInstanced();
-        if (m_cube_mesh && m_instanced_cube)
-            m_cube_mesh->drawInstanced(6);
-        m_ourShaderInstanced->setMat4("projection", projection);
-        m_ourShaderInstanced->setMat4("view", view);
-    }
-    else {
-        m_ourShader->use();
-        if (m_plane_mesh)
-            m_plane_mesh->drawNonInstanced();
-        if (m_cube_mesh)
-            m_cube_mesh->drawNonInstanced();
-        m_ourShader->setMat4("projection", projection);
-        m_ourShader->setMat4("view", view);
+    for (int i = 0; i < m_meshList->size(); i++) {
+        RepeaterState* state = m_meshList->at(i)->mesh->getState();
+        if (state->instanced) {
+            m_ourShaderInstanced->use();
+            m_ourShaderInstanced->setMat4("projection", projection);
+            m_ourShaderInstanced->setMat4("view", view);
+        }
+        else {
+            m_ourShader->use();
+            m_ourShader->setMat4("projection", projection);
+            m_ourShader->setMat4("view", view);
+        }
+
+        if (m_meshList->at(i)->name.find("Cube") != std::string::npos)
+            m_meshList->at(i)->mesh->draw(6);
+        else
+            m_meshList->at(i)->mesh->draw();
+
     }
 }
 

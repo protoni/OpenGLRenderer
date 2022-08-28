@@ -111,3 +111,11 @@ void Repeater::drawInstanced(int faceCount)
     deactivate();
 }
 
+void Repeater::draw(int faceCount)
+{
+    if (m_state->instanced)
+        drawInstanced(faceCount);
+    else
+        drawNonInstanced();
+}
+
