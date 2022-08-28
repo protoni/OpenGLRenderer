@@ -4,12 +4,15 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <string>
+
 #include "Camera.h"
 
 struct ScreenSettings
 {
     unsigned int width = 800;
     unsigned int height = 600;
+    const std::string title = "OpenGLRenderer";
 };
 
 class Window

@@ -29,7 +29,7 @@ bool Window::init()
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     // Create a window
-    m_window = glfwCreateWindow(m_windowSettings->width, m_windowSettings->height, "OpenGLRenderer", NULL, NULL);
+    m_window = glfwCreateWindow(m_windowSettings->width, m_windowSettings->height, m_windowSettings->title.c_str(), NULL, NULL);
     if (m_window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;

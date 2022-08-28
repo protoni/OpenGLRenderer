@@ -137,7 +137,6 @@ void Scene::renderScene()
 
     m_smiley_texture->use();
 
-    std::cout << "m_screenWidth: " << m_screenSettings->width << ", m_screenHeight: " << m_screenSettings->height << std::endl;
     glm::mat4 projection = glm::perspective(glm::radians(m_camera->Zoom), (float)m_screenSettings->width / (float)m_screenSettings->height, 0.1f, 100.0f);
     glm::mat4 view = m_camera->GetViewMatrix();
 
