@@ -13,7 +13,7 @@ public:
 
     void drawNonInstanced();
     void drawInstanced(int faceCount = 0);
-    void update(int rows, int columns, float scale);
+    void update(int rows, int columns, float scale, float padding);
     void createBuffer();
 
 private:
@@ -21,6 +21,7 @@ private:
     int m_rows;
     int m_columns;
     float m_scale;
+    float m_padding;
     bool m_instanced;
 
     unsigned int m_buffer;

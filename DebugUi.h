@@ -36,17 +36,21 @@ private:
     int m_planeSize;
     int m_planeSizeZ;
     float m_planeScale;
+    float m_planePadding;
     int m_planeSize_old;
     int m_planeSizeZ_old;
     float m_planeScale_old;
+    float m_planePadding_old;
 
     // Cube
     int m_cubeCount;
     int m_cubeCountZ;
     float m_cubeScale;
+    float m_cubePadding;
     int m_cubeCount_old;
     int m_cubeCountZ_old;
     float m_cubeScale_old;
+    float m_cubePadding_old;
 
     float m_debounceCounter;
     

@@ -23,7 +23,8 @@ Plane::Plane(Shader* shader, bool instanced)
     plane_indices,
     sizeof(plane_vertices) / sizeof(plane_vertices[0]),
     sizeof(plane_indices) / sizeof(plane_indices[0])
-  ), m_rows(1), m_columns(1), m_scale(1.0), m_buffer(0), m_matrices(NULL), m_shader(shader), m_instanced(instanced)
+  ), m_rows(1), m_columns(1), m_scale(1.0), m_buffer(0), m_matrices(NULL), m_shader(shader), m_instanced(instanced),
+    m_padding(0.0f)
 {
 
     // Init instance buffer
@@ -62,7 +63,7 @@ void Plane::createBuffer()
     m_matrices = new glm::mat4[m_rows * m_columns];
     for (int j = 0; j < m_rows; j++) { // rows
         for (int i = 0; i < m_columns; i++) { // columns
-            glm::mat4* model = getMesh(i, j, m_scale);
+            glm::mat4* model = getMesh(i, j, m_scale, m_padding);
             if (model)
                 m_matrices[ptr++] = *model;
         }
@@ -91,11 +92,12 @@ void Plane::createBuffer()
     deactivate();
 }
 
-void Plane::update(int rows, int columns, float scale)
+void Plane::update(int rows, int columns, float scale, float padding)
 {
     m_rows = rows;
     m_columns = columns;
     m_scale = scale;
+    m_padding = padding;
 
     if (m_instanced)
         createBuffer();
@@ -107,7 +109,7 @@ void Plane::drawNonInstanced()
 
     for (int j = 0; j < m_rows; j++) { // rows
         for (int i = 0; i < m_columns; i++) { // columns
-            render(i, j, m_scale);
+            render(i, j, m_scale, m_padding);
         }
     }
 
