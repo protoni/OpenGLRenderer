@@ -7,11 +7,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-Mesh::Mesh(Shader* shader, float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indiceCount, unsigned int triangleCount) :
+Mesh::Mesh(Shader* shader, float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indiceCount) :
     m_shader(shader), m_vertices(vertices), m_indices(indices), 
     m_vertexCount(vertexCount), m_indiceCount(indiceCount),
-    m_VAO(0), m_VBO(0), m_EBO(0), m_texture1(-1), m_texture2(-1),
-    m_triangleCount(triangleCount)
+    m_VAO(0), m_VBO(0), m_EBO(0), m_texture1(-1), m_texture2(-1)
 {
     create();
 }
@@ -69,7 +68,7 @@ void Mesh::render(int xPos, int yPos, float scale)
     glm::mat4 model = *getMesh(xPos, yPos, scale);
     m_shader->setMat4("model", model);
 
-    glDrawElements(GL_TRIANGLES, m_triangleCount, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, m_indiceCount, GL_UNSIGNED_INT, 0);
 }
 
 glm::mat4* Mesh::getMesh(int xPos, int yPos, float scale)
@@ -81,7 +80,7 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, float scale)
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(((0.5f) * scale) * xPos, 0.0f, 0.0f - (0.5 * scale) * yPos));
-    model = glm::scale(model, glm::vec3(0.5f * scale, 0.0f, 0.5f * scale));
+    model = glm::scale(model, glm::vec3(0.5f * scale, 0.5f * scale, 0.5f * scale));
     //m_shader->setMat4("model", model);
 
     return &model;

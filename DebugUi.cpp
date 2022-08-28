@@ -7,7 +7,8 @@
 DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene),
     m_debugModeOn(false), m_wireframeModeOn(false), m_planeSize(1), m_debounceCounter(0.0),
     m_planeScale(1.0f), m_planeSizeZ(1), m_planeSize_old(1), m_planeScale_old(1.0f), m_planeSizeZ_old(1),
-    m_instancedPlaneOn(false)
+    m_instancedPlaneOn(false), m_cubeCount(1), m_cubeCountZ(1), m_cubeScale(1.0f),
+    m_cubeCount_old(1), m_cubeCountZ_old(1), m_cubeScale_old(1), m_instancedCubeOn(false)
 {
     init();
 }
@@ -49,6 +50,11 @@ void DebugUi::draw()
         ImGui::SliderFloat("Plane scale", &m_planeScale, 0.01f, 10.0f);
         ImGui::Text("");
         ImGui::Text("Cube");
+        ImGui::Checkbox("Instanced Cube", &m_instancedCubeOn);
+        ImGui::SliderInt("Cube Columns", &m_cubeCount, 1, 500);
+        ImGui::SliderInt("Cube Rows", &m_cubeCountZ, 1, 500);
+        ImGui::SliderFloat("Cube scale", &m_cubeScale, 0.01f, 10.0f);
+        ImGui::Text("");
         ImGui::End();
     }
 }
@@ -86,11 +92,16 @@ void DebugUi::updateInstancedPlaneMode()
         m_scene->changePlaneInstanced(m_instancedPlaneOn);
 }
 
+void DebugUi::updateInstancedCubeMode()
+{
+    if (m_instancedCubeOn != m_scene->getCubeInstanceMode())
+        m_scene->changeCubeInstanced(m_instancedCubeOn);
+}
+
 void DebugUi::updatePlaneSize()
 {
     if (m_debugModeOn) {
         if (m_debounceCounter >= 0.1f) {
-            m_debounceCounter = 0;
 
             if (m_planeSize != m_planeSize_old ||
                 m_planeSizeZ != m_planeSizeZ_old ||
@@ -100,6 +111,29 @@ void DebugUi::updatePlaneSize()
                 m_planeSize_old = m_planeSize;
                 m_planeSizeZ_old = m_planeSizeZ;
                 m_planeScale_old = m_planeScale;
+
+                m_debounceCounter = 0;
+            }
+        }
+    }
+}
+
+void DebugUi::updateCubeCount()
+{
+    if (m_debugModeOn) {
+        if (m_debounceCounter >= 0.1f) {
+            m_debounceCounter = 0;
+
+            if (m_cubeCount != m_cubeCount_old ||
+                m_cubeCountZ != m_cubeCountZ_old ||
+                m_cubeScale != m_cubeScale_old) {
+                m_scene->updateCube(m_cubeCount, m_cubeCountZ, m_cubeScale);
+
+                m_cubeCount_old = m_cubeCount;
+                m_cubeCountZ_old = m_cubeCountZ;
+                m_cubeScale_old = m_cubeScale;
+
+                m_debounceCounter = 0;
             }
         }
     }
@@ -112,5 +146,8 @@ void DebugUi::update(float deltaTime)
     render();
     updateWireframeMode();
     updatePlaneSize();
+    updateCubeCount();
     updateInstancedPlaneMode();
+    updateInstancedCubeMode();
+    
 }

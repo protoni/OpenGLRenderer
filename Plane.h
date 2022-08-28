@@ -8,10 +8,11 @@ class Plane : public Mesh
 {
 public:
     Plane(Shader* shader, bool instanced);
+    Plane(Shader* shader, bool instanced, float* vertices, unsigned int* indices, unsigned int verticeCount, unsigned int indiceCount);
     ~Plane();
 
     void drawNonInstanced();
-    void drawInstanced();
+    void drawInstanced(int faceCount = 0);
     void update(int rows, int columns, float scale);
     void createBuffer();
 

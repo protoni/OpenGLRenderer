@@ -22,13 +22,27 @@ Plane::Plane(Shader* shader, bool instanced)
     plane_vertices,
     plane_indices,
     sizeof(plane_vertices) / sizeof(plane_vertices[0]),
-    sizeof(plane_indices) / sizeof(plane_indices[0]),
-    6
+    sizeof(plane_indices) / sizeof(plane_indices[0])
   ), m_rows(1), m_columns(1), m_scale(1.0), m_buffer(0), m_matrices(NULL), m_shader(shader), m_instanced(instanced)
 {
+
     // Init instance buffer
-    
     if(m_instanced)
+        createBuffer();
+}
+
+Plane::Plane(Shader* shader, bool instanced, float* vertices, unsigned int* indices, unsigned int verticeCount, unsigned int indiceCount)
+    : Mesh(shader,
+        vertices,
+        indices,
+        verticeCount,
+        indiceCount
+    ), m_rows(1), m_columns(1), m_scale(1.0), m_buffer(0), m_matrices(NULL), m_shader(shader), m_instanced(instanced)
+{
+    std::cout << "vertex count: " << verticeCount << ", index count: " << indiceCount << std::endl;
+
+    // Init instance buffer
+    if (m_instanced)
         createBuffer();
 }
 
@@ -100,9 +114,10 @@ void Plane::drawNonInstanced()
     deactivate();
 }
 
-void Plane::drawInstanced()
+void Plane::drawInstanced(int faceCount)
 {
     activate();
-    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, (m_rows * m_columns));
+    glDrawElementsInstanced(GL_TRIANGLES, 6*6, GL_UNSIGNED_INT, 0, (m_rows * m_columns));
     deactivate();
 }
+

@@ -11,8 +11,7 @@ public:
         float* vertices,
         unsigned int* indices,
         unsigned int verticeCount,
-        unsigned int indiceCount,
-        unsigned int triangeCount
+        unsigned int indiceCount
     );
     ~Mesh();
 

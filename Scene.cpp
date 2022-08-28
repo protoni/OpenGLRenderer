@@ -28,12 +28,13 @@ Scene::Scene(Camera *camera, unsigned int SCR_WIDTH, unsigned int SCR_HEIGHT) :
     m_camera(camera), m_screenWidth(SCR_WIDTH), m_screenHeight(SCR_HEIGHT), m_faceCounter(3),
     m_ourShader(NULL), m_texture1(0), m_texture2(0), m_VAO(0), m_EBO(0), m_plane_mesh(NULL),
     m_smiley_texture(NULL), m_columns(1), m_meshList(NULL), m_scale(1.0), m_rows(1), m_instanced(false),
-    m_ourShaderInstanced(NULL)
+    m_ourShaderInstanced(NULL), m_cube_mesh(NULL), m_instanced_cube(false)
 {
     m_ourShaderInstanced = new Shader("./shaderInstanced.vs", "./shader.fs");
     m_ourShader = new Shader("./shader.vs", "./shader.fs");
     
-    createPlane();
+    //createPlane();
+    createCube();
 
     // Load texture
     m_smiley_texture = new Texture("awesomeface.png");
@@ -46,6 +47,9 @@ Scene::~Scene()
 {
     if (m_plane_mesh)
         delete(m_plane_mesh);
+
+    if (m_cube_mesh)
+        delete(m_cube_mesh);
 }
 
 void Scene::createPlane()
@@ -60,6 +64,18 @@ void Scene::createPlane()
     }
 }
 
+void Scene::createCube()
+{
+    if (m_instanced_cube) {
+        std::cout << "using instanced cube shader!" << std::endl;
+        m_cube_mesh = new Cube(m_ourShaderInstanced, m_instanced_cube);
+    }
+    else {
+        std::cout << "using non instanced cube shader!" << std::endl;
+        m_cube_mesh = new Cube(m_ourShader, m_instanced_cube);
+    }
+}
+
 void Scene::changePlaneInstanced(bool instanced)
 {
     m_instanced = instanced;
@@ -70,15 +86,40 @@ void Scene::changePlaneInstanced(bool instanced)
     createPlane();
 }
 
+void Scene::changeCubeInstanced(bool instanced)
+{
+    m_instanced_cube = instanced;
+
+    if (m_cube_mesh)
+        delete(m_cube_mesh);
+
+    createCube();
+}
+
 bool Scene::getPlaneInstanceMode()
 {
     return m_instanced;
 }
 
+bool Scene::getCubeInstanceMode()
+{
+    return m_instanced_cube;
+}
+
 void Scene::updatePlane(int rows, int columns, float scale)
 {
-    m_plane_mesh->update(rows, columns, scale);
+    if(m_plane_mesh)
+        m_plane_mesh->update(rows, columns, scale);
+
     std::cout << "Triangle count: " << rows * columns * 6 << std::endl;
+}
+
+void Scene::updateCube(int rows, int columns, float scale)
+{
+    if (m_cube_mesh)
+        m_cube_mesh->update(rows, columns, scale);
+
+    std::cout << "Triangle count: " << rows * columns * (6 * 6) << std::endl;
 }
 
 void Scene::renderScene()
@@ -93,15 +134,21 @@ void Scene::renderScene()
     glm::mat4 projection = glm::perspective(glm::radians(m_camera->Zoom), (float)m_screenWidth / (float)m_screenHeight, 0.1f, 100.0f);
     glm::mat4 view = m_camera->GetViewMatrix();
 
-    if (m_instanced) {
+    if (m_instanced || m_instanced_cube) {
         m_ourShaderInstanced->use();
-        m_plane_mesh->drawInstanced();
+        if( m_plane_mesh && m_instanced)
+            m_plane_mesh->drawInstanced();
+        if (m_cube_mesh && m_instanced_cube)
+            m_cube_mesh->drawInstanced(6);
         m_ourShaderInstanced->setMat4("projection", projection);
         m_ourShaderInstanced->setMat4("view", view);
     }
     else {
         m_ourShader->use();
-        m_plane_mesh->drawNonInstanced();
+        if (m_plane_mesh)
+            m_plane_mesh->drawNonInstanced();
+        if (m_cube_mesh)
+            m_cube_mesh->drawNonInstanced();
         m_ourShader->setMat4("projection", projection);
         m_ourShader->setMat4("view", view);
     }

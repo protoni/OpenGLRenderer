@@ -9,6 +9,7 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "Plane.h"
+#include "Cube.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -25,17 +26,22 @@ public:
     void renderScene();
     void update();
     void updatePlane(int rows, int columns, float scale);
+    void updateCube(int rows, int columns, float scale);
     void changePlaneInstanced(bool instanced);
+    void changeCubeInstanced(bool instanced);
     bool getPlaneInstanceMode();
+    bool getCubeInstanceMode();
 
 private:
     void createPlane();
+    void createCube();
     void renderPlane();
 
     Camera *m_camera;
     Shader *m_ourShader;
     Shader * m_ourShaderInstanced;
     Plane* m_plane_mesh;
+    Cube* m_cube_mesh;
     Texture* m_smiley_texture;
 
     unsigned int m_screenWidth;
@@ -53,6 +59,7 @@ private:
     float m_scale;
 
     bool m_instanced;
+    bool m_instanced_cube;
 
     std::vector<Mesh*> m_meshList;
     
