@@ -18,6 +18,10 @@
 
 #include <vector>
 
+#include "windows.h"
+#include <crtdbg.h>
+
+
 struct MeshObject
 {
     Repeater* mesh;
@@ -45,10 +49,11 @@ public:
     std::vector<MeshObject*>* getMeshList();
 
 private:
-    Plane* createPlane(bool instanced);
-    Cube* createCube(bool instanced);
+    void createPlane(bool instanced, Plane*& plane);
+    void createCube(bool instanced, Cube*& cube);
     void renderPlane();
     int getTriangleCount();
+    void dumpMemory();
 
     Camera* m_camera;
     Shader* m_ourShader;
@@ -72,7 +77,6 @@ private:
     bool m_instanced_cube;
 
     std::vector<MeshObject*>* m_meshList;
-    
 };
 
 #endif // SCENE_H

@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "DebugMacros.h"
+
 DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene),
     m_debugModeOn(false), m_wireframeModeOn(false), m_debounceCounter(0.0),
     m_planeState(NULL)
@@ -18,6 +20,10 @@ DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene
 
 DebugUi::~DebugUi()
 {
+    if (m_planeState) {
+        delete m_planeState;
+        m_planeState = NULL;
+    }
 }
 
 void DebugUi::init()

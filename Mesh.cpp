@@ -7,6 +7,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "DebugMacros.h"
+
 Mesh::Mesh(Shader* shader, float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indiceCount) :
     m_shader(shader), m_vertices(vertices), m_indices(indices), 
     m_vertexCount(vertexCount), m_indiceCount(indiceCount),

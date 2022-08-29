@@ -4,6 +4,7 @@
 
 float multiply = 1.0f;
 
+#include "DebugMacros.h"
 
 float hexagon_vertices[] = {
     -0.5f,  1.0f, 0.0f,  0.0f, 0.0f,  // top left
@@ -46,14 +47,33 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
 Scene::~Scene()
 {
     for (int i = 0; i < m_meshList->size(); i++) {
-        delete(m_meshList->at(i)->mesh);
+        delete m_meshList->at(i)->mesh;
+        delete m_meshList->at(i);
+    }
+
+    if (m_meshList) {
+        delete m_meshList;
+        m_meshList = NULL;
+    }
+
+    if (m_smiley_texture) {
+        delete m_smiley_texture;
+        m_smiley_texture = NULL;
+    }
+
+    if (m_ourShaderInstanced) {
+        delete m_ourShaderInstanced;
+        m_ourShaderInstanced = NULL;
+    }
+
+    if (m_ourShader) {
+        delete m_ourShader;
+        m_ourShader = NULL;
     }
 }
 
-Plane* Scene::createPlane(bool instanced)
+void Scene::createPlane(bool instanced, Plane*& plane)
 {
-    Plane* plane;
-
     if (instanced) {
         std::cout << "using instanced plane shader!" << std::endl;
         plane = new Plane(m_ourShaderInstanced, instanced);
@@ -62,14 +82,10 @@ Plane* Scene::createPlane(bool instanced)
         std::cout << "using non instanced plane shader!" << std::endl;
         plane = new Plane(m_ourShader, instanced);
     }
-
-    return plane;
 }
 
-Cube* Scene::createCube(bool instanced)
+void Scene::createCube(bool instanced, Cube*& cube)
 {
-    Cube* cube;
-
     if (instanced) {
         std::cout << "using instanced cube shader!" << std::endl;
         cube = new Cube(m_ourShaderInstanced, instanced);
@@ -78,26 +94,33 @@ Cube* Scene::createCube(bool instanced)
         std::cout << "using non instanced cube shader!" << std::endl;
         cube = new Cube(m_ourShader, instanced);
     }
-
-    return cube;
 }
 
 void Scene::updatePlaneInstanced(bool instanced, int idx)
 {
     delete(m_meshList->at(idx)->mesh);
-    m_meshList->at(idx)->mesh = createPlane(instanced);
+    Plane* plane;
+    createPlane(instanced, plane);
+
+    m_meshList->at(idx)->mesh = plane;
 }
 
 void Scene::updateCubeInstanced(bool instanced, int idx)
 {
     delete(m_meshList->at(idx)->mesh);
-    m_meshList->at(idx)->mesh = createCube(instanced);
+    Cube* cube;
+    createCube(instanced, cube);
+
+    m_meshList->at(idx)->mesh = cube;
 }
 
 void Scene::addCube()
 {
     MeshObject* object = new MeshObject();
-    object->mesh = createCube(false);
+    Cube* cube;
+    createCube(false, cube);
+
+    object->mesh = cube;
     object->name = std::string("Cube_") + std::to_string(m_meshList->size());
 
     m_meshList->push_back(object);
@@ -106,7 +129,10 @@ void Scene::addCube()
 void Scene::addPlane()
 {
     MeshObject* object = new MeshObject();
-    object->mesh = createPlane(false);
+    Plane* plane;
+    createPlane(false, plane);
+
+    object->mesh = plane;
     object->name = std::string("Plane_") + std::to_string(m_meshList->size());
 
     m_meshList->push_back(object);

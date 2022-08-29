@@ -1,6 +1,8 @@
 #include "Input.h"
 #include <iostream>
 
+#include "DebugMacros.h"
+
 Input::Input(Window* window, Camera* camera, DebugUi* debugUi) :
     m_window(window), m_camera(camera), m_debugUi(debugUi),
     m_debounceCounter(0)

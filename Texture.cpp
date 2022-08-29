@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 #include "stb_image.h"
 
+#include "DebugMacros.h"
+
 Texture::Texture(const char* path) : m_path(path), m_texture(0)
 {
     load();

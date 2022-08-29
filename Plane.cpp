@@ -1,4 +1,5 @@
 #include "Plane.h"
+#include "DebugMacros.h"
 
 float plane_vertices[] = {
     // Location         // Texture coords

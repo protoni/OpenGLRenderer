@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-
+#include "DebugMacros.h"
 
 Window::Window(ScreenSettings* settings) :
     m_window(NULL), m_camera(NULL), m_windowSettings(settings),

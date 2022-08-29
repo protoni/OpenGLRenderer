@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "DebugMacros.h"
+
 Repeater::Repeater(Shader* shader, bool instanced, float* vertices, unsigned int* indices, unsigned int verticeCount, unsigned int indiceCount)
     : Mesh(shader,
         vertices,
@@ -30,8 +32,10 @@ Repeater::~Repeater()
     if(m_matrices)
         delete[] m_matrices;
 
-    if (m_state)
+    if (m_state) {
         delete m_state;
+        m_state = NULL;
+    }
 }
 
 // Create instanced buffer on the GPU
