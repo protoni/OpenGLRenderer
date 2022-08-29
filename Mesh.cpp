@@ -65,6 +65,11 @@ void Mesh::deactivate()
     glBindVertexArray(0);
 }
 
+void Mesh::setShader(Shader* shader)
+{
+    m_shader = shader;
+}
+
 void Mesh::render(
     int xPos, int yPos, int zPos,
     float scale, float padding,

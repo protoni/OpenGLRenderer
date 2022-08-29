@@ -89,7 +89,7 @@ void DebugUi::objectLayout(bool* p_open)
                 ImGui::Text(meshList->at(selected)->name.c_str(), selected);
 
                 if (ImGui::Button("Remove Object", ImVec2(100, 0))) {
-                    meshList->erase(meshList->begin() + selected);
+                    m_scene->deleteObject(selected);
 
                     ImGui::EndChild();
                     ImGui::EndGroup();
@@ -140,12 +140,7 @@ void DebugUi::objectLayout(bool* p_open)
                 if (m_debounceCounter >= .1f) {
                     if (m_planeState->instanced != state->instanced) {
                         state->instanced = m_planeState->instanced;
-
-                        if (meshList->at(selected)->name.find("Cube") != std::string::npos)
-                            m_scene->updateCubeInstanced(m_planeState->instanced, selected);
-                        else if (meshList->at(selected)->name.find("Plane") != std::string::npos)
-                            m_scene->updatePlaneInstanced(m_planeState->instanced, selected);
-
+                        m_scene->updateMeshShader(m_planeState->instanced, selected);
                         m_debounceCounter = 0;
                     }
 

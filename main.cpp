@@ -132,6 +132,10 @@ int main(int argc, char** argv)
 
             // Update the scene
             scene->update();
+            //std::vector<std::string>* objects = scene->getObjectsToCreate();
+            //for (int i = 0; i < objects->size(); i++) {
+            //
+            //}
         }
 
         // Draw debug UI
@@ -142,6 +146,7 @@ int main(int argc, char** argv)
     }
 
     // Cleanup
+    scene->clean();
     debugUi->cleanup();
     glfwTerminate();
 
@@ -150,6 +155,8 @@ int main(int argc, char** argv)
     delete scene;
     delete debugUi;
     delete input;
+
+    
 
     std::cout << "Exiting.." << std::endl;
 

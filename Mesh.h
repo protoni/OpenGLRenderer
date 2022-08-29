@@ -32,6 +32,8 @@ public:
     void setTexture1(unsigned int& texture);
     void setTexture2(unsigned int& texture);
 
+    void setShader(Shader* shader);
+
     void activate();
     void deactivate();
 

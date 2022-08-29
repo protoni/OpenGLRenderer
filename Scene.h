@@ -11,6 +11,7 @@
 #include "Plane.h"
 #include "Cube.h"
 #include "Window.h"
+#include "Repeater.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,7 +21,7 @@
 
 #include "windows.h"
 #include <crtdbg.h>
-
+#include <thread>
 
 struct MeshObject
 {
@@ -32,6 +33,7 @@ struct MeshObject
 class Scene
 {
 public:
+    //void operator()
     Scene(Camera *camera, ScreenSettings* screenSettings);
     ~Scene();
 
@@ -39,14 +41,15 @@ public:
     void update();
     bool updateObjectMesh(int idx);
 
-    // Delete and recreate instanced with a different shader if changing instanced rendering state
-    void updatePlaneInstanced(bool instanced, int idx);
-    void updateCubeInstanced(bool instanced, int idx);
+    void updateMeshShader(bool instanced, int idx);
 
     void addCube();
     void addPlane();
 
     std::vector<MeshObject*>* getMeshList();
+
+    void deleteObject(int idx);
+    void clean();
 
 private:
     void createPlane(bool instanced, Plane*& plane);
