@@ -70,17 +70,8 @@ void Mesh::setShader(Shader* shader)
     m_shader = shader;
 }
 
-//void Mesh::render(
-//    int xPos, int yPos, int zPos,
-//    float scale, float padding,
-//    float xOffset, float yOffset, float zOffset,
-//    float angle, float xRotation, float yRotation, float zRotation)
 void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state)
 {
-    //glm::mat4 model = *getMesh(
-    //    xPos, yPos, zPos, scale, padding, 
-    //    xOffset, yOffset, zOffset,
-    //    angle, xRotation, yRotation, zRotation);
 
     glm::mat4 model = *getMesh(xPos, yPos, zPos, state);
 
@@ -89,12 +80,6 @@ void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state)
     glDrawElements(GL_TRIANGLES, m_indiceCount, GL_UNSIGNED_INT, 0);
 }
 
-//glm::mat4* Mesh::getMesh(
-//    int xPos, int yPos, int zPos,
-//    float scale, float padding,
-//    float xOffset, float yOffset, float zOffset,
-//    float angle, float xRotation, float yRotation, float zRotation
-//)
 glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state)
 {
     if (xPos < 1)
@@ -118,13 +103,12 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state)
         ((0.5f * state->scaleZ) * zPos) + (state->paddingZ * zPos) + state->zOffset)
     );
     
-    //model = glm::rotate(model, glm::radians(angle), glm::vec3(xRotation, yRotation, zRotation));
     if (state->scaleX    != 0 && state->scaleY    != 0 && state->scaleZ    != 0 &&
         state->xRotation != 0 && state->yRotation != 0 && state->zRotation != 0) {
         model = glm::rotate(model, glm::radians(state->angle), glm::vec3(state->xRotation, state->yRotation, state->zRotation));
     }
     model = glm::scale(model, glm::vec3(0.5f * state->scaleX, 0.5f * state->scaleY, 0.5f * state->scaleZ));
-    //m_shader->setMat4("model", model);
+
 
     return &model;
 }
