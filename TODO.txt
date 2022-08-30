@@ -14,7 +14,7 @@ Todo:
 Bugs:
 - When selecting an object, highlight color doesn't show up
   - Selected object needs to be moved to the end of the meshlist vector show that it will be drawn last
-- Moving objects in Z axis doesn't work
+
 
 
 Done:
@@ -22,4 +22,4 @@ Done:
 
 
 Fixed bugs:
--
+- Moving objects in Z axis doesn't work

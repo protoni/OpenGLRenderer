@@ -130,26 +130,40 @@ void DebugUi::objectLayout(bool* p_open)
                 
                 // Set current values and draw settings
                 ImGui::Checkbox("Instanced", &m_planeState->instanced);
-                ImGui::SliderInt("Columns", &m_planeState->columnCount, 1, 500);
-                ImGui::SliderInt("Rows", &m_planeState->rowCount, 1, 500);
-                ImGui::SliderInt("Stacks", &m_planeState->stackCount, 1, 500);
-                ImGui::Separator();
-                ImGui::SliderFloat("Scale X", &m_planeState->scaleX, 0.01f, 10.0f);
-                ImGui::SliderFloat("Scale Y", &m_planeState->scaleY, 0.01f, 10.0f);
-                ImGui::SliderFloat("Scale Z", &m_planeState->scaleZ, 0.01f, 10.0f);
-                ImGui::Separator();
-                ImGui::SliderFloat("Padding X", &m_planeState->paddingX, 0.0f, 10.0f);
-                ImGui::SliderFloat("Padding Y", &m_planeState->paddingY, 0.0f, 10.0f);
-                ImGui::SliderFloat("Padding Z", &m_planeState->paddingZ, 0.0f, 10.0f);
-                ImGui::Separator();
-                ImGui::SliderFloat("X offset", &m_planeState->xOffset, -5.0f, 5.0f);
-                ImGui::SliderFloat("Y offset", &m_planeState->yOffset, -5.0f, 5.0f);
-                ImGui::SliderFloat("Z offset", &m_planeState->zOffset, -15.0f, 15.0f);
-                ImGui::Separator();
-                ImGui::SliderFloat("Rotation angle", &m_planeState->angle, 0.0f, 360.0f);
-                ImGui::SliderFloat("X Rotation", &m_planeState->xRotation, 0.001f, 1.0f);
-                ImGui::SliderFloat("Y Rotation", &m_planeState->yRotation, 0.001f, 1.0f);
-                ImGui::SliderFloat("Z Rotation", &m_planeState->zRotation, 0.001f, 1.0f);
+                if (ImGui::CollapsingHeader("Repeater")) {
+                    ImGui::SliderInt("Columns", &m_planeState->columnCount, 1, 500);
+                    ImGui::SliderInt("Rows", &m_planeState->rowCount, 1, 500);
+                    ImGui::SliderInt("Stacks", &m_planeState->stackCount, 1, 500);
+                }
+
+                //ImGui::Separator();
+                if (ImGui::CollapsingHeader("Scale")) {
+                    ImGui::SliderFloat("Scale X", &m_planeState->scaleX, 0.01f, 10.0f);
+                    ImGui::SliderFloat("Scale Y", &m_planeState->scaleY, 0.01f, 10.0f);
+                    ImGui::SliderFloat("Scale Z", &m_planeState->scaleZ, 0.01f, 10.0f);
+                }
+
+                //ImGui::Separator();
+                if (ImGui::CollapsingHeader("Padding")) {
+                    ImGui::SliderFloat("Padding X", &m_planeState->paddingX, 0.0f, 10.0f);
+                    ImGui::SliderFloat("Padding Y", &m_planeState->paddingY, 0.0f, 10.0f);
+                    ImGui::SliderFloat("Padding Z", &m_planeState->paddingZ, 0.0f, 10.0f);
+                }
+
+                //ImGui::Separator();
+                if (ImGui::CollapsingHeader("Offset")) {
+                    ImGui::SliderFloat("X offset", &m_planeState->xOffset, -5.0f, 5.0f);
+                    ImGui::SliderFloat("Y offset", &m_planeState->yOffset, -5.0f, 5.0f);
+                    ImGui::SliderFloat("Z offset", &m_planeState->zOffset, -5.0f, 5.0f);
+                }
+                
+                //ImGui::Separator();
+                if (ImGui::CollapsingHeader("Rotation")) {
+                    ImGui::SliderFloat("Rotation angle", &m_planeState->angle, 0.0f, 360.0f);
+                    ImGui::SliderFloat("X Rotation", &m_planeState->xRotation, 0.001f, 1.0f);
+                    ImGui::SliderFloat("Y Rotation", &m_planeState->yRotation, 0.001f, 1.0f);
+                    ImGui::SliderFloat("Z Rotation", &m_planeState->zRotation, 0.001f, 1.0f);
+                }
 
                 // Check if settings changed
                 if (m_debounceCounter >= .1f) {
@@ -170,6 +184,7 @@ void DebugUi::objectLayout(bool* p_open)
                         m_planeState->paddingZ != state->paddingZ ||
                         m_planeState->xOffset != state->xOffset ||
                         m_planeState->yOffset != state->yOffset ||
+                        m_planeState->zOffset != state->zOffset ||
                         m_planeState->angle != state->angle ||
                         m_planeState->xRotation != state->xRotation ||
                         m_planeState->yRotation != state->yRotation ||
