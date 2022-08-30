@@ -124,6 +124,11 @@ void Repeater::drawInstanced(int faceCount)
     deactivate();
 }
 
+void Repeater::setInstanced(bool instanced)
+{
+    m_state->instanced = instanced;
+}
+
 void Repeater::draw(int faceCount)
 {
     if (m_state->instanced)

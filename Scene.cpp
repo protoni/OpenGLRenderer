@@ -68,11 +68,14 @@ Scene::~Scene()
 
 void Scene::updateMeshShader(bool instanced, int idx)
 {
-    if (instanced)
+    if (instanced) {
         m_meshList->at(idx)->mesh->setShader(m_ourShaderInstanced);
-    else
+    }
+    else {
         m_meshList->at(idx)->mesh->setShader(m_ourShader);
-    
+    }
+
+    m_meshList->at(idx)->mesh->setInstanced(instanced);
 }
 
 void Scene::addCube()
@@ -120,6 +123,17 @@ int Scene::getTriangleCount()
             count += m_meshList->at(i)->mesh->getObjCount() * ( 6 * 6); // 6 plane indices * 6 faces of a cube
         else
             count += m_meshList->at(i)->mesh->getObjCount() * 6; // 6 indices of a plane
+    }
+
+    return count;
+}
+
+int Scene::getObjectCount()
+{
+    int count = 0;
+
+    for (int i = 0; i < m_meshList->size(); i++) {
+        count += m_meshList->at(i)->mesh->getObjCount();
     }
 
     return count;

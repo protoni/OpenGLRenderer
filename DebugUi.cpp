@@ -201,6 +201,7 @@ void DebugUi::showInfoWindow(bool* p_open)
         ImGui::Text("FPS:             %.1f", m_fps);
         ImGui::Text("Delta time:      %.3f ms", m_deltaTime);
         ImGui::Text("Triangles:       %d", m_scene->getTriangleCount());
+        ImGui::Text("Objects:         %d", m_scene->getObjectCount());
     }
     ImGui::End();
 }

@@ -2,7 +2,6 @@
 
 
 Todo:
-- Draw FPS and other info to the screen
 - Select objects by clicking them instead of clicking the list item
 - Select multiple objects at once
 - Select multiple objects at once and combine them to the same instance
@@ -11,13 +10,16 @@ Todo:
 - Add adjustable fps limit to debug UI settings
 - Add debugUi intervals to debug UI
 
+
 Bugs:
 - When selecting an object, highlight color doesn't show up
   - Selected object needs to be moved to the end of the meshlist vector show that it will be drawn last
 - Moving objects in Z axis doesn't work
 
+
 Done:
-- 
+- Draw FPS and other info to the screen
+
 
 Fixed bugs:
 -

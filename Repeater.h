@@ -60,6 +60,8 @@ public:
     int getObjCount();
     RepeaterState* getState();
 
+    void setInstanced(bool instanced);
+
 private:
     Shader* m_shader;
     RepeaterState* m_state;

@@ -51,6 +51,7 @@ public:
     void deleteObject(int idx);
     void clean();
     int getTriangleCount();
+    int getObjectCount();
 
 private:
     void createPlane(bool instanced, Plane*& plane);
