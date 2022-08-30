@@ -59,6 +59,11 @@ void DebugUi::objectLayout(bool* p_open)
         if (ImGui::Button("Add Plane", ImVec2(100, 0)))
             m_scene->addPlane();
 
+        ImGui::SameLine();
+
+        if (ImGui::Button("Add Triangle", ImVec2(100, 0)))
+            m_scene->addTriangle();
+
         // Left
         static int selected = 0;
         {

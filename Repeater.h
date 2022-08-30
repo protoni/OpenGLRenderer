@@ -52,8 +52,8 @@ public:
     ~Repeater();
 
     void drawNonInstanced();
-    void drawInstanced(int faceCount = 1);
-    void draw(int faceCount = 1);
+    void drawInstanced();
+    void draw();
 
     void update();
     void createBuffer();
@@ -66,6 +66,7 @@ private:
     Shader* m_shader;
     RepeaterState* m_state;
 
+    unsigned int m_indiceCount;
     unsigned int m_buffer;
     glm::mat4* m_matrices;
 };

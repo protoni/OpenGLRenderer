@@ -1,6 +1,6 @@
 #include "Cube.h"
 
-#include "DebugMacros.h"
+#include "../DebugMacros.h"
 
 float cube_vertices[] = {
 

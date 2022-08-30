@@ -12,6 +12,7 @@
 #include "Cube.h"
 #include "Window.h"
 #include "Repeater.h"
+#include "Triangle.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -33,7 +34,6 @@ struct MeshObject
 class Scene
 {
 public:
-    //void operator()
     Scene(Camera *camera, ScreenSettings* screenSettings);
     ~Scene();
 
@@ -45,6 +45,7 @@ public:
 
     void addCube();
     void addPlane();
+    void addTriangle();
 
     std::vector<MeshObject*>* getMeshList();
 

@@ -96,6 +96,15 @@ void Scene::addPlane()
     m_meshList->push_back(object);
 }
 
+void Scene::addTriangle()
+{
+    Triangle* triangle = new Triangle(m_ourShader, false);
+    MeshObject* object = new MeshObject();
+    object->mesh = triangle;
+    object->name = std::string("Triangle_") + std::to_string(m_meshList->size());
+    m_meshList->push_back(object);
+}
+
 std::vector<MeshObject*>* Scene::getMeshList()
 {
     return m_meshList;
@@ -175,10 +184,7 @@ void Scene::renderScene()
                 m_ourShader->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
         }
 
-        if (m_meshList->at(i)->name.find("Cube") != std::string::npos)
-            m_meshList->at(i)->mesh->draw(6);
-        else
-            m_meshList->at(i)->mesh->draw();
+        m_meshList->at(i)->mesh->draw();
     }
 }
 

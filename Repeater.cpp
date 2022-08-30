@@ -12,7 +12,7 @@ Repeater::Repeater(Shader* shader, bool instanced, float* vertices, unsigned int
         indices,
         verticeCount,
         indiceCount
-    ), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state()
+    ), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(indiceCount)
 {
     std::cout << "vertex count: " << verticeCount << ", index count: " << indiceCount << std::endl;
 
@@ -117,10 +117,10 @@ void Repeater::drawNonInstanced()
     deactivate();
 }
 
-void Repeater::drawInstanced(int faceCount)
+void Repeater::drawInstanced()
 {
     activate();
-    glDrawElementsInstanced(GL_TRIANGLES, (6 * faceCount), GL_UNSIGNED_INT, 0, getObjCount());
+    glDrawElementsInstanced(GL_TRIANGLES, m_indiceCount, GL_UNSIGNED_INT, 0, getObjCount());
     deactivate();
 }
 
@@ -129,10 +129,10 @@ void Repeater::setInstanced(bool instanced)
     m_state->instanced = instanced;
 }
 
-void Repeater::draw(int faceCount)
+void Repeater::draw()
 {
     if (m_state->instanced)
-        drawInstanced(faceCount);
+        drawInstanced();
     else
         drawNonInstanced();
 }
