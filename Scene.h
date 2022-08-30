@@ -50,12 +50,12 @@ public:
 
     void deleteObject(int idx);
     void clean();
+    int getTriangleCount();
 
 private:
     void createPlane(bool instanced, Plane*& plane);
     void createCube(bool instanced, Cube*& cube);
     void renderPlane();
-    int getTriangleCount();
     void dumpMemory();
 
     Camera* m_camera;

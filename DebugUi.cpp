@@ -10,7 +10,7 @@
 
 DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene),
     m_debugModeOn(false), m_wireframeModeOn(false), m_debounceCounter(0.0),
-    m_planeState(NULL)
+    m_planeState(NULL), m_infoWindowOn(false), m_fps(0.0), m_deltaTime(0.0)
 {
     init();
 
@@ -38,7 +38,7 @@ void DebugUi::init()
 
 void DebugUi::newWindow()
 {
-    if (m_debugModeOn) {
+    if (m_debugModeOn || m_infoWindowOn) {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -184,6 +184,27 @@ void DebugUi::objectLayout(bool* p_open)
     ImGui::End();
 }
 
+void DebugUi::showInfoWindow(bool* p_open)
+{
+    static int corner = 0;
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+
+    ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+    if (ImGui::Begin("Info window", p_open, window_flags))
+    {
+        if (ImGui::IsMousePosValid())
+            ImGui::Text("Mouse Position: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
+        else
+            ImGui::Text("Mouse Position: <invalid>");
+
+        ImGui::Text("FPS:             %.1f", m_fps);
+        ImGui::Text("Delta time:      %.3f ms", m_deltaTime);
+        ImGui::Text("Triangles:       %d", m_scene->getTriangleCount());
+    }
+    ImGui::End();
+}
+
 void DebugUi::draw()
 {
     if (m_debugModeOn) {
@@ -191,17 +212,22 @@ void DebugUi::draw()
         ImGui::Text("");
         ImGui::Checkbox("Wireframe Mode", &m_wireframeModeOn);
         ImGui::Text("");
+        ImGui::Checkbox("Info Window", &m_infoWindowOn);
 
         bool open;
         objectLayout(&open);
- 
+
         ImGui::End();
+    }   
+    if (m_infoWindowOn) {
+        bool open;
+        showInfoWindow(&open);
     }
 }
 
 void DebugUi::render()
 {
-    if (m_debugModeOn) {
+    if (m_debugModeOn || m_infoWindowOn) {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
@@ -226,9 +252,11 @@ void DebugUi::updateWireframeMode()
     }
 }
 
-void DebugUi::update(double deltaTime)
+void DebugUi::update(double deltaTime, double fps)
 {
     m_debounceCounter += (float)deltaTime;
+    m_fps = (float)fps;
+    m_deltaTime = deltaTime;
     draw();
     render();
     updateWireframeMode();

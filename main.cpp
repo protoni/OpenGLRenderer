@@ -52,6 +52,7 @@ double fpsCounter = 0.0f;  // Count frames per second
 double fpsLimit = 120.0f;   // MAX FPS
 double frame_time = (1.0f / fpsLimit) * 1000;
 double sleep_time = 0.0f;
+double fps = 0.0f;
 
 
 int main(int argc, char** argv)
@@ -128,18 +129,15 @@ int main(int argc, char** argv)
             // Print out FPS and delta time
             std::cout << "deltaTime: " << deltaTime << std::endl;
             std::cout << "FPS: " << fpsCounter << std::endl;
+            fps = fpsCounter;
             fpsCounter = 0.0f;
 
             // Update the scene
             scene->update();
-            //std::vector<std::string>* objects = scene->getObjectsToCreate();
-            //for (int i = 0; i < objects->size(); i++) {
-            //
-            //}
         }
 
         // Draw debug UI
-        debugUi->update(deltaTime);
+        debugUi->update(deltaTime, fps);
 
         window->swapBuffers();
         glfwPollEvents();

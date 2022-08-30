@@ -92,6 +92,15 @@ glm::mat4* Mesh::getMesh(
     float angle, float xRotation, float yRotation, float zRotation
 )
 {
+    if (xPos < 1)
+        xPos = 1;
+    
+    if (yPos < 1)
+        yPos = 1;
+
+    if (zPos < 1)
+        zPos = 1;
+
     if (!m_shader || !m_VAO || !m_EBO) {
         std::cout << "getMesh error!" << std::endl;
         return NULL;
