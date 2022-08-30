@@ -113,8 +113,12 @@ void DebugUi::objectLayout(bool* p_open)
                 m_planeState->columnCount = state->columnCount;
                 m_planeState->rowCount = state->rowCount;
                 m_planeState->stackCount = state->stackCount;
-                m_planeState->scale = state->scale;
-                m_planeState->padding = state->padding;
+                m_planeState->scaleX = state->scaleX;
+                m_planeState->scaleY = state->scaleY;
+                m_planeState->scaleZ = state->scaleZ;
+                m_planeState->paddingX = state->paddingX;
+                m_planeState->paddingY = state->paddingY;
+                m_planeState->paddingZ = state->paddingZ;
                 m_planeState->xOffset = state->xOffset;
                 m_planeState->yOffset = state->yOffset;
                 m_planeState->zOffset = state->zOffset;
@@ -129,8 +133,14 @@ void DebugUi::objectLayout(bool* p_open)
                 ImGui::SliderInt("Columns", &m_planeState->columnCount, 1, 500);
                 ImGui::SliderInt("Rows", &m_planeState->rowCount, 1, 500);
                 ImGui::SliderInt("Stacks", &m_planeState->stackCount, 1, 500);
-                ImGui::SliderFloat("Scale", &m_planeState->scale, 0.01f, 10.0f);
-                ImGui::SliderFloat("Padding", &m_planeState->padding, 0.0f, 10.0f);
+                ImGui::Separator();
+                ImGui::SliderFloat("Scale X", &m_planeState->scaleX, 0.01f, 10.0f);
+                ImGui::SliderFloat("Scale Y", &m_planeState->scaleY, 0.01f, 10.0f);
+                ImGui::SliderFloat("Scale Z", &m_planeState->scaleZ, 0.01f, 10.0f);
+                ImGui::Separator();
+                ImGui::SliderFloat("Padding X", &m_planeState->paddingX, 0.0f, 10.0f);
+                ImGui::SliderFloat("Padding Y", &m_planeState->paddingY, 0.0f, 10.0f);
+                ImGui::SliderFloat("Padding Z", &m_planeState->paddingZ, 0.0f, 10.0f);
                 ImGui::Separator();
                 ImGui::SliderFloat("X offset", &m_planeState->xOffset, -5.0f, 5.0f);
                 ImGui::SliderFloat("Y offset", &m_planeState->yOffset, -5.0f, 5.0f);
@@ -152,8 +162,12 @@ void DebugUi::objectLayout(bool* p_open)
                     if (m_planeState->columnCount != state->columnCount ||
                         m_planeState->rowCount != state->rowCount ||
                         m_planeState->stackCount != state->stackCount ||
-                        m_planeState->scale != state->scale ||
-                        m_planeState->padding != state->padding ||
+                        m_planeState->scaleX != state->scaleX ||
+                        m_planeState->scaleY != state->scaleY ||
+                        m_planeState->scaleZ != state->scaleZ ||
+                        m_planeState->paddingX != state->paddingX ||
+                        m_planeState->paddingY != state->paddingY ||
+                        m_planeState->paddingZ != state->paddingZ ||
                         m_planeState->xOffset != state->xOffset ||
                         m_planeState->yOffset != state->yOffset ||
                         m_planeState->angle != state->angle ||
@@ -164,8 +178,12 @@ void DebugUi::objectLayout(bool* p_open)
                         state->columnCount = m_planeState->columnCount;
                         state->rowCount = m_planeState->rowCount;
                         state->stackCount = m_planeState->stackCount;
-                        state->scale = m_planeState->scale;
-                        state->padding = m_planeState->padding;
+                        state->scaleX = m_planeState->scaleX;
+                        state->scaleY = m_planeState->scaleY;
+                        state->scaleZ = m_planeState->scaleZ;
+                        state->paddingX = m_planeState->paddingX;
+                        state->paddingY = m_planeState->paddingY;
+                        state->paddingZ = m_planeState->paddingZ;
                         state->xOffset = m_planeState->xOffset;
                         state->yOffset = m_planeState->yOffset;
                         state->zOffset = m_planeState->zOffset;

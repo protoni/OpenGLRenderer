@@ -49,11 +49,12 @@ void Repeater::createBuffer()
     for (int y = 0; y < m_state->stackCount; y++) {          // stacks  ( y-axis )
         for (int z = 0; z < m_state->rowCount; z++) {        // rows    ( z axis )
             for (int x = 0; x < m_state->columnCount; x++) { // columns ( x axis )
-                m_matrices[ptr++] = *getMesh(
-                    x, y, z,
-                    m_state->scale, m_state->padding,
-                    m_state->xOffset, m_state->yOffset, m_state->zOffset,
-                    m_state->angle, m_state->xRotation, m_state->yRotation, m_state->zRotation);
+                m_matrices[ptr++] = *getMesh(x, y, z, m_state);
+                //m_matrices[ptr++] = *getMesh(
+                //    x, y, z,
+                //    m_state->scale, m_state->padding,
+                //    m_state->xOffset, m_state->yOffset, m_state->zOffset,
+                //    m_state->angle, m_state->xRotation, m_state->yRotation, m_state->zRotation);
             }
         }
     }
@@ -104,12 +105,13 @@ void Repeater::drawNonInstanced()
     for (int y = 0; y < m_state->stackCount; y++) {          // stacks  ( y-axis )
         for (int z = 0; z < m_state->rowCount; z++) {        // rows    ( z axis )
             for (int x = 0; x < m_state->columnCount; x++) { // columns ( x axis )
-                render(
-                    x, y, z,
-                    m_state->scale, m_state->padding,
-                    m_state->xOffset, m_state->yOffset, m_state->zOffset,
-                    m_state->angle, m_state->xRotation, m_state->yRotation, m_state->zRotation
-                );
+                render(x, y, z, m_state);
+                //render(
+                //    x, y, z,
+                //    m_state->scale, m_state->padding,
+                //    m_state->xOffset, m_state->yOffset, m_state->zOffset,
+                //    m_state->angle, m_state->xRotation, m_state->yRotation, m_state->zRotation
+                //);
             }
         }
     }

@@ -1,7 +1,9 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include "RepeaterState.h"
 #include "Shader.h"
+
 
 class Mesh
 {
@@ -15,19 +17,23 @@ public:
     );
     ~Mesh();
 
-    void render(
-        int xPos, int yPos, int zPos,
-        float scale, float padding,
-        float xOffset, float yOffset, float zOffset,
-        float angle, float xRotation, float yRotation, float zRotation
-    );
+    //void render(
+    //    int xPos, int yPos, int zPos,
+    //    float scale, float padding,
+    //    float xOffset, float yOffset, float zOffset,
+    //    float angle, float xRotation, float yRotation, float zRotation
+    //);
 
-    glm::mat4* getMesh(
-        int xPos, int yPos, int zPos,
-        float scale, float padding,
-        float xOffset, float yOffset, float zOffset,
-        float angle, float xRotation, float yRotation, float zRotation
-    );
+    void render(int xPos, int yPos, int zPos, RepeaterState* state);
+
+    //glm::mat4* getMesh(
+    //    int xPos, int yPos, int zPos,
+    //    float scale, float padding,
+    //    float xOffset, float yOffset, float zOffset,
+    //    float angle, float xRotation, float yRotation, float zRotation
+    //);
+
+    glm::mat4* getMesh(int xPos, int yPos, int zPos, RepeaterState* state);
 
     void setTexture1(unsigned int& texture);
     void setTexture2(unsigned int& texture);

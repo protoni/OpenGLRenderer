@@ -192,6 +192,7 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Repeater.h" />
+    <ClInclude Include="RepeaterState.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shapes\Cube.h" />

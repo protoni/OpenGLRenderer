@@ -155,5 +155,8 @@
     <ClInclude Include="Shapes\Triangle.h">
       <Filter>Header Files\Shapes</Filter>
     </ClInclude>
+    <ClInclude Include="RepeaterState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
