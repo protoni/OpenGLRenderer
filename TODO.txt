@@ -1,0 +1,13 @@
+
+
+
+Ideas:
+- Select objects by clicking them instead of clicking the list item
+- Select multiple objects at once
+- Select multiple objects at once and combine them to the same instance
+
+Bugs:
+- When selecting an object, highlight color doesn't show up
+  - Selected object needs to be moved to the end of the meshlist vector show that it will be drawn last
+  
+  
