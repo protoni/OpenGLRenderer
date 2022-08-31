@@ -13,11 +13,13 @@ class Repeater : public Mesh
 public:
     //Repeater(Shader* shader, bool instanced);
     Repeater(Shader* shader, bool instanced, float* vertices, unsigned int* indices, unsigned int verticeCount, unsigned int indiceCount);
+    Repeater(Shader* shader, bool instanced);
     ~Repeater();
 
     void drawNonInstanced();
     void drawInstanced();
     void draw();
+    void setIndiceCount(unsigned int count);
 
     void update();
     void createBuffer();

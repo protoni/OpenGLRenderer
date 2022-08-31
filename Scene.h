@@ -13,6 +13,8 @@
 #include "Window.h"
 #include "Repeater.h"
 #include "Triangle.h"
+#include "Sphere.h"
+#include "Custom.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -46,6 +48,8 @@ public:
     void addCube();
     void addPlane();
     void addTriangle();
+    void addSphere();
+    void addCustom();
 
     std::vector<MeshObject*>* getMeshList();
 

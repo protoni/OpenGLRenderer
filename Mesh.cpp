@@ -9,18 +9,25 @@
 
 #include "DebugMacros.h"
 
+
+
 Mesh::Mesh(Shader* shader, float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indiceCount) :
     m_shader(shader), m_vertices(vertices), m_indices(indices), 
     m_vertexCount(vertexCount), m_indiceCount(indiceCount),
-    m_VAO(0), m_VBO(0), m_EBO(0), m_texture1(-1), m_texture2(-1)
+    m_VAO(0), m_VBO(0), m_EBO(0), m_texture1(-1), m_texture2(-1), m_useVectors(false)
 {
     create();
 }
 
+Mesh::Mesh(Shader* shader) : m_VAO(0), m_VBO(0), m_EBO(0), m_texture1(-1), m_texture2(-1), m_useVectors(false), m_vertices(), m_indices()
+{
+}
+
 Mesh::~Mesh()
 {
-
+    cleanup();
 }
+
 
 void Mesh::create()
 {
@@ -53,6 +60,46 @@ void Mesh::create()
     glBindVertexArray(0);
 }
 
+void Mesh::createVBO(std::vector<unsigned int>* indices, std::vector<float>* vertices)
+{
+    if (indices->size() < 1 || vertices->size() < 1) {
+        std::cout << "CreateVBO error! Empty vector." << std::endl;
+        std::cout << "vertices: " << vertices->size() << ", indices: " << indices->size() << std::endl;
+        return;
+    }
+
+    m_interleavedVertices = vertices;
+    m_indicesVec = indices;
+    m_indiceCount = indices->size();
+    m_useVectors = true;
+    
+    glGenVertexArrays(1, &m_VAO);
+    
+    // Create Buffers
+    glGenBuffers(1, &m_VBO);
+    glGenBuffers(1, &m_EBO);
+    
+    // Use vertex array
+    glBindVertexArray(m_VAO);
+    
+    std::cout << "m_interleavedVertices: " << vertices->size() << ", indices: " << indices->size() << std::endl;
+    
+    glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices->at(0)) * vertices->size(), &vertices->front(), GL_STATIC_DRAW);
+    
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices->at(0)) * indices->size(), &indices->front(), GL_STATIC_DRAW);
+    
+    // Link vertex attributes
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+}
+
 void Mesh::activate()
 {
     //glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
@@ -72,7 +119,6 @@ void Mesh::setShader(Shader* shader)
 
 void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state)
 {
-
     glm::mat4 model = *getMesh(xPos, yPos, zPos, state);
 
     m_shader->setMat4("model", model);
@@ -121,4 +167,24 @@ void Mesh::setTexture1(unsigned int& texture)
 void Mesh::setTexture2(unsigned int& texture)
 {
     m_texture2 = texture;
+}
+
+unsigned int Mesh::getIndexCount()
+{
+    return m_indiceCount;
+}
+
+void Mesh::cleanup()
+{
+    if (m_useVectors) {
+        if (m_indicesVec) {
+            delete m_indicesVec;
+            m_indicesVec = NULL;
+        }
+
+        if (m_interleavedVertices) {
+            delete m_interleavedVertices;
+            m_interleavedVertices = NULL;
+        }
+    }
 }

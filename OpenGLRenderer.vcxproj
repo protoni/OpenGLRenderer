@@ -170,7 +170,9 @@
     <ClCompile Include="Repeater.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shapes\Cube.cpp" />
+    <ClCompile Include="Shapes\Custom.cpp" />
     <ClCompile Include="Shapes\Plane.cpp" />
+    <ClCompile Include="Shapes\Sphere.cpp" />
     <ClCompile Include="Shapes\Triangle.cpp" />
     <ClCompile Include="stb_image.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -196,7 +198,9 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shapes\Cube.h" />
+    <ClInclude Include="Shapes\Custom.h" />
     <ClInclude Include="Shapes\Plane.h" />
+    <ClInclude Include="Shapes\Sphere.h" />
     <ClInclude Include="Shapes\Triangle.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Window.h" />

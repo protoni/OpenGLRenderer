@@ -64,6 +64,14 @@ void DebugUi::objectLayout(bool* p_open)
         if (ImGui::Button("Add Triangle", ImVec2(100, 0)))
             m_scene->addTriangle();
 
+        if (ImGui::Button("Add Sphere", ImVec2(100, 0)))
+            m_scene->addSphere();
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Add Custom", ImVec2(100, 0)))
+            m_scene->addCustom();
+
         // Left
         static int selected = 0;
         {
@@ -131,9 +139,9 @@ void DebugUi::objectLayout(bool* p_open)
                 // Set current values and draw settings
                 ImGui::Checkbox("Instanced", &m_planeState->instanced);
                 if (ImGui::CollapsingHeader("Repeater")) {
-                    ImGui::SliderInt("Columns", &m_planeState->columnCount, 1, 500);
-                    ImGui::SliderInt("Rows", &m_planeState->rowCount, 1, 500);
-                    ImGui::SliderInt("Stacks", &m_planeState->stackCount, 1, 500);
+                    ImGui::SliderInt("Columns", &m_planeState->columnCount, 1, 100);
+                    ImGui::SliderInt("Rows", &m_planeState->rowCount, 1, 100);
+                    ImGui::SliderInt("Stacks", &m_planeState->stackCount, 1, 100);
                 }
 
                 //ImGui::Separator();
@@ -238,7 +246,7 @@ void DebugUi::showInfoWindow(bool* p_open)
 
         ImGui::Text("FPS:             %.1f", m_fps);
         ImGui::Text("Delta time:      %.3f ms", m_deltaTime);
-        ImGui::Text("Triangles:       %d", m_scene->getTriangleCount());
+        ImGui::Text("Indices:         %d", m_scene->getTriangleCount());
         ImGui::Text("Objects:         %d", m_scene->getObjectCount());
     }
     ImGui::End();

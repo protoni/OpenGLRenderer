@@ -27,8 +27,25 @@ Repeater::Repeater(Shader* shader, bool instanced, float* vertices, unsigned int
         createBuffer();
 }
 
+Repeater::Repeater(Shader* shader, bool instanced)
+    : Mesh(shader), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(0)
+{
+    // Init state
+    m_state = new RepeaterState();
+
+    // Set initial instancing state
+    m_state->instanced = instanced;
+
+    // Init instance buffer
+    if (m_state->instanced)
+        createBuffer();
+
+    cleanup();
+}
+
 Repeater::~Repeater()
 {
+    std::cout << "Repeater destructor called!" << std::endl;
     if(m_matrices)
         delete[] m_matrices;
 
@@ -36,6 +53,11 @@ Repeater::~Repeater()
         delete m_state;
         m_state = NULL;
     }
+}
+
+void Repeater::setIndiceCount(unsigned int count)
+{
+    m_indiceCount = count;
 }
 
 // Create instanced buffer on the GPU

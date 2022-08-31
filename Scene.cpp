@@ -105,6 +105,24 @@ void Scene::addTriangle()
     m_meshList->push_back(object);
 }
 
+void Scene::addSphere()
+{
+    Sphere* sphere = new Sphere(m_ourShader, false);
+    MeshObject* object = new MeshObject();
+    object->mesh = sphere;
+    object->name = std::string("Sphere_") + std::to_string(m_meshList->size());
+    m_meshList->push_back(object);
+}
+
+void Scene::addCustom()
+{
+    Custom* custom = new Custom(m_ourShader, false);
+    MeshObject* object = new MeshObject();
+    object->mesh = custom;
+    object->name = std::string("Custom_") + std::to_string(m_meshList->size());
+    m_meshList->push_back(object);
+}
+
 std::vector<MeshObject*>* Scene::getMeshList()
 {
     return m_meshList;
@@ -128,10 +146,11 @@ int Scene::getTriangleCount()
     int count = 0;
     
     for (int i = 0; i < m_meshList->size(); i++) {
-        if (m_meshList->at(i)->name.find("Cube") != std::string::npos)
-            count += m_meshList->at(i)->mesh->getObjCount() * ( 6 * 6); // 6 plane indices * 6 faces of a cube
-        else
-            count += m_meshList->at(i)->mesh->getObjCount() * 6; // 6 indices of a plane
+        count += m_meshList->at(i)->mesh->getObjCount() * m_meshList->at(i)->mesh->getIndexCount();
+        //if (m_meshList->at(i)->name.find("Cube") != std::string::npos)
+        //    count += m_meshList->at(i)->mesh->getObjCount() * ( 6 * 6); // 6 plane indices * 6 faces of a cube
+        //else
+        //    count += m_meshList->at(i)->mesh->getObjCount() * 6; // 6 indices of a plane
     }
 
     return count;

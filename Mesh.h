@@ -3,7 +3,7 @@
 
 #include "RepeaterState.h"
 #include "Shader.h"
-
+#include <vector>
 
 class Mesh
 {
@@ -15,8 +15,13 @@ public:
         unsigned int verticeCount,
         unsigned int indiceCount
     );
+
+    Mesh(Shader* shader);
+
     ~Mesh();
 
+    void createVBO(std::vector<unsigned int>* indices, std::vector<float>* vertices);
+    void create();
     void render(int xPos, int yPos, int zPos, RepeaterState* state);
 
     glm::mat4* getMesh(int xPos, int yPos, int zPos, RepeaterState* state);
@@ -24,10 +29,14 @@ public:
     void setTexture1(unsigned int& texture);
     void setTexture2(unsigned int& texture);
 
-    void setShader(Shader* shader);
+    unsigned int getIndexCount();
 
+    void setShader(Shader* shader);
+    void init();
     void activate();
     void deactivate();
+
+    void cleanup();
 
 private:
     Shader* m_shader;
@@ -47,8 +56,15 @@ private:
 
     unsigned int m_triangleCount;
 
-    void create();
     
+    
+    //std::vector<unsigned int> m_indicesVec;
+    //std::vector<float> m_interleavedVertices;
+
+    bool m_useVectors;
+
+    std::vector<unsigned int>* m_indicesVec;
+    std::vector<float>* m_interleavedVertices;
 };
 
 #endif // MESH_H
