@@ -3,9 +3,9 @@
 
 #include "DebugMacros.h"
 
-Input::Input(Window* window, Camera* camera, DebugUi* debugUi) :
+Input::Input(Window* window, Camera* camera, DebugUi* debugUi, Scene* scene) :
     m_window(window), m_camera(camera), m_debugUi(debugUi),
-    m_debounceCounter(0)
+    m_debounceCounter(0), m_scene(scene)
 {
 
 }
@@ -37,7 +37,32 @@ void Input::processInput(double deltaTime)
     if (glfwGetKey(m_window->get(), GLFW_KEY_X) == GLFW_PRESS)
         m_camera->ProcessKeyboard(CameraMovement::DOWN, deltaTime);
 
+    bool changed = false;
     
+    // Limit actions to 50ms
+    if (m_debounceCounter >= .05) {
+        // Move mesh pointer
+        if (glfwGetKey(m_window->get(), GLFW_KEY_LEFT) == GLFW_PRESS) {
+            m_scene->updateMeshPointer(MeshInstanceDirections::Left);
+            changed = true;
+        }
+
+        if (glfwGetKey(m_window->get(), GLFW_KEY_RIGHT) == GLFW_PRESS) {
+            m_scene->updateMeshPointer(MeshInstanceDirections::Right);
+            changed = true;
+        }
+
+        if (glfwGetKey(m_window->get(), GLFW_KEY_UP) == GLFW_PRESS) {
+            m_scene->updateMeshPointer(MeshInstanceDirections::Up);
+            changed = true;
+        }
+
+        if (glfwGetKey(m_window->get(), GLFW_KEY_DOWN) == GLFW_PRESS) {
+            m_scene->updateMeshPointer(MeshInstanceDirections::Down);
+            changed = true;
+        }
+    }
+
     // Limit actions to 500ms
     if (m_debounceCounter >= .5) {
 
@@ -47,9 +72,12 @@ void Input::processInput(double deltaTime)
             m_window->debugMode();
             m_debugUi->debugMode();
             std::cout << "dbg mode!" << std::endl;
-            m_debounceCounter = 0;
+            changed = true;
         }
     }
+
+    if (changed)
+        m_debounceCounter = 0;
 }
 
 

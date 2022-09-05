@@ -141,7 +141,7 @@ void Repeater::setInstanced(bool instanced)
 {
     m_state->instanced = instanced;
 }
-
+        
 void Repeater::draw()
 {
     if (m_state->instanced)

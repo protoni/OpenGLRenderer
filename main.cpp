@@ -84,7 +84,7 @@ int main(int argc, char** argv)
     DebugUi* debugUi = new DebugUi(window, scene);
 
     // Create input handler
-    Input* input = new Input(window, camera, debugUi);
+    Input* input = new Input(window, camera, debugUi, scene);
 
     // Enable depth buffer
     glEnable(GL_DEPTH_TEST);

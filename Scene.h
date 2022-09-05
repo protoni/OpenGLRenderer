@@ -26,6 +26,14 @@
 #include <crtdbg.h>
 #include <thread>
 
+enum MeshInstanceDirections
+{
+    Left,
+    Right,
+    Up,
+    Down
+};
+
 struct MeshObject
 {
     Repeater* mesh;
@@ -50,6 +58,7 @@ public:
     void addTriangle();
     void addSphere();
     void addCustom();
+    void updateMeshPointer(int direction);
 
     std::vector<MeshObject*>* getMeshList();
 
@@ -63,6 +72,7 @@ private:
     void createCube(bool instanced, Cube*& cube);
     void renderPlane();
     void dumpMemory();
+    int getSelectedMeshIndex();
 
     Camera* m_camera;
     Shader* m_ourShader;
@@ -81,6 +91,7 @@ private:
     int m_columns;
     int m_rows;
     float m_scale;
+    unsigned int m_meshPointer;
 
     bool m_instanced;
     bool m_instanced_cube;

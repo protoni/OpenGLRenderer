@@ -29,7 +29,7 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_camera(camera), m_screenSettings(screenSettings), m_faceCounter(3),
     m_ourShader(NULL), m_texture1(0), m_texture2(0), m_VAO(0), m_EBO(0),
     m_smiley_texture(NULL), m_columns(1), m_meshList(), m_scale(1.0), m_rows(1), m_instanced(false),
-    m_ourShaderInstanced(NULL), m_instanced_cube(false)
+    m_ourShaderInstanced(NULL), m_instanced_cube(false), m_meshPointer(0)
 {
     // Create and build shaders
     m_ourShaderInstanced = new Shader("./shaderInstanced.vs", "./shader.fs");
@@ -123,9 +123,57 @@ void Scene::addCustom()
     m_meshList->push_back(object);
 }
 
+void Scene::updateMeshPointer(int direction)
+{
+    RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
+
+    // Figure out which row are we selected
+    int rowPosition;
+    if (m_meshPointer > 0) {
+        rowPosition = (m_meshPointer / state->columnCount);
+    }
+    else {
+        rowPosition = 0;
+    }
+
+    std::cout << "rowPosition: " << rowPosition << std::endl;
+
+    if (direction == MeshInstanceDirections::Left) {
+        if(m_meshPointer - (rowPosition * state->columnCount) > 0)
+            m_meshPointer -= 1;
+    }
+
+    else if (direction == MeshInstanceDirections::Right) {
+        if(m_meshPointer - (rowPosition * state->columnCount) < state->rowCount - 1)
+            m_meshPointer += 1;
+    }
+
+    else if (direction == MeshInstanceDirections::Down) {
+        if(rowPosition < state->rowCount - 1)
+            m_meshPointer += state->columnCount;
+    }
+
+    else if (direction == MeshInstanceDirections::Up) {
+        if (rowPosition > 0)
+            m_meshPointer -= state->columnCount;
+    }
+
+    std::cout << "mesh pointer: " << m_meshPointer << std::endl;
+}
+
 std::vector<MeshObject*>* Scene::getMeshList()
 {
     return m_meshList;
+}
+
+int Scene::getSelectedMeshIndex()
+{
+    for (int i = 0; i < m_meshList->size(); i++) {
+        if (m_meshList->at(i)->selected)
+            return i;
+    }
+
+    return -1;
 }
 
 bool Scene::updateObjectMesh(int idx)
@@ -185,12 +233,12 @@ void Scene::renderScene()
             m_ourShaderInstanced->use();
             m_ourShaderInstanced->setMat4("projection", projection);
             m_ourShaderInstanced->setMat4("view", view);
-
-            if (m_meshList->at(i)->selected) {
-                m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
-            }
-            else
-                m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
+            m_ourShaderInstanced->setInt("selectedMesh", m_meshPointer);
+            //if (m_meshList->at(i)->selected) {
+            //    m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
+            //}
+            //else
+            //    m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
         }
         else {
             m_ourShader->use();
