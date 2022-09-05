@@ -128,15 +128,6 @@ void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state)
 
 glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state)
 {
-    if (xPos < 1)
-        xPos = 1;
-    
-    if (yPos < 1)
-        yPos = 1;
-
-    if (zPos < 1)
-        zPos = 1;
-
     if (!m_shader || !m_VAO || !m_EBO) {
         std::cout << "getMesh error!" << std::endl;
         return NULL;

@@ -144,8 +144,14 @@ void Scene::updateMeshPointer(int direction)
     }
 
     else if (direction == MeshInstanceDirections::Right) {
-        if(m_meshPointer - (rowPosition * state->columnCount) < state->rowCount - 1)
-            m_meshPointer += 1;
+        if (rowPosition > 0) {
+            if (m_meshPointer - (rowPosition * state->columnCount) < state->rowCount - 1)
+                m_meshPointer += 1;
+        }
+        else {
+            if(m_meshPointer < state->columnCount - 1)
+                m_meshPointer += 1;
+        }
     }
 
     else if (direction == MeshInstanceDirections::Down) {
@@ -157,6 +163,9 @@ void Scene::updateMeshPointer(int direction)
         if (rowPosition > 0)
             m_meshPointer -= state->columnCount;
     }
+
+    if (m_meshPointer >= state->columnCount * state->rowCount)
+        m_meshPointer = (state->columnCount * state->rowCount) - 1;
 
     std::cout << "mesh pointer: " << m_meshPointer << std::endl;
 }
