@@ -127,7 +127,7 @@ void Scene::updateMeshPointer(int direction)
 {
     RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
 
-    // Figure out which row are we selected
+    // Figure out which row are we on
     int rowPosition;
     if (m_meshPointer > 0) {
         rowPosition = (m_meshPointer / state->columnCount);
@@ -159,6 +159,11 @@ void Scene::updateMeshPointer(int direction)
     }
 
     std::cout << "mesh pointer: " << m_meshPointer << std::endl;
+}
+
+void Scene::resetMeshPointer()
+{
+    m_meshPointer = 0;
 }
 
 std::vector<MeshObject*>* Scene::getMeshList()
@@ -234,6 +239,7 @@ void Scene::renderScene()
             m_ourShaderInstanced->setMat4("projection", projection);
             m_ourShaderInstanced->setMat4("view", view);
             m_ourShaderInstanced->setInt("selectedMesh", m_meshPointer);
+            m_ourShaderInstanced->setInt("selectedInstance", m_meshList->at(i)->selected);
             //if (m_meshList->at(i)->selected) {
             //    m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
             //}

@@ -8,8 +8,6 @@ out vec2 TexCoord;
 flat out highp int instanceID;
 
 uniform mat4 transform;
-
-
 uniform mat4 view;
 uniform mat4 projection;
 

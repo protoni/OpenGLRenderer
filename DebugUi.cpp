@@ -90,6 +90,12 @@ void DebugUi::objectLayout(bool* p_open)
         {
             std::vector<MeshObject*>* meshList = m_scene->getMeshList();
 
+            // Reset mesh pointer
+            if (selected < meshList->size()) {
+                if (!meshList->at(selected)->selected)
+                    m_scene->resetMeshPointer();
+            }
+
             // Unselect all first
             for (int i = 0; i < meshList->size(); i++) {
                 meshList->at(i)->selected = false;

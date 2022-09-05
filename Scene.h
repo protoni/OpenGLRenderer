@@ -59,6 +59,7 @@ public:
     void addSphere();
     void addCustom();
     void updateMeshPointer(int direction);
+    void resetMeshPointer();
 
     std::vector<MeshObject*>* getMeshList();
 
