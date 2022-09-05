@@ -10,10 +10,16 @@ flat out highp int instanceID;
 uniform mat4 transform;
 uniform mat4 view;
 uniform mat4 projection;
+uniform bool selectedInstance;
 
 void main()
 {
-    gl_Position = projection * view * aInstanceMatrix * vec4(aPos, 1.0);
+    if(selectedInstance) {
+        gl_Position = projection * view * aInstanceMatrix * (vec4(aPos, 1.0) + vec4(0.01, 0.01, 0.01, 0.01));
+    }
+    else {
+        gl_Position = projection * view * aInstanceMatrix * vec4(aPos, 1.0);
+    }
     TexCoord = aTexCoord;
     instanceID = gl_InstanceID;
 }

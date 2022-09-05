@@ -127,6 +127,8 @@ void Scene::updateMeshPointer(int direction)
 {
     RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
 
+    state->selected = m_meshPointer;
+
     // Figure out which row are we on
     int rowPosition;
     if (m_meshPointer > 0) {
@@ -229,6 +231,35 @@ int Scene::getObjectCount()
     return count;
 }
 
+void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
+{
+    RepeaterState* state = m_meshList->at(idx)->mesh->getState();
+    if (state->instanced) {
+        m_ourShaderInstanced->use();
+        m_ourShaderInstanced->setMat4("projection", projection);
+        m_ourShaderInstanced->setMat4("view", view);
+        m_ourShaderInstanced->setInt("selectedMesh", m_meshPointer);
+        m_ourShaderInstanced->setInt("selectedInstance", m_meshList->at(idx)->selected);
+        //if (m_meshList->at(i)->selected) {
+        //    m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
+        //}
+        //else
+        //    m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
+    }
+    else {
+        m_ourShader->use();
+        m_ourShader->setMat4("projection", projection);
+        m_ourShader->setMat4("view", view);
+
+        if (m_meshList->at(idx)->selected)
+            m_ourShader->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
+        else
+            m_ourShader->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
+    }
+
+    m_meshList->at(idx)->mesh->draw();
+}
+
 void Scene::renderScene()
 {
     if (!m_ourShader || !m_ourShaderInstanced) {
@@ -241,33 +272,16 @@ void Scene::renderScene()
     glm::mat4 projection = glm::perspective(glm::radians(m_camera->Zoom), (float)m_screenSettings->width / (float)m_screenSettings->height, 0.1f, 100.0f);
     glm::mat4 view = m_camera->GetViewMatrix();
 
+    int lastDrawn = 0;
     for (int i = 0; i < m_meshList->size(); i++) {
-        RepeaterState* state = m_meshList->at(i)->mesh->getState();
-        if (state->instanced) {
-            m_ourShaderInstanced->use();
-            m_ourShaderInstanced->setMat4("projection", projection);
-            m_ourShaderInstanced->setMat4("view", view);
-            m_ourShaderInstanced->setInt("selectedMesh", m_meshPointer);
-            m_ourShaderInstanced->setInt("selectedInstance", m_meshList->at(i)->selected);
-            //if (m_meshList->at(i)->selected) {
-            //    m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
-            //}
-            //else
-            //    m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
-        }
-        else {
-            m_ourShader->use();
-            m_ourShader->setMat4("projection", projection);
-            m_ourShader->setMat4("view", view);
-
-            if (m_meshList->at(i)->selected)
-                m_ourShader->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
-            else
-                m_ourShader->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
-        }
-
-        m_meshList->at(i)->mesh->draw();
+        if (m_meshList->at(i)->selected)
+            lastDrawn = i;
+        else
+            draw(i, projection, view);
     }
+
+    if(lastDrawn < m_meshList->size())
+        draw(lastDrawn, projection, view);
 }
 
 void Scene::update()

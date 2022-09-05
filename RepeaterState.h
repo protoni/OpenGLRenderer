@@ -31,6 +31,8 @@ struct RepeaterState
 
     bool instanced;
 
+    unsigned int selected;
+
     RepeaterState() :
         rowCount(1),
         columnCount(1),
@@ -48,6 +50,7 @@ struct RepeaterState
         xRotation(0.001),
         yRotation(0.001),
         zRotation(0.001),
+        selected(0),
         instanced(false) {}
 };
 

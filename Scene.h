@@ -73,6 +73,7 @@ private:
     void createCube(bool instanced, Cube*& cube);
     void renderPlane();
     void dumpMemory();
+    void draw(int idx, glm::mat4& projection, glm::mat4& view);
     int getSelectedMeshIndex();
 
     Camera* m_camera;
