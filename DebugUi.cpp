@@ -115,11 +115,15 @@ void DebugUi::objectLayout(bool* p_open)
                     ImGui::End();
                     return;
                 }
-            
+
                 ImGui::Separator();
                 
                 // Set selected
                 meshList->at(selected)->selected = true;
+
+                if (ImGui::Button("Remove Mesh", ImVec2(100, 0))) {
+                    m_scene->deleteInstancedMesh(selected);
+                }
 
                 // Load current values
                 RepeaterState* state = meshList->at(selected)->mesh->getState();

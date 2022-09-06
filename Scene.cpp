@@ -127,8 +127,6 @@ void Scene::updateMeshPointer(int direction)
 {
     RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
 
-    state->selected = m_meshPointer;
-
     // Figure out which row are we on
     int rowPosition;
     if (m_meshPointer > 0) {
@@ -175,6 +173,23 @@ void Scene::updateMeshPointer(int direction)
 void Scene::resetMeshPointer()
 {
     m_meshPointer = 0;
+}
+
+void Scene::deleteInstancedMesh(int selected)
+{
+    std::cout << "selected idx: " << getSelectedMeshIndex() << std::endl;
+    if (getSelectedMeshIndex() < m_meshList->size()) {
+        RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
+        if (state->deleted == nullptr)
+            state->deleted = new std::vector<int>;
+
+        if (std::find(state->deleted->begin(), state->deleted->end(), m_meshPointer) == state->deleted->end()) {
+            state->deleted->push_back(m_meshPointer);
+            m_meshList->at(selected)->mesh->update();
+        }
+
+        std::cout << "deleted size: " << state->deleted->size() << std::endl;
+    }
 }
 
 std::vector<MeshObject*>* Scene::getMeshList()

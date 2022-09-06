@@ -12,7 +12,7 @@ Repeater::Repeater(Shader* shader, bool instanced, float* vertices, unsigned int
         indices,
         verticeCount,
         indiceCount
-    ), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(indiceCount)
+    ), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(indiceCount), m_deleteRemoved(0)
 {
     std::cout << "vertex count: " << verticeCount << ", index count: " << indiceCount << std::endl;
 
@@ -60,6 +60,21 @@ void Repeater::setIndiceCount(unsigned int count)
     m_indiceCount = count;
 }
 
+bool Repeater::meshDeleted(int meshPointer)
+{
+    bool ret = false;
+    if (m_state->deleted) {
+        std::vector<int> deletedMeshes = *m_state->deleted;
+        if (std::find(deletedMeshes.begin(), deletedMeshes.end(), meshPointer) != deletedMeshes.end())
+            ret = true;
+
+        for (int i = 0; i < deletedMeshes.size(); i++) {
+        }
+    }
+
+    return ret;
+}
+
 // Create instanced buffer on the GPU
 void Repeater::createBuffer()
 {   
@@ -67,11 +82,45 @@ void Repeater::createBuffer()
 
     delete[] m_matrices;
 
+    // Get deleted mesh count
+    int deletedCount = 0;
+    if (m_state->deleted)
+        deletedCount = m_state->deleted->size();
+
+    //int meshPointer = 0;
+    bool removedLastTime = false;
     m_matrices = new glm::mat4[getObjCount()];
     for (int y = 0; y < m_state->stackCount; y++) {          // stacks  ( y-axis )
         for (int z = 0; z < m_state->rowCount; z++) {        // rows    ( z axis )
-            for (int x = 0; x < m_state->columnCount; x++) { // columns ( x axis )
-                m_matrices[ptr++] = *getMesh(x, y, z, m_state);
+            for (int x = 0; x < m_state->columnCount; x++) {  // columns ( x axis )
+                if (!meshDeleted(ptr)) {
+                    m_matrices[ptr++] = *getMesh(x, y, z, m_state, false, 0);
+                }
+                else {
+                    m_matrices[ptr++] = *getMesh(x, y, z, m_state, true, m_deleteRemoved);
+                }
+                //if (!meshDeleted(ptr)) {
+                //    if (removedLastTime) {
+                //        removedLastTime = false;
+                //        m_matrices[ptr++] = *getMesh(x+1, y, z, m_state, true, m_deleteRemoved);
+                //    }
+                //    else
+                //        m_matrices[ptr++] = *getMesh(x, y, z, m_state, false, 0);
+                //}
+                //else {
+                //    removedLastTime = true;
+                //}
+                //else if(meshDeleted(ptr))
+                    //    m_matrices[ptr++] = *getMesh(x, y, z, m_state, false, 0);
+                //if (meshDeleted(ptr)) {
+                //    m_matrices[ptr++] = *getMesh(x, y, z, m_state, true, m_deleteRemoved);
+                //    m_deleteRemoved++;
+                //    removedLastTime = true;
+                //}
+                //else if (!meshDeleted(ptr))
+                //    m_matrices[ptr++] = *getMesh(x, y, z, m_state, false, 0);
+                //else
+                //    std::cout << "deleted ptr, skip: " << ptr - 1 << std::endl;
             }
         }
     }
@@ -133,6 +182,9 @@ void Repeater::drawNonInstanced()
 void Repeater::drawInstanced()
 {
     activate();
+    int deletedCount = 0;
+    if (m_state->deleted)
+        deletedCount = m_state->deleted->size();
     glDrawElementsInstanced(GL_TRIANGLES, m_indiceCount, GL_UNSIGNED_INT, 0, getObjCount());
     deactivate();
 }

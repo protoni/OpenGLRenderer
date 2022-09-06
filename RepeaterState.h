@@ -1,6 +1,8 @@
 #ifndef REPEATER_STATE_H
 #define REPEATER_STATE_H
 
+#include <vector>
+
 struct RepeaterState
 {
     // Repeater settings
@@ -31,7 +33,7 @@ struct RepeaterState
 
     bool instanced;
 
-    unsigned int selected;
+    std::vector<int>* deleted;
 
     RepeaterState() :
         rowCount(1),
@@ -50,7 +52,7 @@ struct RepeaterState
         xRotation(0.001),
         yRotation(0.001),
         zRotation(0.001),
-        selected(0),
+        deleted(nullptr),
         instanced(false) {}
 };
 

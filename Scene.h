@@ -60,6 +60,7 @@ public:
     void addCustom();
     void updateMeshPointer(int direction);
     void resetMeshPointer();
+    void deleteInstancedMesh(int selected);
 
     std::vector<MeshObject*>* getMeshList();
 
