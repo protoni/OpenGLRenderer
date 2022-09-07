@@ -309,6 +309,12 @@ void Scene::update()
 
 void Scene::deleteObject(int idx)
 {
+    // Clear individual deleted meshes inside an instance
+    RepeaterState* state = m_meshList->at(idx)->mesh->getState();
+    if (state->deleted) {
+        delete state->deleted;
+    }
+
     delete m_meshList->at(idx)->mesh;
     delete m_meshList->at(idx);
 
