@@ -238,9 +238,13 @@ int Scene::getTriangleCount()
 int Scene::getObjectCount()
 {
     int count = 0;
-
+    RepeaterState* state;
     for (int i = 0; i < m_meshList->size(); i++) {
-        count += m_meshList->at(i)->mesh->getObjCount();
+        state = m_meshList->at(i)->mesh->getState();
+        if (state->deleted)
+            count += m_meshList->at(i)->mesh->getObjCount() - state->deleted->size();
+        else
+            count += m_meshList->at(i)->mesh->getObjCount();
     }
 
     return count;
