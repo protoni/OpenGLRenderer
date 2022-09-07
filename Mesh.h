@@ -24,7 +24,7 @@ public:
     void create();
     void render(int xPos, int yPos, int zPos, RepeaterState* state);
 
-    glm::mat4* getMesh(int xPos, int yPos, int zPos, RepeaterState* state, bool meshDeleted, unsigned int deletedRemoved);
+    glm::mat4* getMesh(int xPos, int yPos, int zPos, RepeaterState* state);
 
     void setTexture1(unsigned int& texture);
     void setTexture2(unsigned int& texture);

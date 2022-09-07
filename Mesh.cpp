@@ -126,14 +126,14 @@ void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state)
     if (zPos < 1)
         zPos = 1;
 
-    glm::mat4 model = *getMesh(xPos, yPos, zPos, state, 0, 0);
+    glm::mat4 model = *getMesh(xPos, yPos, zPos, state);
 
     m_shader->setMat4("model", model);
 
     glDrawElements(GL_TRIANGLES, m_indiceCount, GL_UNSIGNED_INT, 0);
 }
 
-glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, bool meshDeleted, unsigned int deletedRemoved)
+glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state)
 {
     if (!m_shader || !m_VAO || !m_EBO) {
         std::cout << "getMesh error!" << std::endl;
@@ -142,22 +142,12 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, boo
 
     glm::mat4 model = glm::mat4(1.0f);
 
+    model = glm::translate(model, glm::vec3(
+        ((0.5f * state->scaleX) * xPos) + (state->paddingX * xPos) + state->xOffset,
+        ((0.5f * state->scaleY) * yPos) + (state->paddingY * yPos) + state->yOffset,
+        ((0.5f * state->scaleZ) * zPos) + (state->paddingZ * zPos) + state->zOffset)
+    );
     
-    if (!meshDeleted) {
-    //    std::cout << "Mesh deleted!" << std::endl;
-    //    model = glm::translate(model, glm::vec3(
-    //        (((0.5f * state->scaleX) * xPos) + (state->paddingX * xPos) + (state->xOffset * 2)),
-    //        (((0.5f * state->scaleY) * yPos) + (state->paddingY * yPos) + (state->yOffset)),
-    //        (((0.5f * state->scaleZ) * zPos) + (state->paddingZ * zPos) + (state->zOffset)))
-    //    );
-    //}
-    //else {
-        model = glm::translate(model, glm::vec3(
-            ((0.5f * state->scaleX) * xPos) + (state->paddingX * xPos) + state->xOffset,
-            ((0.5f * state->scaleY) * yPos) + (state->paddingY * yPos) + state->yOffset,
-            ((0.5f * state->scaleZ) * zPos) + (state->paddingZ * zPos) + state->zOffset)
-        );
-    }
 
     if (state->scaleX != 0 && state->scaleY != 0 && state->scaleZ != 0 &&
         state->xRotation != 0 && state->yRotation != 0 && state->zRotation != 0) {

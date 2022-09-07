@@ -68,8 +68,8 @@ bool Repeater::meshDeleted(int meshPointer)
         if (std::find(deletedMeshes.begin(), deletedMeshes.end(), meshPointer) != deletedMeshes.end())
             ret = true;
 
-        for (int i = 0; i < deletedMeshes.size(); i++) {
-        }
+        //for (int i = 0; i < deletedMeshes.size(); i++) {
+        //}
     }
 
     return ret;
@@ -94,33 +94,11 @@ void Repeater::createBuffer()
         for (int z = 0; z < m_state->rowCount; z++) {        // rows    ( z axis )
             for (int x = 0; x < m_state->columnCount; x++) {  // columns ( x axis )
                 if (!meshDeleted(ptr)) {
-                    m_matrices[ptr++] = *getMesh(x, y, z, m_state, false, 0);
+                    m_matrices[ptr++] = *getMesh(x, y, z, m_state);
                 }
                 else {
-                    m_matrices[ptr++] = *getMesh(x, y, z, m_state, true, m_deleteRemoved);
+                    m_matrices[ptr++] = glm::mat4(0.0f);
                 }
-                //if (!meshDeleted(ptr)) {
-                //    if (removedLastTime) {
-                //        removedLastTime = false;
-                //        m_matrices[ptr++] = *getMesh(x+1, y, z, m_state, true, m_deleteRemoved);
-                //    }
-                //    else
-                //        m_matrices[ptr++] = *getMesh(x, y, z, m_state, false, 0);
-                //}
-                //else {
-                //    removedLastTime = true;
-                //}
-                //else if(meshDeleted(ptr))
-                    //    m_matrices[ptr++] = *getMesh(x, y, z, m_state, false, 0);
-                //if (meshDeleted(ptr)) {
-                //    m_matrices[ptr++] = *getMesh(x, y, z, m_state, true, m_deleteRemoved);
-                //    m_deleteRemoved++;
-                //    removedLastTime = true;
-                //}
-                //else if (!meshDeleted(ptr))
-                //    m_matrices[ptr++] = *getMesh(x, y, z, m_state, false, 0);
-                //else
-                //    std::cout << "deleted ptr, skip: " << ptr - 1 << std::endl;
             }
         }
     }
