@@ -10,7 +10,7 @@
 
 DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene),
     m_debugModeOn(false), m_wireframeModeOn(false), m_debounceCounter(0.0),
-    m_planeState(NULL), m_infoWindowOn(false), m_fps(0.0), m_deltaTime(0.0)
+    m_planeState(NULL), m_infoWindowOn(false), m_fps(0.0), m_deltaTime(0.0), m_selected(-1)
 {
     init();
 
@@ -85,6 +85,9 @@ void DebugUi::objectLayout(bool* p_open)
             ImGui::EndChild();
         }
         ImGui::SameLine();
+
+        // Update selected object variable
+        m_selected = selected;
 
         // Right
         {

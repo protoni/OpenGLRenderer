@@ -15,6 +15,7 @@ public:
     void cleanup();
     void debugMode();
     void objectLayout(bool* p_open);
+    int getSelectedInstance() { return m_selected; }
 
 private:
     void init();
@@ -42,6 +43,8 @@ private:
     
     float m_fps;
     double m_deltaTime;
+
+    int m_selected;
 };
 
 

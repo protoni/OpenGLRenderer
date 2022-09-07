@@ -61,6 +61,12 @@ void Input::processInput(double deltaTime)
             m_scene->updateMeshPointer(MeshInstanceDirections::Down);
             changed = true;
         }
+
+        
+        if (glfwGetKey(m_window->get(), GLFW_KEY_DELETE) == GLFW_PRESS) {
+            m_scene->deleteInstancedMesh(m_debugUi->getSelectedInstance());
+            changed = true;
+        }
     }
 
     // Limit actions to 500ms

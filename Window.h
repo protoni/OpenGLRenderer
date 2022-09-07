@@ -10,8 +10,8 @@
 
 struct ScreenSettings
 {
-    unsigned int width = 800;
-    unsigned int height = 600;
+    unsigned int width = 1600;
+    unsigned int height = 800;
     const std::string title = "OpenGLRenderer";
 };
 
