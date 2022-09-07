@@ -28,6 +28,8 @@ private:
     void updateInstancedCubeMode();
     void updateInfoWindow();
     void showInfoWindow(bool* p_open);
+    void objectSettings(int selected);
+    void meshSettings();
 
     Window* m_window;
     Scene* m_scene;

@@ -142,18 +142,37 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state)
 
     glm::mat4 model = glm::mat4(1.0f);
 
+    // Set positions
     model = glm::translate(model, glm::vec3(
-        ((0.5f * state->scaleX) * xPos) + (state->paddingX * xPos) + state->xOffset,
-        ((0.5f * state->scaleY) * yPos) + (state->paddingY * yPos) + state->yOffset,
-        ((0.5f * state->scaleZ) * zPos) + (state->paddingZ * zPos) + state->zOffset)
+        ((0.5f * state->transformations->scaleX) * xPos) + (state->transformations->paddingX * xPos) + state->transformations->xOffset,
+        ((0.5f * state->transformations->scaleY) * yPos) + (state->transformations->paddingY * yPos) + state->transformations->yOffset,
+        ((0.5f * state->transformations->scaleZ) * zPos) + (state->transformations->paddingZ * zPos) + state->transformations->zOffset)
     );
     
 
-    if (state->scaleX != 0 && state->scaleY != 0 && state->scaleZ != 0 &&
-        state->xRotation != 0 && state->yRotation != 0 && state->zRotation != 0) {
-        model = glm::rotate(model, glm::radians(state->angle), glm::vec3(state->xRotation, state->yRotation, state->zRotation));
+    // Set rotation
+    if (state->transformations->scaleX != 0 && state->transformations->scaleY != 0 && state->transformations->scaleZ != 0 &&
+        state->transformations->xRotation != 0 && state->transformations->yRotation != 0 && state->transformations->zRotation != 0) {
+        model = glm::rotate(
+            model,
+            glm::radians(state->transformations->angle),
+            glm::vec3(
+                state->transformations->xRotation,
+                state->transformations->yRotation,
+                state->transformations->zRotation
+            )
+        );
     }
-    model = glm::scale(model, glm::vec3(0.5f * state->scaleX, 0.5f * state->scaleY, 0.5f * state->scaleZ));
+
+    // Set scaling
+    model = glm::scale(
+        model,
+        glm::vec3(
+            0.5f * state->transformations->scaleX,
+            0.5f * state->transformations->scaleY,
+            0.5f * state->transformations->scaleZ
+        )
+    );
     
 
     return &model;

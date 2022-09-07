@@ -19,6 +19,8 @@ Repeater::Repeater(Shader* shader, bool instanced, float* vertices, unsigned int
     // Init state
     m_state = new RepeaterState();
     m_state->position = new MeshPointerPosition();
+    m_state->transformations = new MeshTransformations();
+    m_state->modified = new std::vector<ModifiedMesh*>();
 
     // Set initial instancing state
     m_state->instanced = instanced;
