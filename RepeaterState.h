@@ -3,6 +3,21 @@
 
 #include <vector>
 
+struct MeshPointerPosition
+{
+    int meshPointer;
+    int stackPosition;
+    int rowPosition;
+    int columnPosition;
+
+    MeshPointerPosition()
+        : meshPointer(-1)
+        , stackPosition(-1)
+        , rowPosition(-1)
+        , columnPosition(-1)
+    {}
+};
+
 struct RepeaterState
 {
     // Repeater settings
@@ -35,6 +50,8 @@ struct RepeaterState
 
     std::vector<int>* deleted;
 
+    MeshPointerPosition* position;
+
     RepeaterState() :
         rowCount(1),
         columnCount(1),
@@ -53,6 +70,7 @@ struct RepeaterState
         yRotation(0.001),
         zRotation(0.001),
         deleted(nullptr),
+        position(nullptr),
         instanced(false) {}
 };
 

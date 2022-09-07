@@ -14,7 +14,7 @@ DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene
 {
     init();
 
-    // Init local plane state
+    // Init local mesh instance state so that we can compare changed values when modifying object count
     m_planeState = new RepeaterState();
 }
 
@@ -72,7 +72,7 @@ void DebugUi::objectLayout(bool* p_open)
         if (ImGui::Button("Add Custom", ImVec2(100, 0)))
             m_scene->addCustom();
 
-        // Left
+        // Mesh object selector
         static int selected = 0;
         {
             std::vector<MeshObject*> meshList = *m_scene->getMeshList();
@@ -89,7 +89,7 @@ void DebugUi::objectLayout(bool* p_open)
         // Update selected object variable
         m_selected = selected;
 
-        // Right
+        // Repeater settings
         {
             std::vector<MeshObject*>* meshList = m_scene->getMeshList();
 
@@ -105,7 +105,7 @@ void DebugUi::objectLayout(bool* p_open)
             }
 
             ImGui::BeginGroup();
-            ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
+            ImGui::BeginChild("item view", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing() + 80))); // Leave room for 1 line below us and mesh edit view
 
             if (meshList->size() > selected) {
                 ImGui::Text(meshList->at(selected)->name.c_str(), selected);
@@ -114,7 +114,7 @@ void DebugUi::objectLayout(bool* p_open)
                     m_scene->deleteObject(selected);
 
                     ImGui::EndChild();
-                    ImGui::EndGroup();
+                    ImGui::EndGroup();  
                     ImGui::End();
                     return;
                 }
@@ -123,10 +123,6 @@ void DebugUi::objectLayout(bool* p_open)
                 
                 // Set selected
                 meshList->at(selected)->selected = true;
-
-                if (ImGui::Button("Remove Mesh", ImVec2(100, 0))) {
-                    m_scene->deleteInstancedMesh(selected);
-                }
 
                 // Load current values
                 RepeaterState* state = meshList->at(selected)->mesh->getState();
@@ -237,9 +233,32 @@ void DebugUi::objectLayout(bool* p_open)
             }
 
             ImGui::EndChild();
-            ImGui::EndGroup();
+            
         }
+
+        // Mesh position info inside an instance
+        {
+            std::vector<MeshObject*>* meshList = m_scene->getMeshList();
+            if (meshList->size() > selected) {
+                ImGui::BeginChild("Rightmost pane", ImVec2(0, 0), true);
+
+                if (ImGui::Button("Remove Mesh", ImVec2(100, 0))) {
+                    m_scene->deleteInstancedMesh(selected);
+                }
+                ImGui::SameLine();
+
+                RepeaterState* state = meshList->at(selected)->mesh->getState();
+                ImGui::Text("Mesh pointer: %d", state->position->meshPointer);
+                ImGui::Text("Stack position:  %d", state->position->stackPosition);
+                ImGui::Text("Row position:    %d", state->position->rowPosition);
+                ImGui::Text("Column position: %d", state->position->columnPosition);
+
+                ImGui::EndChild();
+            }
+        }
+        
     }
+    ImGui::EndGroup();
     ImGui::End();
 }
 

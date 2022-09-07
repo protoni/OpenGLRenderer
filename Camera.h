@@ -130,4 +130,4 @@ private:
     }
 };
 
-#endif
+#endif // CAMERA_H

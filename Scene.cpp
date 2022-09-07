@@ -127,22 +127,36 @@ void Scene::updateMeshPointer(int direction)
 {
     RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
 
-    // Figure out which row are we on
-    int rowPosition;
+    // Figure out which stack are we on
+    int stackPosition = 0;
     if (m_meshPointer > 0) {
-        rowPosition = (m_meshPointer / state->columnCount);
+        stackPosition = (m_meshPointer / (state->columnCount * state->rowCount));
     }
-    else {
-        rowPosition = 0;
+
+    // Figure out which row are we on
+    int rowPosition = 0;
+    if (m_meshPointer > 0) {
+        if(stackPosition > 0)
+            rowPosition = ((m_meshPointer - (stackPosition * (state->columnCount * state->rowCount))) / state->columnCount);
+        else
+            rowPosition = (m_meshPointer / state->columnCount);
     }
+
+    // Figure out which column are we on
+
+    state->position->meshPointer = m_meshPointer;
+    state->position->stackPosition = stackPosition;
+    state->position->rowPosition = rowPosition;
+    state->position->columnPosition = 0;
 
     std::cout << "rowPosition: " << rowPosition << std::endl;
+    std::cout << "stackPosition: " << stackPosition << std::endl;
 
+    // Update Left / Right direction
     if (direction == MeshInstanceDirections::Left) {
         if(m_meshPointer - (rowPosition * state->columnCount) > 0)
             m_meshPointer -= 1;
     }
-
     else if (direction == MeshInstanceDirections::Right) {
         if (rowPosition > 0) {
             if (m_meshPointer - (rowPosition * state->columnCount) < state->rowCount - 1)
@@ -154,18 +168,42 @@ void Scene::updateMeshPointer(int direction)
         }
     }
 
-    else if (direction == MeshInstanceDirections::Down) {
+    // Update Forward / Backward direction
+    else if (direction == MeshInstanceDirections::Backward) {
         if(rowPosition < state->rowCount - 1)
             m_meshPointer += state->columnCount;
     }
-
-    else if (direction == MeshInstanceDirections::Up) {
+    else if (direction == MeshInstanceDirections::Forward) {
         if (rowPosition > 0)
             m_meshPointer -= state->columnCount;
     }
 
-    if (m_meshPointer >= state->columnCount * state->rowCount)
-        m_meshPointer = (state->columnCount * state->rowCount) - 1;
+    // Update Up / Down direction
+    else if (direction == MeshInstanceDirections::Up) {
+        //if (rowPosition < state->rowCount - 1)
+        //if (m_meshPointer - (rowPosition * state->columnCount) < state->rowCount - 1)
+        //std::cout << "move up"
+        if (stackPosition > 0) {
+            if ((m_meshPointer - (state->columnCount * state->rowCount) * stackPosition) < state->stackCount - 1) {
+                m_meshPointer += state->columnCount * state->rowCount;//state->stackCount;
+            }
+            else {
+                std::cout << "dbg: " << (state->columnCount * state->rowCount) * stackPosition << std::endl;
+            }
+        }
+        else {
+            m_meshPointer += state->columnCount * state->rowCount;
+        }
+    }
+
+    else if (direction == MeshInstanceDirections::Down) {
+        //if (rowPosition > 0)
+            //m_meshPointer -= state->stackCount;
+        m_meshPointer -= state->columnCount * state->rowCount;
+    }
+
+    if (m_meshPointer >= state->columnCount * state->rowCount * state->stackCount)
+        m_meshPointer = (state->columnCount * state->rowCount * state->stackCount) - 1;
 
     std::cout << "mesh pointer: " << m_meshPointer << std::endl;
 }
@@ -318,6 +356,10 @@ void Scene::deleteObject(int idx)
     if (state->deleted) {
         delete state->deleted;
     }
+
+    // Clear mesh pointer position
+    if (state->position)
+        delete state->position;
 
     delete m_meshList->at(idx)->mesh;
     delete m_meshList->at(idx);

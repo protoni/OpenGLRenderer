@@ -31,7 +31,9 @@ enum MeshInstanceDirections
     Left,
     Right,
     Up,
-    Down
+    Down,
+    Forward,
+    Backward
 };
 
 struct MeshObject
