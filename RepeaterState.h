@@ -62,10 +62,12 @@ struct ModifiedMesh
 {
     int meshPointer;
     MeshTransformations* transformations;
+    MeshPointerPosition* position;
 
     ModifiedMesh()
         : meshPointer(0)
-        , transformations(nullptr) {}
+        , transformations(nullptr)
+        , position(nullptr) {}
 };
 
 struct RepeaterState

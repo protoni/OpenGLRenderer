@@ -28,8 +28,8 @@ private:
     void updateInstancedCubeMode();
     void updateInfoWindow();
     void showInfoWindow(bool* p_open);
-    void objectSettings(int selected);
-    void meshSettings();
+    bool objectSettings(int selected);
+    void meshSettings(int selected);
 
     Window* m_window;
     Scene* m_scene;
@@ -40,6 +40,7 @@ private:
     bool m_instancedCubeOn;
 
     RepeaterState* m_planeState;
+    MeshTransformations m_meshState;
 
     float m_debounceCounter;
     
@@ -47,6 +48,10 @@ private:
     double m_deltaTime;
 
     int m_selected;
+
+    int m_modifiedMesh;
+
+    bool m_loadSelectedMesh;
 };
 
 

@@ -367,12 +367,33 @@ void Scene::deleteObject(int idx)
 
     // Cler modified mesh list
     if (state->modified) {
+        //for (int i = 0; i < state->modified->size(); i++) {
+        //    delete state->modified->at(i);
+        //}
+
+        // Clear old mesh transformations
         for (int i = 0; i < state->modified->size(); i++) {
-            delete state->modified->at(i);
+            if (state->modified->at(i)) {
+                if (state->modified->at(i)->position) {
+                    delete state->modified->at(i)->position;
+                    state->modified->at(i)->position = NULL;
+                }
+                if (state->modified->at(i)->transformations) {
+                    delete state->modified->at(i)->transformations;
+                    state->modified->at(i)->transformations = NULL;
+                }
+                if (state->modified->at(i)) {
+                    delete state->modified->at(i);
+                    state->modified->at(i) = NULL;
+                }
+            }
         }
 
         delete state->modified;
     }
+
+    
+
 
     // Clear the mesh
     delete m_meshList->at(idx)->mesh;

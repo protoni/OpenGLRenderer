@@ -126,14 +126,14 @@ void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state)
     if (zPos < 1)
         zPos = 1;
 
-    glm::mat4 model = *getMesh(xPos, yPos, zPos, state);
+    glm::mat4 model = *getMesh(xPos, yPos, zPos, state, 0);
 
     m_shader->setMat4("model", model);
 
     glDrawElements(GL_TRIANGLES, m_indiceCount, GL_UNSIGNED_INT, 0);
 }
 
-glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state)
+glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int ptr)
 {
     if (!m_shader || !m_VAO || !m_EBO) {
         std::cout << "getMesh error!" << std::endl;
@@ -142,12 +142,30 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state)
 
     glm::mat4 model = glm::mat4(1.0f);
 
+    //if (state->modified) {
+    //    if (state->modified->size() > 0) {
+    //        for (int i = 0; i < state->modified->size(); i++) {
+    //
+    //        }
+    //    }
+    //}
+
     // Set positions
-    model = glm::translate(model, glm::vec3(
-        ((0.5f * state->transformations->scaleX) * xPos) + (state->transformations->paddingX * xPos) + state->transformations->xOffset,
-        ((0.5f * state->transformations->scaleY) * yPos) + (state->transformations->paddingY * yPos) + state->transformations->yOffset,
-        ((0.5f * state->transformations->scaleZ) * zPos) + (state->transformations->paddingZ * zPos) + state->transformations->zOffset)
-    );
+    if (ptr < state->modified->size()) {
+        model = glm::translate(model, glm::vec3(
+            ((0.5f * state->transformations->scaleX) * xPos) + (state->transformations->paddingX * xPos) + (state->transformations->xOffset + state->modified->at(ptr)->transformations->xOffset),
+            ((0.5f * state->transformations->scaleY) * yPos) + (state->transformations->paddingY * yPos) + (state->transformations->yOffset + state->modified->at(ptr)->transformations->yOffset),
+            ((0.5f * state->transformations->scaleZ) * zPos) + (state->transformations->paddingZ * zPos) + (state->transformations->zOffset + state->modified->at(ptr)->transformations->zOffset))
+        );
+        std::cout << "state->modified->at(ptr)->transformations->scaleX" << state->modified->at(ptr)->transformations->scaleX << std::endl;
+    }
+    else {
+        model = glm::translate(model, glm::vec3(
+            ((0.5f * state->transformations->scaleX) * xPos) + (state->transformations->paddingX * xPos) + state->transformations->xOffset,
+            ((0.5f * state->transformations->scaleY) * yPos) + (state->transformations->paddingY * yPos) + state->transformations->yOffset,
+            ((0.5f * state->transformations->scaleZ) * zPos) + (state->transformations->paddingZ * zPos) + state->transformations->zOffset)
+        );
+    }
     
 
     // Set rotation
@@ -165,14 +183,29 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state)
     }
 
     // Set scaling
-    model = glm::scale(
-        model,
-        glm::vec3(
-            0.5f * state->transformations->scaleX,
-            0.5f * state->transformations->scaleY,
-            0.5f * state->transformations->scaleZ
-        )
-    );
+    if (ptr < state->modified->size()) {
+        model = glm::scale(
+            model,
+            glm::vec3(
+                0.5f * ((state->transformations->scaleX - state->modified->at(ptr)->transformations->scaleX) + 0.5),
+                0.5f * ((state->transformations->scaleY - state->modified->at(ptr)->transformations->scaleY) + 0.5),
+                0.5f * ((state->transformations->scaleZ - state->modified->at(ptr)->transformations->scaleZ) + 0.5)
+                //0.5f * state->transformations->scaleX * state->modified->at(ptr)->transformations->scaleX,
+                //0.5f * state->transformations->scaleY * state->modified->at(ptr)->transformations->scaleY,
+                //0.5f * state->transformations->scaleZ * state->modified->at(ptr)->transformations->scaleZ
+            )
+        );
+    }
+    else {
+        model = glm::scale(
+            model,
+            glm::vec3(
+                0.5f * state->transformations->scaleX,
+                0.5f * state->transformations->scaleY,
+                0.5f * state->transformations->scaleZ
+            )
+        );
+    }
     
 
     return &model;

@@ -10,13 +10,17 @@
 
 DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene),
     m_debugModeOn(false), m_wireframeModeOn(false), m_debounceCounter(0.0),
-    m_planeState(NULL), m_infoWindowOn(false), m_fps(0.0), m_deltaTime(0.0), m_selected(-1)
+    m_planeState(NULL), m_infoWindowOn(false), m_fps(0.0), m_deltaTime(0.0), m_selected(-1), m_modifiedMesh(-1), m_loadSelectedMesh(true)//,
+    //m_meshState(NULL)
 {
     init();
 
-    // Init local mesh instance state so that we can compare changed values when modifying object count
+    // Init local object instance state so that we can compare changed values when modifying object count
     m_planeState = new RepeaterState();
     m_planeState->transformations = new MeshTransformations();
+
+    // Init local mesh modifying state so that we can compare changed values when modifying meshes
+    //m_meshState = new MeshTransformations();
 }
 
 DebugUi::~DebugUi()
@@ -49,16 +53,78 @@ void DebugUi::newWindow()
     }
 }
 
-void DebugUi::meshSettings()
+void DebugUi::meshSettings(int selected)
 {
     ImGui::BeginChild("Mesh panel", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing() + 80))); // Leave room for 1 line below us and mesh edit view
+    
+    ImGui::Text("Mesh settings");
 
-    ImGui::Text("mesh");
+    std::vector<MeshObject*>* meshList = m_scene->getMeshList();
+    RepeaterState* state = meshList->at(selected)->mesh->getState();
+
+    // Load current values
+    if (m_scene->getMeshPointer() >= 0 && m_scene->getMeshPointer() < state->modified->size()) {
+        m_meshState.scaleX = state->modified->at(m_scene->getMeshPointer())->transformations->scaleX;
+        m_meshState.scaleY = state->modified->at(m_scene->getMeshPointer())->transformations->scaleY;
+        m_meshState.scaleZ = state->modified->at(m_scene->getMeshPointer())->transformations->scaleZ;
+
+        m_meshState.xOffset = state->modified->at(m_scene->getMeshPointer())->transformations->xOffset;
+        m_meshState.yOffset = state->modified->at(m_scene->getMeshPointer())->transformations->yOffset;
+        m_meshState.zOffset = state->modified->at(m_scene->getMeshPointer())->transformations->zOffset;
+        //std::cout << "loaded current values!" << std::endl;
+    }
+    else {
+        std::cout << "modified mesh pointer error1!" << std::endl;
+    }
+
+    // Draw settings
+    if (ImGui::CollapsingHeader("Scale")) {
+        ImGui::SliderFloat("Scale X", &m_meshState.scaleX, 0.01f, 10.0f);
+        ImGui::SliderFloat("Scale Y", &m_meshState.scaleY, 0.01f, 10.0f);
+        ImGui::SliderFloat("Scale Z", &m_meshState.scaleZ, 0.01f, 10.0f);
+    }
+    
+    if (ImGui::CollapsingHeader("Offset")) {
+        ImGui::SliderFloat("X offset", &m_meshState.xOffset, -5.0f, 5.0f);
+        ImGui::SliderFloat("Y offset", &m_meshState.yOffset, -5.0f, 5.0f);
+        ImGui::SliderFloat("Z offset", &m_meshState.zOffset, -5.0f, 5.0f);
+    }
+
+    // Check if settings changed
+    if (m_debounceCounter >= .1f) {
+        if (m_scene->getMeshPointer() >= 0 && m_scene->getMeshPointer() < state->modified->size()) {
+            if (m_meshState.scaleX != state->modified->at(m_scene->getMeshPointer())->transformations->scaleX ||
+                m_meshState.scaleY != state->modified->at(m_scene->getMeshPointer())->transformations->scaleY ||
+                m_meshState.scaleZ != state->modified->at(m_scene->getMeshPointer())->transformations->scaleZ ||
+                
+                m_meshState.xOffset != state->modified->at(m_scene->getMeshPointer())->transformations->xOffset ||
+                m_meshState.yOffset != state->modified->at(m_scene->getMeshPointer())->transformations->yOffset ||
+                m_meshState.zOffset != state->modified->at(m_scene->getMeshPointer())->transformations->zOffset
+                ) {
+
+                state->modified->at(m_scene->getMeshPointer())->transformations->scaleX = m_meshState.scaleX;
+                state->modified->at(m_scene->getMeshPointer())->transformations->scaleY = m_meshState.scaleY;
+                state->modified->at(m_scene->getMeshPointer())->transformations->scaleZ = m_meshState.scaleZ;
+
+                state->modified->at(m_scene->getMeshPointer())->transformations->xOffset = m_meshState.xOffset;
+                state->modified->at(m_scene->getMeshPointer())->transformations->yOffset = m_meshState.yOffset;
+                state->modified->at(m_scene->getMeshPointer())->transformations->zOffset = m_meshState.zOffset;
+
+                std::cout << "Changed!" << std::endl;
+                m_scene->updateObjectMesh(selected);
+
+                m_debounceCounter = 0;
+            }
+        }
+        else {
+            std::cout << "modified mesh pointer error2!" << std::endl;
+        }
+    }
 
     ImGui::EndChild();
 }
 
-void DebugUi::objectSettings(int selected)
+bool DebugUi::objectSettings(int selected)
 {
     std::vector<MeshObject*>* meshList = m_scene->getMeshList();
 
@@ -83,9 +149,7 @@ void DebugUi::objectSettings(int selected)
             m_scene->deleteObject(selected);
 
             ImGui::EndChild();
-            ImGui::EndGroup();
-            ImGui::End();
-            return;
+            return false;
         }
 
         ImGui::Separator();
@@ -202,6 +266,8 @@ void DebugUi::objectSettings(int selected)
     }
 
     ImGui::EndChild();
+
+    return true;
 }
 
 void DebugUi::objectLayout(bool* p_open)
@@ -257,13 +323,19 @@ void DebugUi::objectLayout(bool* p_open)
 
             // Repeater settings
             if (ImGui::BeginTabItem("Object")) {
-                objectSettings(selected);
+                if (!objectSettings(selected)) {
+                    ImGui::EndTabItem();
+                    ImGui::EndTabBar();
+                    ImGui::EndGroup();
+                    ImGui::End();
+                    return;
+                }
                 ImGui::EndTabItem();
             }
             
             // Mesh settings
             if (ImGui::BeginTabItem("Mesh")) {
-                meshSettings();
+                meshSettings(selected);
                 ImGui::EndTabItem();
             }
 

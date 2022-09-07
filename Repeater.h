@@ -39,6 +39,8 @@ private:
     glm::mat4* m_matrices;
 
     unsigned int m_deleteRemoved;
+
+    int m_oldObjectCount;
 };
 
 #endif // REPEATER_H
