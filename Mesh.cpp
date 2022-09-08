@@ -119,14 +119,21 @@ void Mesh::setShader(Shader* shader)
 
 void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state)
 {
-    glm::mat4 model = *getMesh(xPos, yPos, zPos, state);
+    if (xPos < 1)
+        xPos = 1;
+    if (yPos < 1)
+        yPos = 1;
+    if (zPos < 1)
+        zPos = 1;
+
+    glm::mat4 model = *getMesh(xPos, yPos, zPos, state, 0);
 
     m_shader->setMat4("model", model);
 
     glDrawElements(GL_TRIANGLES, m_indiceCount, GL_UNSIGNED_INT, 0);
 }
 
-glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state)
+glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int ptr)
 {
     if (!m_shader || !m_VAO || !m_EBO) {
         std::cout << "getMesh error!" << std::endl;
@@ -134,18 +141,100 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state)
     }
 
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model,glm::vec3(
-        ((0.5f * state->scaleX) * xPos) + (state->paddingX * xPos) + state->xOffset,
-        ((0.5f * state->scaleY) * yPos) + (state->paddingY * yPos) + state->yOffset,
-        ((0.5f * state->scaleZ) * zPos) + (state->paddingZ * zPos) + state->zOffset)
-    );
-    
-    if (state->scaleX    != 0 && state->scaleY    != 0 && state->scaleZ    != 0 &&
-        state->xRotation != 0 && state->yRotation != 0 && state->zRotation != 0) {
-        model = glm::rotate(model, glm::radians(state->angle), glm::vec3(state->xRotation, state->yRotation, state->zRotation));
-    }
-    model = glm::scale(model, glm::vec3(0.5f * state->scaleX, 0.5f * state->scaleY, 0.5f * state->scaleZ));
 
+    // Set positions
+    if (ptr < state->modified->size()) {
+        model = glm::translate(model, glm::vec3(
+            (
+                ((0.5f * state->transformations->scaleX) * xPos) +
+                (state->transformations->paddingX * xPos) +
+                (state->transformations->xOffset + state->modified->at(ptr)->transformations->xOffset)
+            ),
+            (
+                ((0.5f * state->transformations->scaleY) * yPos) +
+                (state->transformations->paddingY * yPos) +
+                (state->transformations->yOffset + state->modified->at(ptr)->transformations->yOffset)
+            ),
+            (
+                ((0.5f * state->transformations->scaleZ) * zPos) +
+                (state->transformations->paddingZ * zPos) +
+                (state->transformations->zOffset + state->modified->at(ptr)->transformations->zOffset)
+            ))
+        );
+    }
+    else {
+        model = glm::translate(model, glm::vec3(
+            ((0.5f * state->transformations->scaleX) * xPos) + (state->transformations->paddingX * xPos) + state->transformations->xOffset,
+            ((0.5f * state->transformations->scaleY) * yPos) + (state->transformations->paddingY * yPos) + state->transformations->yOffset,
+            ((0.5f * state->transformations->scaleZ) * zPos) + (state->transformations->paddingZ * zPos) + state->transformations->zOffset)
+        );
+    }
+    
+
+    // Set rotation
+    if (ptr < state->modified->size()) {
+        if (
+            state->transformations->xRotation != 0 &&
+            state->transformations->yRotation != 0 &&
+            state->transformations->zRotation != 0 &&
+            state->modified->at(ptr)->transformations->xRotation != 0 &&
+            state->modified->at(ptr)->transformations->yRotation != 0 &&
+            state->modified->at(ptr)->transformations->zRotation != 0
+            ) {
+            model = glm::rotate(
+                model,
+                glm::radians(state->transformations->angle + state->modified->at(ptr)->transformations->angle),
+                glm::vec3(
+                    state->transformations->xRotation + state->modified->at(ptr)->transformations->xRotation,
+                    state->transformations->yRotation + state->modified->at(ptr)->transformations->yRotation,
+                    state->transformations->zRotation + state->modified->at(ptr)->transformations->zRotation
+                )
+            );
+        }
+    }
+    else {
+        if (
+            state->transformations->xRotation != 0 &&
+            state->transformations->yRotation != 0 &&
+            state->transformations->zRotation != 0
+            ) {
+            model = glm::rotate(
+                model,
+                glm::radians(state->transformations->angle),
+                glm::vec3(
+                    state->transformations->xRotation,
+                    state->transformations->yRotation,
+                    state->transformations->zRotation
+                )
+            );
+        }
+    }
+
+    // Set scaling
+    if (ptr < state->modified->size()) {
+        model = glm::scale(
+            model,
+            glm::vec3(
+                0.5f * ((state->transformations->scaleX - state->modified->at(ptr)->transformations->scaleX) + 0.5),
+                0.5f * ((state->transformations->scaleY - state->modified->at(ptr)->transformations->scaleY) + 0.5),
+                0.5f * ((state->transformations->scaleZ - state->modified->at(ptr)->transformations->scaleZ) + 0.5)
+                //0.5f * state->transformations->scaleX * state->modified->at(ptr)->transformations->scaleX,
+                //0.5f * state->transformations->scaleY * state->modified->at(ptr)->transformations->scaleY,
+                //0.5f * state->transformations->scaleZ * state->modified->at(ptr)->transformations->scaleZ
+            )
+        );
+    }
+    else {
+        model = glm::scale(
+            model,
+            glm::vec3(
+                0.5f * state->transformations->scaleX,
+                0.5f * state->transformations->scaleY,
+                0.5f * state->transformations->scaleZ
+            )
+        );
+    }
+    
 
     return &model;
 }

@@ -29,12 +29,18 @@ public:
     void setInstanced(bool instanced);
 
 private:
+    bool meshDeleted(int meshPointer);
+
     Shader* m_shader;
     RepeaterState* m_state;
 
     unsigned int m_indiceCount;
     unsigned int m_buffer;
     glm::mat4* m_matrices;
+
+    unsigned int m_deleteRemoved;
+
+    int m_oldObjectCount;
 };
 
 #endif // REPEATER_H

@@ -127,24 +127,36 @@ void Scene::updateMeshPointer(int direction)
 {
     RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
 
-    state->selected = m_meshPointer;
+    // Figure out which stack are we on
+    int stackPosition = 0;
+    if (m_meshPointer > 0) {
+        stackPosition = (m_meshPointer / (state->columnCount * state->rowCount));
+    }
 
     // Figure out which row are we on
-    int rowPosition;
+    int rowPosition = 0;
     if (m_meshPointer > 0) {
-        rowPosition = (m_meshPointer / state->columnCount);
+        if(stackPosition > 0)
+            rowPosition = ((m_meshPointer - (stackPosition * (state->columnCount * state->rowCount))) / state->columnCount);
+        else
+            rowPosition = (m_meshPointer / state->columnCount);
     }
-    else {
-        rowPosition = 0;
-    }
+
+    // Figure out which column are we on
+
+    state->position->meshPointer = m_meshPointer;
+    state->position->stackPosition = stackPosition;
+    state->position->rowPosition = rowPosition;
+    state->position->columnPosition = 0;
 
     std::cout << "rowPosition: " << rowPosition << std::endl;
+    std::cout << "stackPosition: " << stackPosition << std::endl;
 
+    // Update Left / Right direction
     if (direction == MeshInstanceDirections::Left) {
         if(m_meshPointer - (rowPosition * state->columnCount) > 0)
             m_meshPointer -= 1;
     }
-
     else if (direction == MeshInstanceDirections::Right) {
         if (rowPosition > 0) {
             if (m_meshPointer - (rowPosition * state->columnCount) < state->rowCount - 1)
@@ -156,18 +168,42 @@ void Scene::updateMeshPointer(int direction)
         }
     }
 
-    else if (direction == MeshInstanceDirections::Down) {
+    // Update Forward / Backward direction
+    else if (direction == MeshInstanceDirections::Backward) {
         if(rowPosition < state->rowCount - 1)
             m_meshPointer += state->columnCount;
     }
-
-    else if (direction == MeshInstanceDirections::Up) {
+    else if (direction == MeshInstanceDirections::Forward) {
         if (rowPosition > 0)
             m_meshPointer -= state->columnCount;
     }
 
-    if (m_meshPointer >= state->columnCount * state->rowCount)
-        m_meshPointer = (state->columnCount * state->rowCount) - 1;
+    // Update Up / Down direction
+    else if (direction == MeshInstanceDirections::Up) {
+        //if (rowPosition < state->rowCount - 1)
+        //if (m_meshPointer - (rowPosition * state->columnCount) < state->rowCount - 1)
+        //std::cout << "move up"
+        if (stackPosition > 0) {
+            if ((m_meshPointer - (state->columnCount * state->rowCount) * stackPosition) < state->stackCount - 1) {
+                m_meshPointer += state->columnCount * state->rowCount;//state->stackCount;
+            }
+            else {
+                std::cout << "dbg: " << (state->columnCount * state->rowCount) * stackPosition << std::endl;
+            }
+        }
+        else {
+            m_meshPointer += state->columnCount * state->rowCount;
+        }
+    }
+
+    else if (direction == MeshInstanceDirections::Down) {
+        //if (rowPosition > 0)
+            //m_meshPointer -= state->stackCount;
+        m_meshPointer -= state->columnCount * state->rowCount;
+    }
+
+    if (m_meshPointer >= state->columnCount * state->rowCount * state->stackCount)
+        m_meshPointer = (state->columnCount * state->rowCount * state->stackCount) - 1;
 
     std::cout << "mesh pointer: " << m_meshPointer << std::endl;
 }
@@ -175,6 +211,20 @@ void Scene::updateMeshPointer(int direction)
 void Scene::resetMeshPointer()
 {
     m_meshPointer = 0;
+}
+
+void Scene::deleteInstancedMesh(int selected)
+{
+    std::cout << "selected idx: " << getSelectedMeshIndex() << std::endl;
+    if (getSelectedMeshIndex() < m_meshList->size()) {
+        RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
+        if (m_meshPointer >= 0 && m_meshPointer < state->modified->size()) {
+            state->modified->at(m_meshPointer)->deleted = true;
+            m_meshList->at(selected)->mesh->update();
+
+            std::cout << "deleted mesh pointer: " << m_meshPointer << std::endl;
+        }
+    }
 }
 
 std::vector<MeshObject*>* Scene::getMeshList()
@@ -223,9 +273,13 @@ int Scene::getTriangleCount()
 int Scene::getObjectCount()
 {
     int count = 0;
-
+    RepeaterState* state;
     for (int i = 0; i < m_meshList->size(); i++) {
-        count += m_meshList->at(i)->mesh->getObjCount();
+        state = m_meshList->at(i)->mesh->getState();
+        if (state->deleted)
+            count += m_meshList->at(i)->mesh->getObjCount() - state->deleted->size();
+        else
+            count += m_meshList->at(i)->mesh->getObjCount();
     }
 
     return count;
@@ -294,9 +348,57 @@ void Scene::update()
 
 void Scene::deleteObject(int idx)
 {
+    // Clear individual deleted meshes inside an instance
+    RepeaterState* state = m_meshList->at(idx)->mesh->getState();
+    if (state->deleted) {
+        delete state->deleted;
+    }
+
+    // Clear mesh pointer position
+    if (state->position)
+        delete state->position;
+
+    // Clear mesh transformations
+    if (state->transformations)
+        delete state->transformations;
+
+    // Cler modified mesh list
+    if (state->modified) {
+        //for (int i = 0; i < state->modified->size(); i++) {
+        //    delete state->modified->at(i);
+        //}
+
+        // Clear old mesh transformations
+        for (int i = 0; i < state->modified->size(); i++) {
+            if (state->modified->at(i)) {
+                if (state->modified->at(i)->position) {
+                    delete state->modified->at(i)->position;
+                    state->modified->at(i)->position = NULL;
+                }
+                if (state->modified->at(i)->transformations) {
+                    delete state->modified->at(i)->transformations;
+                    state->modified->at(i)->transformations = NULL;
+                }
+                if (state->modified->at(i)) {
+                    delete state->modified->at(i);
+                    state->modified->at(i) = NULL;
+                }
+            }
+        }
+
+        delete state->modified;
+    }
+
+    
+
+
+    // Clear the mesh
     delete m_meshList->at(idx)->mesh;
+
+    // Clear object
     delete m_meshList->at(idx);
 
+    // Clear the object list
     m_meshList->erase(m_meshList->begin() + idx);
 }
 

@@ -1,13 +1,25 @@
 #ifndef REPEATER_STATE_H
 #define REPEATER_STATE_H
 
-struct RepeaterState
-{
-    // Repeater settings
-    int rowCount;
-    int columnCount;
-    int stackCount;
+#include <vector>
 
+struct MeshPointerPosition
+{
+    int meshPointer;
+    int stackPosition;
+    int rowPosition;
+    int columnPosition;
+
+    MeshPointerPosition()
+        : meshPointer(-1)
+        , stackPosition(-1)
+        , rowPosition(-1)
+        , columnPosition(-1)
+    {}
+};
+
+struct MeshTransformations
+{
     // Padding / space between object sides
     float paddingX;
     float paddingY;
@@ -29,28 +41,73 @@ struct RepeaterState
     float yRotation;
     float zRotation;
 
+    MeshTransformations()
+        : scaleX(0.5)
+        , scaleY(0.5)
+        , scaleZ(0.5)
+        , paddingX(0.0)
+        , paddingY(0.0)
+        , paddingZ(0.0)
+        , xOffset(0.0)
+        , yOffset(0.0)
+        , zOffset(0.0)
+        , angle(0.0)
+        , xRotation(0.001)
+        , yRotation(0.001)
+        , zRotation(0.001)
+    {}
+};
+
+struct ModifiedMesh
+{
+    int meshPointer;
+
+    // Modified transformations of this mesh
+    MeshTransformations* transformations;
+
+    // What is the position of this mesh inside an object instance
+    MeshPointerPosition* position;
+    
+    // Has this mesh been deleted
+    bool deleted;
+
+    ModifiedMesh()
+        : meshPointer(0)
+        , transformations(nullptr)
+        , deleted(false)
+        , position(nullptr) {}
+};
+
+struct RepeaterState
+{
+    // Repeater settings
+    int rowCount;
+    int columnCount;
+    int stackCount;
+
+    // Are the meshes instanced
     bool instanced;
 
-    unsigned int selected;
+    // Deleted meshes
+    std::vector<int>* deleted;
+
+    // Modified meshes
+    std::vector<ModifiedMesh*>* modified;
+
+    // Currently selected mesh positions
+    MeshPointerPosition* position;
+
+    // Mesh transformations ( scale, padding, offset, rotations)
+    MeshTransformations* transformations;
 
     RepeaterState() :
         rowCount(1),
         columnCount(1),
         stackCount(1),
-        scaleX(0.5),
-        scaleY(0.5),
-        scaleZ(0.5),
-        paddingX(0.0),
-        paddingY(0.0),
-        paddingZ(0.0),
-        xOffset(0.0),
-        yOffset(0.0),
-        zOffset(0.0),
-        angle(0.0),
-        xRotation(0.001),
-        yRotation(0.001),
-        zRotation(0.001),
-        selected(0),
+        deleted(nullptr),
+        position(nullptr),
+        transformations(nullptr),
+        modified(nullptr),
         instanced(false) {}
 };
 

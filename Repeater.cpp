@@ -12,12 +12,15 @@ Repeater::Repeater(Shader* shader, bool instanced, float* vertices, unsigned int
         indices,
         verticeCount,
         indiceCount
-    ), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(indiceCount)
+    ), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(indiceCount), m_deleteRemoved(0), m_oldObjectCount(0)
 {
     std::cout << "vertex count: " << verticeCount << ", index count: " << indiceCount << std::endl;
 
     // Init state
     m_state = new RepeaterState();
+    m_state->position = new MeshPointerPosition();
+    m_state->transformations = new MeshTransformations();
+    m_state->modified = new std::vector<ModifiedMesh*>();
 
     // Set initial instancing state
     m_state->instanced = instanced;
@@ -28,10 +31,11 @@ Repeater::Repeater(Shader* shader, bool instanced, float* vertices, unsigned int
 }
 
 Repeater::Repeater(Shader* shader, bool instanced)
-    : Mesh(shader), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(0)
+    : Mesh(shader), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(0), m_oldObjectCount(0)
 {
     // Init state
     m_state = new RepeaterState();
+    m_state->position = new MeshPointerPosition();
 
     // Set initial instancing state
     m_state->instanced = instanced;
@@ -60,21 +64,95 @@ void Repeater::setIndiceCount(unsigned int count)
     m_indiceCount = count;
 }
 
+bool Repeater::meshDeleted(int meshPointer)
+{
+    bool ret = false;
+    if (m_state->deleted) {
+        std::vector<int> deletedMeshes = *m_state->deleted;
+        if (std::find(deletedMeshes.begin(), deletedMeshes.end(), meshPointer) != deletedMeshes.end())
+            ret = true;
+
+        //for (int i = 0; i < deletedMeshes.size(); i++) {
+        //}
+    }
+
+    return ret;
+}
+
 // Create instanced buffer on the GPU
 void Repeater::createBuffer()
 {   
     int ptr = 0;
 
+    // Clear old mesh transformations if object count has changed
+    if (m_oldObjectCount != getObjCount()) {
+        for (int i = 0; i < m_state->modified->size(); i++) {
+            if (m_state->modified->at(i)) {
+                if (m_state->modified->at(i)->position) {
+                    delete m_state->modified->at(i)->position;
+                    m_state->modified->at(i)->position = NULL;
+                }
+                if (m_state->modified->at(i)->transformations) {
+                    delete m_state->modified->at(i)->transformations;
+                    m_state->modified->at(i)->transformations = NULL;
+                }
+                if (m_state->modified->at(i)) {
+                    delete m_state->modified->at(i);
+                    m_state->modified->at(i) = NULL;
+                }
+            }
+        }
+        m_state->modified->clear();
+    }
+    
+    // Clear old matrix data
     delete[] m_matrices;
 
+    // Get deleted mesh count
+    int deletedCount = 0;
+    if (m_state->deleted)
+        deletedCount = m_state->deleted->size();
+
+    //int meshPointer = 0;
+    bool removedLastTime = false;
     m_matrices = new glm::mat4[getObjCount()];
     for (int y = 0; y < m_state->stackCount; y++) {          // stacks  ( y-axis )
         for (int z = 0; z < m_state->rowCount; z++) {        // rows    ( z axis )
-            for (int x = 0; x < m_state->columnCount; x++) { // columns ( x axis )
-                m_matrices[ptr++] = *getMesh(x, y, z, m_state);
+            for (int x = 0; x < m_state->columnCount; x++) {  // columns ( x axis )
+                if (ptr < m_state->modified->size()) {
+                    if(m_state->modified->at(ptr)->deleted)
+                        m_matrices[ptr] = glm::mat4(0.0f);
+                    else
+                        m_matrices[ptr] = *getMesh(x, y, z, m_state, ptr);
+
+                }
+                else 
+                    m_matrices[ptr] = *getMesh(x, y, z, m_state, ptr);
+
+                // Create new modified mesh data if object count has changed
+                if (m_oldObjectCount != getObjCount()) {
+                    ModifiedMesh* modifiedMesh = new ModifiedMesh();
+                    modifiedMesh->meshPointer = ptr;
+
+                    MeshPointerPosition* meshPointerPosition = new MeshPointerPosition();
+                    modifiedMesh->position = meshPointerPosition;
+                    modifiedMesh->position->meshPointer = ptr;
+                    modifiedMesh->position->stackPosition = y;
+                    modifiedMesh->position->rowPosition = z;
+                    modifiedMesh->position->columnPosition = x;
+
+                    MeshTransformations* meshTransformations = new MeshTransformations();
+                    modifiedMesh->transformations = meshTransformations;
+
+                    m_state->modified->push_back(modifiedMesh);
+                }
+
+                ptr++;
             }
         }
     }
+
+    m_oldObjectCount = getObjCount();
 
     std::cout << "planes: " << (getObjCount()) << std::endl;
 
@@ -133,6 +211,9 @@ void Repeater::drawNonInstanced()
 void Repeater::drawInstanced()
 {
     activate();
+    int deletedCount = 0;
+    if (m_state->deleted)
+        deletedCount = m_state->deleted->size();
     glDrawElementsInstanced(GL_TRIANGLES, m_indiceCount, GL_UNSIGNED_INT, 0, getObjCount());
     deactivate();
 }

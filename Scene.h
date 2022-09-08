@@ -12,6 +12,7 @@
 #include "Cube.h"
 #include "Window.h"
 #include "Repeater.h"
+#include "RepeaterState.h"
 #include "Triangle.h"
 #include "Sphere.h"
 #include "Custom.h"
@@ -31,7 +32,9 @@ enum MeshInstanceDirections
     Left,
     Right,
     Up,
-    Down
+    Down,
+    Forward,
+    Backward
 };
 
 struct MeshObject
@@ -60,6 +63,7 @@ public:
     void addCustom();
     void updateMeshPointer(int direction);
     void resetMeshPointer();
+    void deleteInstancedMesh(int selected);
 
     std::vector<MeshObject*>* getMeshList();
 
@@ -67,6 +71,8 @@ public:
     void clean();
     int getTriangleCount();
     int getObjectCount();
+
+    int getMeshPointer() { return m_meshPointer; }
 
 private:
     void createPlane(bool instanced, Plane*& plane);

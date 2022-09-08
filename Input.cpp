@@ -53,12 +53,28 @@ void Input::processInput(double deltaTime)
         }
 
         if (glfwGetKey(m_window->get(), GLFW_KEY_UP) == GLFW_PRESS) {
-            m_scene->updateMeshPointer(MeshInstanceDirections::Up);
+            m_scene->updateMeshPointer(MeshInstanceDirections::Forward);
             changed = true;
         }
 
         if (glfwGetKey(m_window->get(), GLFW_KEY_DOWN) == GLFW_PRESS) {
+            m_scene->updateMeshPointer(MeshInstanceDirections::Backward);
+            changed = true;
+        }
+
+        if (glfwGetKey(m_window->get(), GLFW_KEY_COMMA) == GLFW_PRESS) {
+            m_scene->updateMeshPointer(MeshInstanceDirections::Up);
+            changed = true;
+        }
+
+        if (glfwGetKey(m_window->get(), GLFW_KEY_PERIOD) == GLFW_PRESS) {
             m_scene->updateMeshPointer(MeshInstanceDirections::Down);
+            changed = true;
+        }
+
+        
+        if (glfwGetKey(m_window->get(), GLFW_KEY_DELETE) == GLFW_PRESS) {
+            m_scene->deleteInstancedMesh(m_debugUi->getSelectedInstance());
             changed = true;
         }
     }

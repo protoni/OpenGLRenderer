@@ -10,17 +10,25 @@
 
 DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene),
     m_debugModeOn(false), m_wireframeModeOn(false), m_debounceCounter(0.0),
-    m_planeState(NULL), m_infoWindowOn(false), m_fps(0.0), m_deltaTime(0.0)
+    m_planeState(NULL), m_infoWindowOn(false), m_fps(0.0), m_deltaTime(0.0), m_selected(-1), m_modifiedMesh(-1), m_loadSelectedMesh(true)//,
+    //m_meshState(NULL)
 {
     init();
 
-    // Init local plane state
+    // Init local object instance state so that we can compare changed values when modifying object count
     m_planeState = new RepeaterState();
+    m_planeState->transformations = new MeshTransformations();
+
+    // Init local mesh modifying state so that we can compare changed values when modifying meshes
+    //m_meshState = new MeshTransformations();
 }
 
 DebugUi::~DebugUi()
 {
     if (m_planeState) {
+        // Free transformations struct pointer
+        delete m_planeState->transformations;
+
         delete m_planeState;
         m_planeState = NULL;
     }
@@ -43,6 +51,244 @@ void DebugUi::newWindow()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
+}
+
+void DebugUi::meshSettings(int selected)
+{
+    ImGui::BeginChild("Mesh panel", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing() + 80))); // Leave room for 1 line below us and mesh edit view
+    
+    ImGui::Text("Mesh settings");
+
+    std::vector<MeshObject*>* meshList = m_scene->getMeshList();
+    RepeaterState* state = meshList->at(selected)->mesh->getState();
+
+    // Load current values
+    if (m_scene->getMeshPointer() >= 0 && m_scene->getMeshPointer() < state->modified->size()) {
+        m_meshState.scaleX = state->modified->at(m_scene->getMeshPointer())->transformations->scaleX;
+        m_meshState.scaleY = state->modified->at(m_scene->getMeshPointer())->transformations->scaleY;
+        m_meshState.scaleZ = state->modified->at(m_scene->getMeshPointer())->transformations->scaleZ;
+
+        m_meshState.xOffset = state->modified->at(m_scene->getMeshPointer())->transformations->xOffset;
+        m_meshState.yOffset = state->modified->at(m_scene->getMeshPointer())->transformations->yOffset;
+        m_meshState.zOffset = state->modified->at(m_scene->getMeshPointer())->transformations->zOffset;
+
+        m_meshState.angle = state->modified->at(m_scene->getMeshPointer())->transformations->angle;
+        m_meshState.xRotation = state->modified->at(m_scene->getMeshPointer())->transformations->xRotation;
+        m_meshState.yRotation = state->modified->at(m_scene->getMeshPointer())->transformations->yRotation;
+        m_meshState.zRotation = state->modified->at(m_scene->getMeshPointer())->transformations->zRotation;
+    }
+    else {
+        std::cout << "modified mesh pointer error1!" << std::endl;
+    }
+
+    // Draw settings
+    if (ImGui::CollapsingHeader("Scale")) {
+        ImGui::SliderFloat("Scale X", &m_meshState.scaleX, 0.01f, 10.0f);
+        ImGui::SliderFloat("Scale Y", &m_meshState.scaleY, 0.01f, 10.0f);
+        ImGui::SliderFloat("Scale Z", &m_meshState.scaleZ, 0.01f, 10.0f);
+    }
+    
+    if (ImGui::CollapsingHeader("Offset")) {
+        ImGui::SliderFloat("Offset X", &m_meshState.xOffset, -5.0f, 5.0f);
+        ImGui::SliderFloat("Offset Y", &m_meshState.yOffset, -5.0f, 5.0f);
+        ImGui::SliderFloat("Offset Z", &m_meshState.zOffset, -5.0f, 5.0f);
+    }
+
+    if (ImGui::CollapsingHeader("Rotation")) {
+        ImGui::SliderFloat("Angle", &m_meshState.angle, 0.0f, 360.0f);
+        ImGui::SliderFloat("Rotation X", &m_meshState.xRotation, 0.001f, 1.0f);
+        ImGui::SliderFloat("Rotation Y", &m_meshState.yRotation, 0.001f, 1.0f);
+        ImGui::SliderFloat("Rotation Z", &m_meshState.zRotation, 0.001f, 1.0f);
+    }
+
+    // Check if settings changed
+    if (m_debounceCounter >= .1f) {
+        if (m_scene->getMeshPointer() >= 0 && m_scene->getMeshPointer() < state->modified->size()) {
+            if (m_meshState.scaleX != state->modified->at(m_scene->getMeshPointer())->transformations->scaleX ||
+                m_meshState.scaleY != state->modified->at(m_scene->getMeshPointer())->transformations->scaleY ||
+                m_meshState.scaleZ != state->modified->at(m_scene->getMeshPointer())->transformations->scaleZ ||
+                
+                m_meshState.xOffset != state->modified->at(m_scene->getMeshPointer())->transformations->xOffset ||
+                m_meshState.yOffset != state->modified->at(m_scene->getMeshPointer())->transformations->yOffset ||
+                m_meshState.zOffset != state->modified->at(m_scene->getMeshPointer())->transformations->zOffset ||
+
+                m_meshState.angle != state->modified->at(m_scene->getMeshPointer())->transformations->angle ||
+                m_meshState.xRotation != state->modified->at(m_scene->getMeshPointer())->transformations->xRotation ||
+                m_meshState.yRotation != state->modified->at(m_scene->getMeshPointer())->transformations->yRotation ||
+                m_meshState.zRotation != state->modified->at(m_scene->getMeshPointer())->transformations->zRotation
+                ) {
+
+                state->modified->at(m_scene->getMeshPointer())->transformations->scaleX = m_meshState.scaleX;
+                state->modified->at(m_scene->getMeshPointer())->transformations->scaleY = m_meshState.scaleY;
+                state->modified->at(m_scene->getMeshPointer())->transformations->scaleZ = m_meshState.scaleZ;
+
+                state->modified->at(m_scene->getMeshPointer())->transformations->xOffset = m_meshState.xOffset;
+                state->modified->at(m_scene->getMeshPointer())->transformations->yOffset = m_meshState.yOffset;
+                state->modified->at(m_scene->getMeshPointer())->transformations->zOffset = m_meshState.zOffset;
+
+                state->modified->at(m_scene->getMeshPointer())->transformations->angle = m_meshState.angle;
+                state->modified->at(m_scene->getMeshPointer())->transformations->xRotation = m_meshState.xRotation;
+                state->modified->at(m_scene->getMeshPointer())->transformations->yRotation = m_meshState.yRotation;
+                state->modified->at(m_scene->getMeshPointer())->transformations->zRotation = m_meshState.zRotation;
+
+                std::cout << "Changed!" << std::endl;
+                m_scene->updateObjectMesh(selected);
+
+                m_debounceCounter = 0;
+            }
+        }
+        else {
+            std::cout << "modified mesh pointer error2!" << std::endl;
+        }
+    }
+
+    ImGui::EndChild();
+}
+
+bool DebugUi::objectSettings(int selected)
+{
+    std::vector<MeshObject*>* meshList = m_scene->getMeshList();
+
+    // Reset mesh pointer
+    if (selected < meshList->size()) {
+        if (!meshList->at(selected)->selected)
+            m_scene->resetMeshPointer();
+    }
+
+    // Unselect all first
+    for (int i = 0; i < meshList->size(); i++) {
+        meshList->at(i)->selected = false;
+    }
+
+    
+    ImGui::BeginChild("item view", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing() + 80))); // Leave room for 1 line below us and mesh edit view
+
+    if (meshList->size() > selected) {
+        ImGui::Text(meshList->at(selected)->name.c_str(), selected);
+
+        if (ImGui::Button("Remove Object", ImVec2(100, 0))) {
+            m_scene->deleteObject(selected);
+
+            ImGui::EndChild();
+            return false;
+        }
+
+        ImGui::Separator();
+
+        // Set selected
+        meshList->at(selected)->selected = true;
+
+        // Load current values
+        RepeaterState* state = meshList->at(selected)->mesh->getState();
+        m_planeState->instanced = state->instanced;
+        m_planeState->columnCount = state->columnCount;
+        m_planeState->rowCount = state->rowCount;
+        m_planeState->stackCount = state->stackCount;
+        m_planeState->transformations->scaleX = state->transformations->scaleX;
+        m_planeState->transformations->scaleY = state->transformations->scaleY;
+        m_planeState->transformations->scaleZ = state->transformations->scaleZ;
+        m_planeState->transformations->paddingX = state->transformations->paddingX;
+        m_planeState->transformations->paddingY = state->transformations->paddingY;
+        m_planeState->transformations->paddingZ = state->transformations->paddingZ;
+        m_planeState->transformations->xOffset = state->transformations->xOffset;
+        m_planeState->transformations->yOffset = state->transformations->yOffset;
+        m_planeState->transformations->zOffset = state->transformations->zOffset;
+
+        m_planeState->transformations->angle = state->transformations->angle;
+        m_planeState->transformations->xRotation = state->transformations->xRotation;
+        m_planeState->transformations->yRotation = state->transformations->yRotation;
+        m_planeState->transformations->zRotation = state->transformations->zRotation;
+
+        // Set current values and draw settings
+        ImGui::Checkbox("Instanced", &m_planeState->instanced);
+        if (ImGui::CollapsingHeader("Repeater")) {
+            ImGui::SliderInt("Columns", &m_planeState->columnCount, 1, 100);
+            ImGui::SliderInt("Rows", &m_planeState->rowCount, 1, 100);
+            ImGui::SliderInt("Stacks", &m_planeState->stackCount, 1, 100);
+        }
+
+        //ImGui::Separator();
+        if (ImGui::CollapsingHeader("Scale")) {
+            ImGui::SliderFloat("Scale X", &m_planeState->transformations->scaleX, 0.01f, 10.0f);
+            ImGui::SliderFloat("Scale Y", &m_planeState->transformations->scaleY, 0.01f, 10.0f);
+            ImGui::SliderFloat("Scale Z", &m_planeState->transformations->scaleZ, 0.01f, 10.0f);
+        }
+
+        //ImGui::Separator();
+        if (ImGui::CollapsingHeader("Padding")) {
+            ImGui::SliderFloat("Padding X", &m_planeState->transformations->paddingX, 0.0f, 10.0f);
+            ImGui::SliderFloat("Padding Y", &m_planeState->transformations->paddingY, 0.0f, 10.0f);
+            ImGui::SliderFloat("Padding Z", &m_planeState->transformations->paddingZ, 0.0f, 10.0f);
+        }
+
+        //ImGui::Separator();
+        if (ImGui::CollapsingHeader("Offset")) {
+            ImGui::SliderFloat("X offset", &m_planeState->transformations->xOffset, -5.0f, 5.0f);
+            ImGui::SliderFloat("Y offset", &m_planeState->transformations->yOffset, -5.0f, 5.0f);
+            ImGui::SliderFloat("Z offset", &m_planeState->transformations->zOffset, -5.0f, 5.0f);
+        }
+
+        //ImGui::Separator();
+        if (ImGui::CollapsingHeader("Rotation")) {
+            ImGui::SliderFloat("Rotation angle", &m_planeState->transformations->angle, 0.0f, 360.0f);
+            ImGui::SliderFloat("X Rotation", &m_planeState->transformations->xRotation, 0.001f, 1.0f);
+            ImGui::SliderFloat("Y Rotation", &m_planeState->transformations->yRotation, 0.001f, 1.0f);
+            ImGui::SliderFloat("Z Rotation", &m_planeState->transformations->zRotation, 0.001f, 1.0f);
+        }
+
+        // Check if settings changed
+        if (m_debounceCounter >= .1f) {
+            if (m_planeState->instanced != state->instanced) {
+                state->instanced = m_planeState->instanced;
+                m_scene->updateMeshShader(m_planeState->instanced, selected);
+                m_debounceCounter = 0;
+            }
+
+            if (m_planeState->columnCount != state->columnCount ||
+                m_planeState->rowCount != state->rowCount ||
+                m_planeState->stackCount != state->stackCount ||
+                m_planeState->transformations->scaleX != state->transformations->scaleX ||
+                m_planeState->transformations->scaleY != state->transformations->scaleY ||
+                m_planeState->transformations->scaleZ != state->transformations->scaleZ ||
+                m_planeState->transformations->paddingX != state->transformations->paddingX ||
+                m_planeState->transformations->paddingY != state->transformations->paddingY ||
+                m_planeState->transformations->paddingZ != state->transformations->paddingZ ||
+                m_planeState->transformations->xOffset != state->transformations->xOffset ||
+                m_planeState->transformations->yOffset != state->transformations->yOffset ||
+                m_planeState->transformations->zOffset != state->transformations->zOffset ||
+                m_planeState->transformations->angle != state->transformations->angle ||
+                m_planeState->transformations->xRotation != state->transformations->xRotation ||
+                m_planeState->transformations->yRotation != state->transformations->yRotation ||
+                m_planeState->transformations->zRotation != state->transformations->zRotation
+                ) {
+                state->columnCount = m_planeState->columnCount;
+                state->rowCount = m_planeState->rowCount;
+                state->stackCount = m_planeState->stackCount;
+                state->transformations->scaleX = m_planeState->transformations->scaleX;
+                state->transformations->scaleY = m_planeState->transformations->scaleY;
+                state->transformations->scaleZ = m_planeState->transformations->scaleZ;
+                state->transformations->paddingX = m_planeState->transformations->paddingX;
+                state->transformations->paddingY = m_planeState->transformations->paddingY;
+                state->transformations->paddingZ = m_planeState->transformations->paddingZ;
+                state->transformations->xOffset = m_planeState->transformations->xOffset;
+                state->transformations->yOffset = m_planeState->transformations->yOffset;
+                state->transformations->zOffset = m_planeState->transformations->zOffset;
+                state->transformations->angle = m_planeState->transformations->angle;
+                state->transformations->xRotation = m_planeState->transformations->xRotation;
+                state->transformations->yRotation = m_planeState->transformations->yRotation;
+                state->transformations->zRotation = m_planeState->transformations->zRotation;
+
+                std::cout << "Changed!" << std::endl;
+                m_scene->updateObjectMesh(selected);
+
+                m_debounceCounter = 0;
+            }
+        }
+    }
+
+    ImGui::EndChild();
+
+    return true;
 }
 
 void DebugUi::objectLayout(bool* p_open)
@@ -72,7 +318,7 @@ void DebugUi::objectLayout(bool* p_open)
         if (ImGui::Button("Add Custom", ImVec2(100, 0)))
             m_scene->addCustom();
 
-        // Left
+        // Mesh object selector
         static int selected = 0;
         {
             std::vector<MeshObject*> meshList = *m_scene->getMeshList();
@@ -86,153 +332,59 @@ void DebugUi::objectLayout(bool* p_open)
         }
         ImGui::SameLine();
 
-        // Right
+        // Update selected object variable
+        m_selected = selected;
+
+        ImGui::BeginGroup();
+
+        // Begin tab group
+        ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+        if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
         {
-            std::vector<MeshObject*>* meshList = m_scene->getMeshList();
 
-            // Reset mesh pointer
-            if (selected < meshList->size()) {
-                if (!meshList->at(selected)->selected)
-                    m_scene->resetMeshPointer();
-            }
-
-            // Unselect all first
-            for (int i = 0; i < meshList->size(); i++) {
-                meshList->at(i)->selected = false;
-            }
-
-            ImGui::BeginGroup();
-            ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
-
-            if (meshList->size() > selected) {
-                ImGui::Text(meshList->at(selected)->name.c_str(), selected);
-
-                if (ImGui::Button("Remove Object", ImVec2(100, 0))) {
-                    m_scene->deleteObject(selected);
-
-                    ImGui::EndChild();
+            // Repeater settings
+            if (ImGui::BeginTabItem("Object")) {
+                if (!objectSettings(selected)) {
+                    ImGui::EndTabItem();
+                    ImGui::EndTabBar();
                     ImGui::EndGroup();
                     ImGui::End();
                     return;
                 }
+                ImGui::EndTabItem();
+            }
             
-                ImGui::Separator();
-                
-                // Set selected
-                meshList->at(selected)->selected = true;
+            // Mesh settings
+            if (ImGui::BeginTabItem("Mesh")) {
+                meshSettings(selected);
+                ImGui::EndTabItem();
+            }
 
-                // Load current values
-                RepeaterState* state = meshList->at(selected)->mesh->getState();
-                m_planeState->instanced = state->instanced;
-                m_planeState->columnCount = state->columnCount;
-                m_planeState->rowCount = state->rowCount;
-                m_planeState->stackCount = state->stackCount;
-                m_planeState->scaleX = state->scaleX;
-                m_planeState->scaleY = state->scaleY;
-                m_planeState->scaleZ = state->scaleZ;
-                m_planeState->paddingX = state->paddingX;
-                m_planeState->paddingY = state->paddingY;
-                m_planeState->paddingZ = state->paddingZ;
-                m_planeState->xOffset = state->xOffset;
-                m_planeState->yOffset = state->yOffset;
-                m_planeState->zOffset = state->zOffset;
+            // Mesh position info inside an instance
+            {
+                std::vector<MeshObject*>* meshList = m_scene->getMeshList();
+                if (meshList->size() > selected) {
+                    ImGui::BeginChild("Rightmost pane", ImVec2(0, 0), true);
 
-                m_planeState->angle = state->angle;
-                m_planeState->xRotation = state->xRotation;
-                m_planeState->yRotation = state->yRotation;
-                m_planeState->zRotation = state->zRotation;
-                
-                // Set current values and draw settings
-                ImGui::Checkbox("Instanced", &m_planeState->instanced);
-                if (ImGui::CollapsingHeader("Repeater")) {
-                    ImGui::SliderInt("Columns", &m_planeState->columnCount, 1, 100);
-                    ImGui::SliderInt("Rows", &m_planeState->rowCount, 1, 100);
-                    ImGui::SliderInt("Stacks", &m_planeState->stackCount, 1, 100);
-                }
-
-                //ImGui::Separator();
-                if (ImGui::CollapsingHeader("Scale")) {
-                    ImGui::SliderFloat("Scale X", &m_planeState->scaleX, 0.01f, 10.0f);
-                    ImGui::SliderFloat("Scale Y", &m_planeState->scaleY, 0.01f, 10.0f);
-                    ImGui::SliderFloat("Scale Z", &m_planeState->scaleZ, 0.01f, 10.0f);
-                }
-
-                //ImGui::Separator();
-                if (ImGui::CollapsingHeader("Padding")) {
-                    ImGui::SliderFloat("Padding X", &m_planeState->paddingX, 0.0f, 10.0f);
-                    ImGui::SliderFloat("Padding Y", &m_planeState->paddingY, 0.0f, 10.0f);
-                    ImGui::SliderFloat("Padding Z", &m_planeState->paddingZ, 0.0f, 10.0f);
-                }
-
-                //ImGui::Separator();
-                if (ImGui::CollapsingHeader("Offset")) {
-                    ImGui::SliderFloat("X offset", &m_planeState->xOffset, -5.0f, 5.0f);
-                    ImGui::SliderFloat("Y offset", &m_planeState->yOffset, -5.0f, 5.0f);
-                    ImGui::SliderFloat("Z offset", &m_planeState->zOffset, -5.0f, 5.0f);
-                }
-                
-                //ImGui::Separator();
-                if (ImGui::CollapsingHeader("Rotation")) {
-                    ImGui::SliderFloat("Rotation angle", &m_planeState->angle, 0.0f, 360.0f);
-                    ImGui::SliderFloat("X Rotation", &m_planeState->xRotation, 0.001f, 1.0f);
-                    ImGui::SliderFloat("Y Rotation", &m_planeState->yRotation, 0.001f, 1.0f);
-                    ImGui::SliderFloat("Z Rotation", &m_planeState->zRotation, 0.001f, 1.0f);
-                }
-
-                // Check if settings changed
-                if (m_debounceCounter >= .1f) {
-                    if (m_planeState->instanced != state->instanced) {
-                        state->instanced = m_planeState->instanced;
-                        m_scene->updateMeshShader(m_planeState->instanced, selected);
-                        m_debounceCounter = 0;
+                    if (ImGui::Button("Remove Mesh", ImVec2(100, 0))) {
+                        m_scene->deleteInstancedMesh(selected);
                     }
+                    ImGui::SameLine();
 
-                    if (m_planeState->columnCount != state->columnCount ||
-                        m_planeState->rowCount != state->rowCount ||
-                        m_planeState->stackCount != state->stackCount ||
-                        m_planeState->scaleX != state->scaleX ||
-                        m_planeState->scaleY != state->scaleY ||
-                        m_planeState->scaleZ != state->scaleZ ||
-                        m_planeState->paddingX != state->paddingX ||
-                        m_planeState->paddingY != state->paddingY ||
-                        m_planeState->paddingZ != state->paddingZ ||
-                        m_planeState->xOffset != state->xOffset ||
-                        m_planeState->yOffset != state->yOffset ||
-                        m_planeState->zOffset != state->zOffset ||
-                        m_planeState->angle != state->angle ||
-                        m_planeState->xRotation != state->xRotation ||
-                        m_planeState->yRotation != state->yRotation ||
-                        m_planeState->zRotation != state->zRotation
-                        ) {
-                        state->columnCount = m_planeState->columnCount;
-                        state->rowCount = m_planeState->rowCount;
-                        state->stackCount = m_planeState->stackCount;
-                        state->scaleX = m_planeState->scaleX;
-                        state->scaleY = m_planeState->scaleY;
-                        state->scaleZ = m_planeState->scaleZ;
-                        state->paddingX = m_planeState->paddingX;
-                        state->paddingY = m_planeState->paddingY;
-                        state->paddingZ = m_planeState->paddingZ;
-                        state->xOffset = m_planeState->xOffset;
-                        state->yOffset = m_planeState->yOffset;
-                        state->zOffset = m_planeState->zOffset;
-                        state->angle = m_planeState->angle;
-                        state->xRotation = m_planeState->xRotation;
-                        state->yRotation = m_planeState->yRotation;
-                        state->zRotation = m_planeState->zRotation;
+                    RepeaterState* state = meshList->at(selected)->mesh->getState();
+                    ImGui::Text("Mesh pointer: %d", state->position->meshPointer);
+                    ImGui::Text("Stack position:  %d", state->position->stackPosition);
+                    ImGui::Text("Row position:    %d", state->position->rowPosition);
+                    ImGui::Text("Column position: %d", state->position->columnPosition);
 
-                        std::cout << "Changed!" << std::endl;
-                        m_scene->updateObjectMesh(selected);
-
-                        m_debounceCounter = 0;
-                    }
+                    ImGui::EndChild();
                 }
             }
 
-            ImGui::EndChild();
-            ImGui::EndGroup();
+            ImGui::EndTabBar();
         }
     }
+    ImGui::EndGroup();
     ImGui::End();
 }
 
