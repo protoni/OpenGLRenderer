@@ -142,20 +142,24 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int
 
     glm::mat4 model = glm::mat4(1.0f);
 
-    //if (state->modified) {
-    //    if (state->modified->size() > 0) {
-    //        for (int i = 0; i < state->modified->size(); i++) {
-    //
-    //        }
-    //    }
-    //}
-
     // Set positions
     if (ptr < state->modified->size()) {
         model = glm::translate(model, glm::vec3(
-            ((0.5f * state->transformations->scaleX) * xPos) + (state->transformations->paddingX * xPos) + (state->transformations->xOffset + state->modified->at(ptr)->transformations->xOffset),
-            ((0.5f * state->transformations->scaleY) * yPos) + (state->transformations->paddingY * yPos) + (state->transformations->yOffset + state->modified->at(ptr)->transformations->yOffset),
-            ((0.5f * state->transformations->scaleZ) * zPos) + (state->transformations->paddingZ * zPos) + (state->transformations->zOffset + state->modified->at(ptr)->transformations->zOffset))
+            (
+                ((0.5f * state->transformations->scaleX) * xPos) +
+                (state->transformations->paddingX * xPos) +
+                (state->transformations->xOffset + state->modified->at(ptr)->transformations->xOffset)
+            ),
+            (
+                ((0.5f * state->transformations->scaleY) * yPos) +
+                (state->transformations->paddingY * yPos) +
+                (state->transformations->yOffset + state->modified->at(ptr)->transformations->yOffset)
+            ),
+            (
+                ((0.5f * state->transformations->scaleZ) * zPos) +
+                (state->transformations->paddingZ * zPos) +
+                (state->transformations->zOffset + state->modified->at(ptr)->transformations->zOffset)
+            ))
         );
         std::cout << "state->modified->at(ptr)->transformations->scaleX" << state->modified->at(ptr)->transformations->scaleX << std::endl;
     }
@@ -169,17 +173,42 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int
     
 
     // Set rotation
-    if (state->transformations->scaleX != 0 && state->transformations->scaleY != 0 && state->transformations->scaleZ != 0 &&
-        state->transformations->xRotation != 0 && state->transformations->yRotation != 0 && state->transformations->zRotation != 0) {
-        model = glm::rotate(
-            model,
-            glm::radians(state->transformations->angle),
-            glm::vec3(
-                state->transformations->xRotation,
-                state->transformations->yRotation,
-                state->transformations->zRotation
-            )
-        );
+    if (ptr < state->modified->size()) {
+        if (
+            state->transformations->xRotation != 0 &&
+            state->transformations->yRotation != 0 &&
+            state->transformations->zRotation != 0 &&
+            state->modified->at(ptr)->transformations->xRotation != 0 &&
+            state->modified->at(ptr)->transformations->yRotation != 0 &&
+            state->modified->at(ptr)->transformations->zRotation != 0
+            ) {
+            model = glm::rotate(
+                model,
+                glm::radians(state->transformations->angle + state->modified->at(ptr)->transformations->angle),
+                glm::vec3(
+                    state->transformations->xRotation + state->modified->at(ptr)->transformations->xRotation,
+                    state->transformations->yRotation + state->modified->at(ptr)->transformations->yRotation,
+                    state->transformations->zRotation + state->modified->at(ptr)->transformations->zRotation
+                )
+            );
+        }
+    }
+    else {
+        if (
+            state->transformations->xRotation != 0 &&
+            state->transformations->yRotation != 0 &&
+            state->transformations->zRotation != 0
+            ) {
+            model = glm::rotate(
+                model,
+                glm::radians(state->transformations->angle),
+                glm::vec3(
+                    state->transformations->xRotation,
+                    state->transformations->yRotation,
+                    state->transformations->zRotation
+                )
+            );
+        }
     }
 
     // Set scaling
