@@ -119,12 +119,15 @@ void Repeater::createBuffer()
     for (int y = 0; y < m_state->stackCount; y++) {          // stacks  ( y-axis )
         for (int z = 0; z < m_state->rowCount; z++) {        // rows    ( z axis )
             for (int x = 0; x < m_state->columnCount; x++) {  // columns ( x axis )
-                if (!meshDeleted(ptr)) {
+                if (ptr < m_state->modified->size()) {
+                    if(m_state->modified->at(ptr)->deleted)
+                        m_matrices[ptr] = glm::mat4(0.0f);
+                    else
+                        m_matrices[ptr] = *getMesh(x, y, z, m_state, ptr);
+
+                }
+                else 
                     m_matrices[ptr] = *getMesh(x, y, z, m_state, ptr);
-                }
-                else {
-                    m_matrices[ptr] = glm::mat4(0.0f);
-                }
 
                 // Create new modified mesh data if object count has changed
                 if (m_oldObjectCount != getObjCount()) {

@@ -61,12 +61,20 @@ struct MeshTransformations
 struct ModifiedMesh
 {
     int meshPointer;
+
+    // Modified transformations of this mesh
     MeshTransformations* transformations;
+
+    // What is the position of this mesh inside an object instance
     MeshPointerPosition* position;
+    
+    // Has this mesh been deleted
+    bool deleted;
 
     ModifiedMesh()
         : meshPointer(0)
         , transformations(nullptr)
+        , deleted(false)
         , position(nullptr) {}
 };
 

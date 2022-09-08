@@ -161,7 +161,6 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int
                 (state->transformations->zOffset + state->modified->at(ptr)->transformations->zOffset)
             ))
         );
-        std::cout << "state->modified->at(ptr)->transformations->scaleX" << state->modified->at(ptr)->transformations->scaleX << std::endl;
     }
     else {
         model = glm::translate(model, glm::vec3(

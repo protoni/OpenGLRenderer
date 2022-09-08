@@ -218,15 +218,12 @@ void Scene::deleteInstancedMesh(int selected)
     std::cout << "selected idx: " << getSelectedMeshIndex() << std::endl;
     if (getSelectedMeshIndex() < m_meshList->size()) {
         RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
-        if (state->deleted == nullptr)
-            state->deleted = new std::vector<int>;
-
-        if (std::find(state->deleted->begin(), state->deleted->end(), m_meshPointer) == state->deleted->end()) {
-            state->deleted->push_back(m_meshPointer);
+        if (m_meshPointer >= 0 && m_meshPointer < state->modified->size()) {
+            state->modified->at(m_meshPointer)->deleted = true;
             m_meshList->at(selected)->mesh->update();
-        }
 
-        std::cout << "deleted size: " << state->deleted->size() << std::endl;
+            std::cout << "deleted mesh pointer: " << m_meshPointer << std::endl;
+        }
     }
 }
 
