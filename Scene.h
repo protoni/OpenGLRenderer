@@ -1,7 +1,8 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include <glad/glad.h>
+//#include <glad/glad.h>
+#include <glad_opengl4_3/glad.h>
 #include <GLFW/glfw3.h>
 
 #include "Shader.h"
@@ -61,7 +62,7 @@ public:
     void addTriangle();
     void addSphere();
     void addCustom();
-    void updateMeshPointer(int direction);
+    void updateMeshPointer(int direction, bool multiselect = false);
     void resetMeshPointer();
     void deleteInstancedMesh(int selected);
 
@@ -81,6 +82,7 @@ private:
     void dumpMemory();
     void draw(int idx, glm::mat4& projection, glm::mat4& view);
     int getSelectedMeshIndex();
+    void highlightSelectedMeshes();
 
     Camera* m_camera;
     Shader* m_ourShader;
@@ -105,6 +107,12 @@ private:
     bool m_instanced_cube;
 
     std::vector<MeshObject*>* m_meshList;
+    std::vector<int> m_multiSelectVec;
+
+    int m_oldMultiSelectVecSize = 0;
+    unsigned int m_oldMeshPointer = 0;
+
+    GLuint m_ssbo;
 };
 
 #endif // SCENE_H

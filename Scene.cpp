@@ -1,4 +1,4 @@
-#include "Scene.h"
+﻿#include "Scene.h"
 
 #include "stb_image.h"
 
@@ -123,7 +123,7 @@ void Scene::addCustom()
     m_meshList->push_back(object);
 }
 
-void Scene::updateMeshPointer(int direction)
+void Scene::updateMeshPointer(int direction, bool multiselect)
 {
     RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
 
@@ -197,15 +197,45 @@ void Scene::updateMeshPointer(int direction)
     }
 
     else if (direction == MeshInstanceDirections::Down) {
-        //if (rowPosition > 0)
-            //m_meshPointer -= state->stackCount;
         m_meshPointer -= state->columnCount * state->rowCount;
     }
 
     if (m_meshPointer >= state->columnCount * state->rowCount * state->stackCount)
         m_meshPointer = (state->columnCount * state->rowCount * state->stackCount) - 1;
 
-    std::cout << "mesh pointer: " << m_meshPointer << std::endl;
+    if (multiselect) {
+        if(std::find(m_multiSelectVec.begin(), m_multiSelectVec.end(), m_meshPointer) == m_multiSelectVec.end())
+            m_multiSelectVec.push_back(m_meshPointer);
+    }
+    else {
+
+        // Clear all the object's fragment shader colors before clearing up the mesh pointer vector, because
+        // otherwise fragment shader will keep the old mesh pointer values in it's SSBO for some reason.
+        m_multiSelectVec.clear();
+        for (int i = 0; i < getObjectCount(); i++) {
+            m_multiSelectVec.push_back(m_meshPointer);
+        }
+
+        // Send the actual cleared mesh pointer values to the fragment shader as a SSBO
+        if(m_multiSelectVec.size() > 0)
+            highlightSelectedMeshes();
+
+        // Clear mesh pointer vector and add only the current position to it
+        m_multiSelectVec.clear();
+        m_multiSelectVec.push_back(m_meshPointer);
+    }
+
+
+    if (m_multiSelectVec.size() > 0) {
+        std::cout << "mesh pointers: ";
+        for (int i = 0; i < m_multiSelectVec.size(); i++)
+            std::cout << m_multiSelectVec.at(i) << ", ";
+
+        std::cout << std::endl;
+    }
+    else {
+        std::cout << "mesh pointer: " << m_meshPointer << std::endl;
+    }
 }
 
 void Scene::resetMeshPointer()
@@ -215,15 +245,29 @@ void Scene::resetMeshPointer()
 
 void Scene::deleteInstancedMesh(int selected)
 {
+    bool deleted = false;
     std::cout << "selected idx: " << getSelectedMeshIndex() << std::endl;
     if (getSelectedMeshIndex() < m_meshList->size()) {
         RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
+
+        // Delete single mesh
         if (m_meshPointer >= 0 && m_meshPointer < state->modified->size()) {
             state->modified->at(m_meshPointer)->deleted = true;
-            m_meshList->at(selected)->mesh->update();
-
+            deleted = true;
             std::cout << "deleted mesh pointer: " << m_meshPointer << std::endl;
         }
+
+        // Delete multi-selected meshes
+        for (int i = 0; i < m_multiSelectVec.size(); i++) {
+            if (m_multiSelectVec.at(i) >= 0 && m_multiSelectVec.at(i) < state->modified->size()) {
+                state->modified->at(m_multiSelectVec.at(i))->deleted = true;
+                deleted = true;
+                std::cout << "deleted mesh pointer: " << m_multiSelectVec.at(i) << std::endl;
+            }
+        }
+
+        if(deleted)
+            m_meshList->at(selected)->mesh->update();
     }
 }
 
@@ -261,10 +305,6 @@ int Scene::getTriangleCount()
     
     for (int i = 0; i < m_meshList->size(); i++) {
         count += m_meshList->at(i)->mesh->getObjCount() * m_meshList->at(i)->mesh->getIndexCount();
-        //if (m_meshList->at(i)->name.find("Cube") != std::string::npos)
-        //    count += m_meshList->at(i)->mesh->getObjCount() * ( 6 * 6); // 6 plane indices * 6 faces of a cube
-        //else
-        //    count += m_meshList->at(i)->mesh->getObjCount() * 6; // 6 indices of a plane
     }
 
     return count;
@@ -285,20 +325,43 @@ int Scene::getObjectCount()
     return count;
 }
 
+void Scene::highlightSelectedMeshes()
+{
+
+    if (m_ssbo)
+        glDeleteBuffers(1, &m_ssbo);
+    
+    glGenBuffers(1, &m_ssbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_ssbo);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(m_multiSelectVec) * m_multiSelectVec.size(), &m_multiSelectVec[0], GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, m_ssbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // unbind
+    m_oldMultiSelectVecSize = m_multiSelectVec.size();
+    m_oldMeshPointer = m_meshPointer;
+}
+
 void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 {
+    
     RepeaterState* state = m_meshList->at(idx)->mesh->getState();
     if (state->instanced) {
         m_ourShaderInstanced->use();
         m_ourShaderInstanced->setMat4("projection", projection);
         m_ourShaderInstanced->setMat4("view", view);
         m_ourShaderInstanced->setInt("selectedMesh", m_meshPointer);
-        m_ourShaderInstanced->setInt("selectedInstance", m_meshList->at(idx)->selected);
+        //m_ourShaderInstanced->setInt("selectedInstance", m_meshList->at(idx)->selected);
         //if (m_meshList->at(i)->selected) {
         //    m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
         //}
         //else
         //    m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
+
+        if (m_multiSelectVec.size() > 0) {
+            if (m_multiSelectVec.size() != m_oldMultiSelectVecSize || m_oldMeshPointer != m_meshPointer) {
+                highlightSelectedMeshes();
+            }
+        
+        }
     }
     else {
         m_ourShader->use();
@@ -388,9 +451,6 @@ void Scene::deleteObject(int idx)
 
         delete state->modified;
     }
-
-    
-
 
     // Clear the mesh
     delete m_meshList->at(idx)->mesh;
