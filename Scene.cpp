@@ -369,12 +369,12 @@ int Scene::getObjectCount()
 
 void Scene::multiPick()
 {
-    if (std::find(m_multiSelectVec.begin(), m_multiSelectVec.end(), m_meshPointer) == m_multiSelectVec.end()) {
-        m_multiSelectVec.push_back(m_meshPointer);
-        std::cout << "add to multi pick vec!" << std::endl;
+    if (m_meshPointer > 0) {
+        if (std::find(m_multiSelectVec.begin(), m_multiSelectVec.end(), m_meshPointer) == m_multiSelectVec.end()) {
+            m_multiSelectVec.push_back(m_meshPointer);
+            std::cout << "add to multi pick vec!" << std::endl;
+        }
     }
-
-    //updateMeshPointer(-1);
 }
 
 void Scene::highlightSelectedMeshes()
