@@ -12,7 +12,7 @@ Repeater::Repeater(Shader* shader, bool instanced, float* vertices, unsigned int
         indices,
         verticeCount,
         indiceCount
-    ), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(indiceCount), m_deleteRemoved(0), m_oldObjectCount(0)
+    ), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(indiceCount), m_deleteRemoved(0), m_oldObjectCount(0), m_selected(NULL)
 {
     std::cout << "vertex count: " << verticeCount << ", index count: " << indiceCount << std::endl;
 
@@ -31,7 +31,7 @@ Repeater::Repeater(Shader* shader, bool instanced, float* vertices, unsigned int
 }
 
 Repeater::Repeater(Shader* shader, bool instanced)
-    : Mesh(shader), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(0), m_oldObjectCount(0)
+    : Mesh(shader), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(0), m_oldObjectCount(0), m_selected(NULL)
 {
     // Init state
     m_state = new RepeaterState();
@@ -71,9 +71,6 @@ bool Repeater::meshDeleted(int meshPointer)
         std::vector<int> deletedMeshes = *m_state->deleted;
         if (std::find(deletedMeshes.begin(), deletedMeshes.end(), meshPointer) != deletedMeshes.end())
             ret = true;
-
-        //for (int i = 0; i < deletedMeshes.size(); i++) {
-        //}
     }
 
     return ret;
@@ -116,18 +113,19 @@ void Repeater::createBuffer()
     //int meshPointer = 0;
     bool removedLastTime = false;
     m_matrices = new glm::mat4[getObjCount()];
+
     for (int y = 0; y < m_state->stackCount; y++) {          // stacks  ( y-axis )
         for (int z = 0; z < m_state->rowCount; z++) {        // rows    ( z axis )
             for (int x = 0; x < m_state->columnCount; x++) {  // columns ( x axis )
                 if (ptr < m_state->modified->size()) {
-                    if(m_state->modified->at(ptr)->deleted)
+                    if (m_state->modified->at(ptr)->deleted) 
                         m_matrices[ptr] = glm::mat4(0.0f);
-                    else
+                    else 
                         m_matrices[ptr] = *getMesh(x, y, z, m_state, ptr);
-
                 }
                 else 
                     m_matrices[ptr] = *getMesh(x, y, z, m_state, ptr);
+                
 
                 // Create new modified mesh data if object count has changed
                 if (m_oldObjectCount != getObjCount()) {
@@ -159,6 +157,7 @@ void Repeater::createBuffer()
     glGenBuffers(1, &m_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
     glBufferData(GL_ARRAY_BUFFER, (getObjCount()) * sizeof(glm::mat4), &m_matrices[0], GL_STATIC_DRAW);
+    
 
     activate();
     glEnableVertexAttribArray(2);

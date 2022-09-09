@@ -2,24 +2,28 @@
 
 
 Todo:
+- Design coordinate system
+  - World coordinates and object instance coordinates
+- Translate screen coordinates to world coordinates
+- Save object's x, y, and z positions inside mesh's modified struct
 - Select objects by clicking them instead of clicking the list item
-- Select multiple objects at once
 - Select multiple objects at once and combine them to the same instance
 - Interactable move, scale and rotation arrow for objects
 - Change mesh colors from the debug UI
 - Add adjustable fps limit to debug UI settings
 - Add debugUi intervals to debug UI
+- Add separate colos for highlighted current mesh and selected meshes
 
 
 Bugs:
 - When selecting an object, highlight color doesn't show up
   - Selected object needs to be moved to the end of the meshlist vector show that it will be drawn last
-
+- Object mesh pointer is a bit buggy. Sometimes doesn't move up, goes beyond the object bounds.
 
 
 Done:
 - Draw FPS and other info to the screen
-
+- Select multiple objects at once
 
 Fixed bugs:
 - Moving objects in Z axis doesn't work

@@ -19,8 +19,8 @@ void Input::processInput(double deltaTime)
     m_debounceCounter += deltaTime;
 
     // Handle exit input
-    if (glfwGetKey(m_window->get(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(m_window->get(), true);
+    //if (glfwGetKey(m_window->get(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    //    glfwSetWindowShouldClose(m_window->get(), true);
 
     // Handle camera movement input
     const float cameraSpeed = 2.5f * (float)deltaTime;
@@ -41,41 +41,72 @@ void Input::processInput(double deltaTime)
     
     // Limit actions to 50ms
     if (m_debounceCounter >= .05) {
+        int direction = -1;
+        bool multiselect = false;
+
         // Move mesh pointer
         if (glfwGetKey(m_window->get(), GLFW_KEY_LEFT) == GLFW_PRESS) {
-            m_scene->updateMeshPointer(MeshInstanceDirections::Left);
+            //m_scene->updateMeshPointer(MeshInstanceDirections::Left);
+            direction = MeshInstanceDirections::Left;
             changed = true;
         }
 
         if (glfwGetKey(m_window->get(), GLFW_KEY_RIGHT) == GLFW_PRESS) {
-            m_scene->updateMeshPointer(MeshInstanceDirections::Right);
+            //m_scene->updateMeshPointer(MeshInstanceDirections::Right);
+            direction = MeshInstanceDirections::Right;
             changed = true;
         }
 
         if (glfwGetKey(m_window->get(), GLFW_KEY_UP) == GLFW_PRESS) {
-            m_scene->updateMeshPointer(MeshInstanceDirections::Forward);
+            //m_scene->updateMeshPointer(MeshInstanceDirections::Forward);
+            direction = MeshInstanceDirections::Forward;
             changed = true;
         }
 
         if (glfwGetKey(m_window->get(), GLFW_KEY_DOWN) == GLFW_PRESS) {
-            m_scene->updateMeshPointer(MeshInstanceDirections::Backward);
+            //m_scene->updateMeshPointer(MeshInstanceDirections::Backward);
+            direction = MeshInstanceDirections::Backward;
             changed = true;
         }
 
         if (glfwGetKey(m_window->get(), GLFW_KEY_COMMA) == GLFW_PRESS) {
-            m_scene->updateMeshPointer(MeshInstanceDirections::Up);
+            //m_scene->updateMeshPointer(MeshInstanceDirections::Up);
+            direction = MeshInstanceDirections::Up;
             changed = true;
         }
 
         if (glfwGetKey(m_window->get(), GLFW_KEY_PERIOD) == GLFW_PRESS) {
-            m_scene->updateMeshPointer(MeshInstanceDirections::Down);
+            //m_scene->updateMeshPointer(MeshInstanceDirections::Down);
+            direction = MeshInstanceDirections::Down;
             changed = true;
         }
 
-        
+        if (glfwGetKey(m_window->get(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+            multiselect = true;
+        }
+
+            // Start multi pick mode
+        if (glfwGetKey(m_window->get(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+            m_scene->setMultiPickMode(true);
+            m_scene->multiPick();
+        }
+
+        // End multi-pick mode
+        if (glfwGetKey(m_window->get(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            m_scene->setMultiPickMode(false);
+        }
+
+        // Delete selected mesh
         if (glfwGetKey(m_window->get(), GLFW_KEY_DELETE) == GLFW_PRESS) {
             m_scene->deleteInstancedMesh(m_debugUi->getSelectedInstance());
             changed = true;
+        }
+
+        if (direction >= 0) {
+            if(multiselect)
+                m_scene->updateMeshPointer(direction, true);
+            else
+                m_scene->updateMeshPointer(direction);
         }
     }
 

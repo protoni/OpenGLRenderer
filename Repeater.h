@@ -37,6 +37,7 @@ private:
     unsigned int m_indiceCount;
     unsigned int m_buffer;
     glm::mat4* m_matrices;
+    int* m_selected;
 
     unsigned int m_deleteRemoved;
 

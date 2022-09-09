@@ -1,11 +1,13 @@
-#version 330 core
+#version 430 core
 
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec2 aTexCoord;
 layout(location = 2) in mat4 aInstanceMatrix;
+layout(location = 3) in highp int aSelected;
 
 out vec2 TexCoord;
 flat out highp int instanceID;
+flat out highp int selectedMesh;
 
 uniform mat4 transform;
 uniform mat4 view;
@@ -22,4 +24,5 @@ void main()
     }
     TexCoord = aTexCoord;
     instanceID = gl_InstanceID;
+    selectedMesh = aSelected;
 }
