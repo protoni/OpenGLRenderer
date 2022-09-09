@@ -292,6 +292,26 @@ bool Scene::updateObjectMesh(int idx)
         return false;
     }
     
+    // If multiple meshes were selected, apply the same changes to all of those
+    if (m_multiSelectVec.size() > 0) {
+        RepeaterState* state = m_meshList->at(idx)->mesh->getState();
+        for (int i = 0; i < m_multiSelectVec.size(); i++) {
+
+            // Get the transformations from the last item of the multi select vector, which is being modified currently
+            MeshTransformations* src = state->modified->at(m_multiSelectVec.back())->transformations;
+            
+            // Create a new destination transformations struct and copy the modified transformations to this
+            MeshTransformations* dst = new MeshTransformations();//state->modified->at(m_multiSelectVec.at(i))->transformations;
+            memcpy(dst, src, sizeof(*src));
+
+            // Free old transformations after copying
+            delete state->modified->at(m_multiSelectVec.at(i))->transformations;
+                
+            // Assign copied transformations to the newly created struct
+            state->modified->at(m_multiSelectVec.at(i))->transformations = dst;
+        }
+    }
+
     m_meshList->at(idx)->mesh->update();
 
     std::cout << "Triangle count: " << getTriangleCount() << std::endl;
