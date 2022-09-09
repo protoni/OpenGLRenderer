@@ -72,6 +72,10 @@ void DebugUi::meshSettings(int selected)
         m_meshState.yOffset = state->modified->at(m_scene->getMeshPointer())->transformations->yOffset;
         m_meshState.zOffset = state->modified->at(m_scene->getMeshPointer())->transformations->zOffset;
 
+        m_meshState.paddingX = state->modified->at(m_scene->getMeshPointer())->transformations->paddingX;
+        m_meshState.paddingY = state->modified->at(m_scene->getMeshPointer())->transformations->paddingY;
+        m_meshState.paddingZ = state->modified->at(m_scene->getMeshPointer())->transformations->paddingZ;
+
         m_meshState.angle = state->modified->at(m_scene->getMeshPointer())->transformations->angle;
         m_meshState.xRotation = state->modified->at(m_scene->getMeshPointer())->transformations->xRotation;
         m_meshState.yRotation = state->modified->at(m_scene->getMeshPointer())->transformations->yRotation;
@@ -94,6 +98,12 @@ void DebugUi::meshSettings(int selected)
         ImGui::SliderFloat("Offset Z", &m_meshState.zOffset, -5.0f, 5.0f);
     }
 
+    if (ImGui::CollapsingHeader("Padding")) {
+        ImGui::SliderFloat("Padding X", &m_meshState.paddingX, 0.0f, 10.0f);
+        ImGui::SliderFloat("Padding Y", &m_meshState.paddingY, 0.0f, 10.0f);
+        ImGui::SliderFloat("Padding Z", &m_meshState.paddingZ, 0.0f, 10.0f);
+    }
+
     if (ImGui::CollapsingHeader("Rotation")) {
         ImGui::SliderFloat("Angle", &m_meshState.angle, 0.0f, 360.0f);
         ImGui::SliderFloat("Rotation X", &m_meshState.xRotation, 0.001f, 1.0f);
@@ -112,6 +122,10 @@ void DebugUi::meshSettings(int selected)
                 m_meshState.yOffset != state->modified->at(m_scene->getMeshPointer())->transformations->yOffset ||
                 m_meshState.zOffset != state->modified->at(m_scene->getMeshPointer())->transformations->zOffset ||
 
+                m_meshState.paddingX != state->modified->at(m_scene->getMeshPointer())->transformations->paddingX ||
+                m_meshState.paddingY != state->modified->at(m_scene->getMeshPointer())->transformations->paddingY ||
+                m_meshState.paddingZ != state->modified->at(m_scene->getMeshPointer())->transformations->paddingZ ||
+
                 m_meshState.angle != state->modified->at(m_scene->getMeshPointer())->transformations->angle ||
                 m_meshState.xRotation != state->modified->at(m_scene->getMeshPointer())->transformations->xRotation ||
                 m_meshState.yRotation != state->modified->at(m_scene->getMeshPointer())->transformations->yRotation ||
@@ -125,6 +139,10 @@ void DebugUi::meshSettings(int selected)
                 state->modified->at(m_scene->getMeshPointer())->transformations->xOffset = m_meshState.xOffset;
                 state->modified->at(m_scene->getMeshPointer())->transformations->yOffset = m_meshState.yOffset;
                 state->modified->at(m_scene->getMeshPointer())->transformations->zOffset = m_meshState.zOffset;
+
+                state->modified->at(m_scene->getMeshPointer())->transformations->paddingX = m_meshState.paddingX;
+                state->modified->at(m_scene->getMeshPointer())->transformations->paddingY = m_meshState.paddingY;
+                state->modified->at(m_scene->getMeshPointer())->transformations->paddingZ = m_meshState.paddingZ;
 
                 state->modified->at(m_scene->getMeshPointer())->transformations->angle = m_meshState.angle;
                 state->modified->at(m_scene->getMeshPointer())->transformations->xRotation = m_meshState.xRotation;

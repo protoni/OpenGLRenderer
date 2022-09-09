@@ -148,16 +148,19 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int
             (
                 ((0.5f * state->transformations->scaleX) * xPos) +
                 (state->transformations->paddingX * xPos) +
+                (state->modified->at(ptr)->transformations->paddingX * xPos) +
                 (state->transformations->xOffset + state->modified->at(ptr)->transformations->xOffset)
             ),
             (
                 ((0.5f * state->transformations->scaleY) * yPos) +
                 (state->transformations->paddingY * yPos) +
+                (state->modified->at(ptr)->transformations->paddingY * yPos) +
                 (state->transformations->yOffset + state->modified->at(ptr)->transformations->yOffset)
             ),
             (
                 ((0.5f * state->transformations->scaleZ) * zPos) +
                 (state->transformations->paddingZ * zPos) +
+                (state->modified->at(ptr)->transformations->paddingZ * zPos) +
                 (state->transformations->zOffset + state->modified->at(ptr)->transformations->zOffset)
             ))
         );
