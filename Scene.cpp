@@ -369,7 +369,7 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         m_ourShaderInstanced->setMat4("projection", projection);
         m_ourShaderInstanced->setMat4("view", view);
         m_ourShaderInstanced->setInt("selectedMesh", m_meshPointer);
-        //m_ourShaderInstanced->setInt("selectedInstance", m_meshList->at(idx)->selected);
+        m_ourShaderInstanced->setInt("selectedInstance", m_meshList->at(idx)->selected);
         //if (m_meshList->at(i)->selected) {
         //    m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
         //}
