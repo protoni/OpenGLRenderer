@@ -75,6 +75,13 @@ public:
 
     int getMeshPointer() { return m_meshPointer; }
 
+    /* Control multi-pick mode ( individual mesh picker )*/
+    void toggleMultiPickMode() { m_multiPickMode = !m_multiPickMode; }
+    void setMultiPickMode(bool mode) { m_multiPickMode = mode; }
+
+    /* Add currently selected mesh to multi select vector */
+    void multiPick();
+
 private:
     void createPlane(bool instanced, Plane*& plane);
     void createCube(bool instanced, Cube*& cube);
@@ -113,6 +120,8 @@ private:
     unsigned int m_oldMeshPointer = 0;
 
     GLuint m_ssbo;
+
+    bool m_multiPickMode = false;
 };
 
 #endif // SCENE_H

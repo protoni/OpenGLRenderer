@@ -19,8 +19,8 @@ void Input::processInput(double deltaTime)
     m_debounceCounter += deltaTime;
 
     // Handle exit input
-    if (glfwGetKey(m_window->get(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(m_window->get(), true);
+    //if (glfwGetKey(m_window->get(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    //    glfwSetWindowShouldClose(m_window->get(), true);
 
     // Handle camera movement input
     const float cameraSpeed = 2.5f * (float)deltaTime;
@@ -85,6 +85,18 @@ void Input::processInput(double deltaTime)
             multiselect = true;
         }
 
+            // Start multi pick mode
+        if (glfwGetKey(m_window->get(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+            m_scene->setMultiPickMode(true);
+            m_scene->multiPick();
+        }
+
+        // End multi-pick mode
+        if (glfwGetKey(m_window->get(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            m_scene->setMultiPickMode(false);
+        }
+
+        // Delete selected mesh
         if (glfwGetKey(m_window->get(), GLFW_KEY_DELETE) == GLFW_PRESS) {
             m_scene->deleteInstancedMesh(m_debugUi->getSelectedInstance());
             changed = true;

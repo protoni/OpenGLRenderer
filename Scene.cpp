@@ -204,25 +204,47 @@ void Scene::updateMeshPointer(int direction, bool multiselect)
         m_meshPointer = (state->columnCount * state->rowCount * state->stackCount) - 1;
 
     if (multiselect) {
-        if(std::find(m_multiSelectVec.begin(), m_multiSelectVec.end(), m_meshPointer) == m_multiSelectVec.end())
+        if (std::find(m_multiSelectVec.begin(), m_multiSelectVec.end(), m_meshPointer) == m_multiSelectVec.end()) {
             m_multiSelectVec.push_back(m_meshPointer);
+            std::cout << "add to multi select vec!" << std::endl;
+        }
     }
     else {
 
+        // Save multipick array before clearing
+        std::vector<int> temp;
+        if (m_multiPickMode) {
+            for (int i = 0; i < m_multiSelectVec.size(); i++) {
+                if(m_multiSelectVec.size() > i)
+                    temp.push_back(m_multiSelectVec.at(i));
+            }
+        }
+        
         // Clear all the object's fragment shader colors before clearing up the mesh pointer vector, because
         // otherwise fragment shader will keep the old mesh pointer values in it's SSBO for some reason.
         m_multiSelectVec.clear();
         for (int i = 0; i < getObjectCount(); i++) {
             m_multiSelectVec.push_back(m_meshPointer);
         }
-
+        
         // Send the actual cleared mesh pointer values to the fragment shader as a SSBO
-        if(m_multiSelectVec.size() > 0)
+        if (m_multiSelectVec.size() > 0)
             highlightSelectedMeshes();
-
+        
         // Clear mesh pointer vector and add only the current position to it
         m_multiSelectVec.clear();
-        m_multiSelectVec.push_back(m_meshPointer);
+        
+
+        if (m_multiPickMode) {
+            for (int i = 0; i < temp.size(); i++) {
+                if(temp.size() > i)
+                    m_multiSelectVec.push_back(temp.at(i));
+            }
+        }
+        else {
+            m_multiSelectVec.push_back(m_meshPointer);
+        }
+        
     }
 
 
@@ -343,6 +365,16 @@ int Scene::getObjectCount()
     }
 
     return count;
+}
+
+void Scene::multiPick()
+{
+    if (std::find(m_multiSelectVec.begin(), m_multiSelectVec.end(), m_meshPointer) == m_multiSelectVec.end()) {
+        m_multiSelectVec.push_back(m_meshPointer);
+        std::cout << "add to multi pick vec!" << std::endl;
+    }
+
+    //updateMeshPointer(-1);
 }
 
 void Scene::highlightSelectedMeshes()
