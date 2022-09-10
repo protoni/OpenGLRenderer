@@ -12,13 +12,15 @@ unsigned int test_indices[] = {
     0
 };
 
-Custom::Custom(Shader* shader, bool instanced)
+Custom::Custom(Shader* shader, bool instanced, bool isLight, bool useNormals)
     : Repeater(shader,
         instanced,
         test_vertices,
         test_indices,
         sizeof(test_vertices) / sizeof(test_vertices[0]),
-        sizeof(test_indices) / sizeof(test_indices[0]))
+        sizeof(test_indices) / sizeof(test_indices[0]),
+        isLight,
+        useNormals)
 {
 
     m_indices = new std::vector<unsigned int>;

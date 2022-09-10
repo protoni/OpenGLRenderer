@@ -6,7 +6,7 @@
 class Cube : public Repeater
 {
 public:
-    Cube(Shader* shader, bool instanced);
+    Cube(Shader* shader, bool instanced, bool isLight = false, bool useNormals = false);
     ~Cube();
 };
 

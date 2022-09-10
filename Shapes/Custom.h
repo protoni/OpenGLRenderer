@@ -10,7 +10,7 @@ Custom object mesh class for testing purposes
 class Custom : public Repeater
 {
 public:
-    Custom(Shader* shader, bool instanced);
+    Custom(Shader* shader, bool instanced, bool isLight = false, bool useNormals = false);
     ~Custom();
 
 

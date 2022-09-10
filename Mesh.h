@@ -9,14 +9,21 @@ class Mesh
 {
 
 public:
-    Mesh(Shader* shader,
+    Mesh(
+        Shader* shader,
         float* vertices,
         unsigned int* indices,
         unsigned int verticeCount,
-        unsigned int indiceCount
+        unsigned int indiceCount,
+        bool isLight,
+        bool useNormals
     );
 
-    Mesh(Shader* shader);
+    Mesh(
+        Shader* shader,
+        bool isLight,
+        bool useNormals
+    );
 
     ~Mesh();
 
@@ -34,9 +41,12 @@ public:
     void setShader(Shader* shader);
     void init();
     void activate();
+    void activateLight();
     void deactivate();
 
     void cleanup();
+
+    bool getIsLight() { return m_isLight; }
 
 private:
     Shader* m_shader;
@@ -48,6 +58,7 @@ private:
     unsigned int m_indiceCount;
 
     unsigned int m_VAO;
+    unsigned int m_lightVAO;
     unsigned int m_VBO;
     unsigned int m_EBO;
 
@@ -65,6 +76,10 @@ private:
 
     std::vector<unsigned int>* m_indicesVec;
     std::vector<float>* m_interleavedVertices;
+
+    bool m_isLight;
+    bool m_useNormals;
+
 };
 
 #endif // MESH_H

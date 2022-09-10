@@ -34,6 +34,8 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     // Create and build shaders
     m_ourShaderInstanced = new Shader("./shaderInstanced.vs", "./shader.fs");
     m_ourShader = new Shader("./shader.vs", "./shader.fs");
+    m_lightShader = new Shader("./shader.vs", "./lightShader.fs");
+    m_lightMeshShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
     
     // Load texture
     m_smiley_texture = new Texture("awesomeface.png");
@@ -63,6 +65,16 @@ Scene::~Scene()
     if (m_ourShader) {
         delete m_ourShader;
         m_ourShader = NULL;
+    }
+
+    if (m_lightShader) {
+        delete m_lightShader;
+        m_lightShader = NULL;
+    }
+
+    if (m_lightMeshShader) {
+        delete m_lightMeshShader;
+        m_lightMeshShader = NULL;
     }
 }
 
@@ -120,6 +132,26 @@ void Scene::addCustom()
     MeshObject* object = new MeshObject();
     object->mesh = custom;
     object->name = std::string("Custom_") + std::to_string(m_meshList->size());
+    m_meshList->push_back(object);
+}
+
+void Scene::addReflectingCube()
+{
+    Cube* cube = new Cube(m_lightMeshShader, false, false, true);
+    MeshObject* object = new MeshObject();
+    object->mesh = cube;
+    object->name = std::string("ReflectingCube_") + std::to_string(m_meshList->size());
+    object->type = MeshType::ReflectCubeType;
+    m_meshList->push_back(object);
+}
+
+void Scene::addLight()
+{
+    Cube* cube = new Cube(m_lightShader, false, true, true);
+    MeshObject* object = new MeshObject();
+    object->mesh = cube;
+    object->name = std::string("Light_") + std::to_string(m_meshList->size());
+    object->type = MeshType::LightType;
     m_meshList->push_back(object);
 }
 
@@ -413,14 +445,43 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         }
     }
     else {
-        m_ourShader->use();
-        m_ourShader->setMat4("projection", projection);
-        m_ourShader->setMat4("view", view);
+        if (m_meshList->at(idx)->type == MeshType::ReflectCubeType) {
+            m_lightMeshShader->use();
+            m_lightMeshShader->setMat4("projection", projection);
+            m_lightMeshShader->setMat4("view", view);
+            m_lightMeshShader->setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+            m_lightMeshShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
 
-        if (m_meshList->at(idx)->selected)
-            m_ourShader->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
-        else
-            m_ourShader->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
+            std::cout << "light pos: X=" << m_lightPos.x << ", Y=" << m_lightPos.y << ", Z=" << m_lightPos.z << std::endl;
+
+            m_lightMeshShader->setVec3("lightPos", m_lightPos);
+        }
+        else {
+            m_ourShader->use();
+            m_ourShader->setMat4("projection", projection);
+            m_ourShader->setMat4("view", view);
+
+            if (m_meshList->at(idx)->selected)
+                m_ourShader->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
+            else
+                m_ourShader->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
+        }
+
+        if (m_meshList->at(idx)->type == MeshType::LightType) {
+            m_lightShader->use();
+            m_lightShader->setMat4("projection", projection);
+            m_lightShader->setMat4("view", view);
+
+            // Update light position
+            if (state->modified->size() > 0) {
+                m_lightPos.x = state->modified->at(0)->transformations->xPos;
+                m_lightPos.y = state->modified->at(0)->transformations->yPos;
+                m_lightPos.z = state->modified->at(0)->transformations->zPos;
+            }
+
+            
+
+        }
     }
 
     m_meshList->at(idx)->mesh->draw();

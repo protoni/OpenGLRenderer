@@ -11,15 +11,24 @@
 
 
 
-Mesh::Mesh(Shader* shader, float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indiceCount) :
+Mesh::Mesh(
+    Shader* shader,
+    float* vertices,
+    unsigned int* indices,
+    unsigned int vertexCount,
+    unsigned int indiceCount,
+    bool isLight,
+    bool useNormals
+) :
     m_shader(shader), m_vertices(vertices), m_indices(indices), 
     m_vertexCount(vertexCount), m_indiceCount(indiceCount),
-    m_VAO(0), m_VBO(0), m_EBO(0), m_texture1(-1), m_texture2(-1), m_useVectors(false)
+    m_VAO(0), m_VBO(0), m_EBO(0), m_texture1(-1), m_texture2(-1), m_useVectors(false), m_isLight(isLight), m_useNormals(useNormals)
 {
     create();
 }
 
-Mesh::Mesh(Shader* shader) : m_VAO(0), m_VBO(0), m_EBO(0), m_texture1(-1), m_texture2(-1), m_useVectors(false), m_vertices(), m_indices()
+Mesh::Mesh(Shader* shader, bool isLight, bool useNormals) : m_VAO(0), m_VBO(0), m_EBO(0), m_texture1(-1), m_texture2(-1),
+    m_useVectors(false), m_vertices(), m_indices(), m_isLight(isLight), m_useNormals(useNormals)
 {
 }
 
@@ -49,15 +58,39 @@ void Mesh::create()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_indices[0]) * m_indiceCount, m_indices, GL_STATIC_DRAW);
 
     // Link vertex attributes
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    if (m_useNormals) {
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        glEnableVertexAttribArray(2);
+    }
+    else {
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+    }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    // If the current mesh is used as a light, set VAO for it
+    if (m_isLight) {
+        glGenVertexArrays(1, &m_lightVAO);
+        glBindVertexArray(m_lightVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        std::cout << "Created a VAO for light mesh!" << std::endl;
+    }
 }
 
 void Mesh::createVBO(std::vector<unsigned int>* indices, std::vector<float>* vertices)
@@ -107,6 +140,12 @@ void Mesh::activate()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
 }
 
+void Mesh::activateLight()
+{
+    glBindVertexArray(m_VAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+}
+
 void Mesh::deactivate()
 {
     glBindVertexArray(0);
@@ -142,28 +181,40 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int
 
     glm::mat4 model = glm::mat4(1.0f);
 
+    
+
     // Set positions
     if (ptr < state->modified->size()) {
-        model = glm::translate(model, glm::vec3(
-            (
-                ((0.5f * state->transformations->scaleX) * xPos) +
-                (state->transformations->paddingX * xPos) +
-                (state->modified->at(ptr)->transformations->paddingX * xPos) +
-                (state->transformations->xOffset + state->modified->at(ptr)->transformations->xOffset)
-            ),
-            (
-                ((0.5f * state->transformations->scaleY) * yPos) +
-                (state->transformations->paddingY * yPos) +
-                (state->modified->at(ptr)->transformations->paddingY * yPos) +
-                (state->transformations->yOffset + state->modified->at(ptr)->transformations->yOffset)
-            ),
-            (
-                ((0.5f * state->transformations->scaleZ) * zPos) +
-                (state->transformations->paddingZ * zPos) +
-                (state->modified->at(ptr)->transformations->paddingZ * zPos) +
-                (state->transformations->zOffset + state->modified->at(ptr)->transformations->zOffset)
-            ))
-        );
+        float x = (
+            ((0.5f * state->transformations->scaleX) * xPos) +
+            (state->transformations->paddingX * xPos) +
+            (state->modified->at(ptr)->transformations->paddingX * xPos) +
+            (state->transformations->xOffset + state->modified->at(ptr)->transformations->xOffset)
+            );
+
+        float y = (
+            ((0.5f * state->transformations->scaleY) * yPos) +
+            (state->transformations->paddingY * yPos) +
+            (state->modified->at(ptr)->transformations->paddingY * yPos) +
+            (state->transformations->yOffset + state->modified->at(ptr)->transformations->yOffset)
+            );
+
+        float z = (
+            ((0.5f * state->transformations->scaleZ) * zPos) +
+            (state->transformations->paddingZ * zPos) +
+            (state->modified->at(ptr)->transformations->paddingZ * zPos) +
+            (state->transformations->zOffset + state->modified->at(ptr)->transformations->zOffset)
+            );
+
+        model = glm::translate(model, glm::vec3(x, y,z));
+
+        if (m_isLight) {
+            state->modified->at(ptr)->transformations->xPos = x;
+            state->modified->at(ptr)->transformations->yPos = y;
+            state->modified->at(ptr)->transformations->zPos = z;
+
+            //std::cout << "light pos: X=" << x << ", Y=" << y << ", Z=" << z << std::endl;
+        }
     }
     else {
         model = glm::translate(model, glm::vec3(

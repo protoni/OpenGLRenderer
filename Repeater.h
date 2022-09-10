@@ -12,8 +12,23 @@ class Repeater : public Mesh
 {
 public:
     //Repeater(Shader* shader, bool instanced);
-    Repeater(Shader* shader, bool instanced, float* vertices, unsigned int* indices, unsigned int verticeCount, unsigned int indiceCount);
-    Repeater(Shader* shader, bool instanced);
+    Repeater(
+        Shader* shader,
+        bool instanced,
+        float* vertices,
+        unsigned int* indices,
+        unsigned int verticeCount,
+        unsigned int indiceCount,
+        bool isLight,
+        bool useNormals
+    );
+    Repeater(
+        Shader* shader,
+        bool instanced,
+        bool isLight,
+        bool useNormals
+    );
+
     ~Repeater();
 
     void drawNonInstanced();

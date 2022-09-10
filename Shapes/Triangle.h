@@ -6,7 +6,7 @@
 class Triangle : public Repeater
 {
 public:
-    Triangle(Shader* shader, bool instanced);
+    Triangle(Shader* shader, bool instanced, bool isLight = false, bool useNormals = false);
     ~Triangle();
 };
 
