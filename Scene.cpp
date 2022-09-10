@@ -379,12 +379,9 @@ void Scene::multiPick()
 
 void Scene::highlightSelectedMeshes()
 {
-
-    if (m_ssbo)
-        glDeleteBuffers(1, &m_ssbo);
-    
     glGenBuffers(1, &m_ssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_ssbo);
+    std::cout << "sending " << (sizeof(m_multiSelectVec) * m_multiSelectVec.size()) / 1024 << " kb to SSBO!" << std::endl;
     glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(m_multiSelectVec) * m_multiSelectVec.size(), &m_multiSelectVec[0], GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, m_ssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // unbind
