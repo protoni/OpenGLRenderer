@@ -455,6 +455,7 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             std::cout << "light pos: X=" << m_lightPos.x << ", Y=" << m_lightPos.y << ", Z=" << m_lightPos.z << std::endl;
 
             m_lightMeshShader->setVec3("lightPos", m_lightPos);
+            m_lightMeshShader->setVec3("viewPos", m_camera->Position);
         }
         else {
             m_ourShader->use();
