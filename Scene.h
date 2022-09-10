@@ -17,6 +17,7 @@
 #include "Triangle.h"
 #include "Sphere.h"
 #include "Custom.h"
+#include "MaterialBase.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

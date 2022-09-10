@@ -450,12 +450,30 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             m_lightMeshShader->setMat4("projection", projection);
             m_lightMeshShader->setMat4("view", view);
             m_lightMeshShader->setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+            //m_lightMeshShader->setVec3("objectColor", glm::vec3(0.1f, 0.9f, 0.31f));
             m_lightMeshShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
 
             std::cout << "light pos: X=" << m_lightPos.x << ", Y=" << m_lightPos.y << ", Z=" << m_lightPos.z << std::endl;
 
             m_lightMeshShader->setVec3("lightPos", m_lightPos);
             m_lightMeshShader->setVec3("viewPos", m_camera->Position);
+
+            // Set material
+            //m_lightMeshShader->setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+            //m_lightMeshShader->setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+            //m_lightMeshShader->setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+            //m_lightMeshShader->setFloat("material.shininess", 32);
+            // 
+            // Set emerald material
+            m_lightMeshShader->setVec3("material.ambient", Materials::materialTypeGreenRubber.ambient);
+            m_lightMeshShader->setVec3("material.diffuse", Materials::materialTypeGreenRubber.diffuse);
+            m_lightMeshShader->setVec3("material.specular", Materials::materialTypeGreenRubber.specular);
+            m_lightMeshShader->setFloat("material.shininess", Materials::materialTypeGreenRubber.shininess);
+
+            // Set lighting intensities for material
+            m_lightMeshShader->setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+            m_lightMeshShader->setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+            m_lightMeshShader->setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
         }
         else {
             m_ourShader->use();
