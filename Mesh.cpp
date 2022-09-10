@@ -66,7 +66,7 @@ void Mesh::create()
         glEnableVertexAttribArray(1);
 
     
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
         glEnableVertexAttribArray(2);
     }
     else {
@@ -156,7 +156,7 @@ void Mesh::setShader(Shader* shader)
     m_shader = shader;
 }
 
-void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state)
+void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned int ptr)
 {
     if (xPos < 1)
         xPos = 1;
@@ -165,7 +165,7 @@ void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state)
     if (zPos < 1)
         zPos = 1;
 
-    glm::mat4 model = *getMesh(xPos, yPos, zPos, state, 0);
+    glm::mat4 model = *getMesh(xPos, yPos, zPos, state, ptr);
 
     m_shader->setMat4("model", model);
 

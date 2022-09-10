@@ -92,7 +92,7 @@ void Scene::updateMeshShader(bool instanced, int idx)
 
 void Scene::addCube()
 {
-    Cube* cube = new Cube(m_ourShader, false);
+    Cube* cube = new Cube(m_ourShader, false, false, true);
     MeshObject* object = new MeshObject();
     object->mesh = cube;
     object->name = std::string("Cube_") + std::to_string(m_meshList->size());
@@ -501,14 +501,14 @@ void Scene::renderScene()
 
     int lastDrawn = 0;
     for (int i = 0; i < m_meshList->size(); i++) {
-        if (m_meshList->at(i)->selected)
-            lastDrawn = i;
-        else
+        //if (m_meshList->at(i)->selected)
+        //    lastDrawn = i;
+        //else
             draw(i, projection, view);
     }
 
-    if(lastDrawn < m_meshList->size())
-        draw(lastDrawn, projection, view);
+    //if(lastDrawn < m_meshList->size())
+    //    draw(lastDrawn, projection, view);
 }
 
 void Scene::update()
