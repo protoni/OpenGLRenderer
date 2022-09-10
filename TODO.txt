@@ -13,7 +13,11 @@ Todo:
 - Add adjustable fps limit to debug UI settings
 - Add debugUi intervals to debug UI
 - Add separate colos for highlighted current mesh and selected meshes
-
+- Add lighting parameters to light's parameters in debug UI
+  - specular strength
+  - specular shininess
+  - ambient strength
+- Add Gouraud/Phong lighting option to light's parameters in debug UI
 
 Bugs:
 - When selecting an object, highlight color doesn't show up
