@@ -139,9 +139,14 @@ void Scene::addReflectingCube()
 {
     Cube* cube = new Cube(m_lightMeshShader, false, false, true);
     MeshObject* object = new MeshObject();
+    MeshLights* light = new MeshLights();
+    MaterialBase* material = new MaterialDefault();
+    //MaterialBase* material = &MaterialDefault;
     object->mesh = cube;
     object->name = std::string("ReflectingCube_") + std::to_string(m_meshList->size());
     object->type = MeshType::ReflectCubeType;
+    object->light = light;
+    object->material = material;
     m_meshList->push_back(object);
 }
 
@@ -373,6 +378,36 @@ bool Scene::updateObjectMesh(int idx)
     return true;
 }
 
+void Scene::updateMeshMaterial(int selected, const std::string& newMaterial)
+{
+    // Clear old material
+    delete m_meshList->at(selected)->material;
+
+    MaterialBase* material;
+    MaterialCollection materialCollection;
+
+    // Set new material
+    if (newMaterial.compare(materialCollection.materialDefault.name) == 0) {
+        material = new MaterialDefault();
+    }
+    else if (newMaterial.compare(materialCollection.materialEmerald.name) == 0) {
+        material = new MaterialEmerald();
+    }
+    else if (newMaterial.compare(materialCollection.materialSilver.name) == 0) {
+        material = new MaterialSilver();
+    }
+    else if (newMaterial.compare(materialCollection.materialGreenRubber.name) == 0) {
+        material = new MaterialGreenRubber();
+    }
+    else if (newMaterial.compare(materialCollection.materialYellowRubber.name) == 0) {
+        material = new MaterialYellowRubber();
+    }
+    else
+        material = new MaterialDefault();
+
+    m_meshList->at(selected)->material = material;
+}
+
 int Scene::getTriangleCount()
 {
     int count = 0;
@@ -453,20 +488,38 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             //m_lightMeshShader->setVec3("objectColor", glm::vec3(0.1f, 0.9f, 0.31f));
             //m_lightMeshShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
 
-            std::cout << "light pos: X=" << m_lightPos.x << ", Y=" << m_lightPos.y << ", Z=" << m_lightPos.z << std::endl;
+            //std::cout << "light pos: X=" << m_lightPos.x << ", Y=" << m_lightPos.y << ", Z=" << m_lightPos.z << std::endl;
 
             m_lightMeshShader->setVec3("light.position", m_lightPos);
             m_lightMeshShader->setVec3("viewPos", m_camera->Position);
 
-            m_lightMeshShader->setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-            m_lightMeshShader->setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-            m_lightMeshShader->setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+            // Set lights
+            if (m_meshList->at(idx)->light) {
+                m_lightMeshShader->setVec3("light.ambient", m_meshList->at(idx)->light->ambient);
+                m_lightMeshShader->setVec3("light.diffuse", m_meshList->at(idx)->light->diffuse);
+                m_lightMeshShader->setVec3("light.specular", m_meshList->at(idx)->light->specular);
+            }
+            else {
+                std::cout << "Error! Mesh doesn't have lights. Using defaults" << std::endl;
+                m_lightMeshShader->setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+                m_lightMeshShader->setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+                m_lightMeshShader->setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+            }
 
             // Set material
-            //m_lightMeshShader->setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
-            //m_lightMeshShader->setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
-            //m_lightMeshShader->setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-            //m_lightMeshShader->setFloat("material.shininess", 32);
+            if (m_meshList->at(idx)->material) {
+                m_lightMeshShader->setVec3("material.ambient", m_meshList->at(idx)->material->ambient);
+                m_lightMeshShader->setVec3("material.diffuse", m_meshList->at(idx)->material->diffuse);
+                m_lightMeshShader->setVec3("material.specular", m_meshList->at(idx)->material->specular);
+                m_lightMeshShader->setFloat("material.shininess", m_meshList->at(idx)->material->shininess);
+            }
+            else {
+                std::cout << "Error! Mesh doesn't have material. Using defaults" << std::endl;
+                m_lightMeshShader->setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+                m_lightMeshShader->setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+                m_lightMeshShader->setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+                m_lightMeshShader->setFloat("material.shininess", 32);
+            }
             // 
             // Set emerald material
             //m_lightMeshShader->setVec3("material.ambient", Materials::materialTypeEmerald.ambient);
@@ -481,10 +534,10 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             //m_lightMeshShader->setFloat("material.shininess", Materials::materialTypeGreenRubber.shininess);
 
             // Set green rubber material
-            m_lightMeshShader->setVec3("material.ambient", Materials::materialTypeSilver.ambient);
-            m_lightMeshShader->setVec3("material.diffuse", Materials::materialTypeSilver.diffuse);
-            m_lightMeshShader->setVec3("material.specular", Materials::materialTypeSilver.specular);
-            m_lightMeshShader->setFloat("material.shininess", Materials::materialTypeSilver.shininess);
+            //m_lightMeshShader->setVec3("material.ambient", Materials::materialTypeSilver.ambient);
+            //m_lightMeshShader->setVec3("material.diffuse", Materials::materialTypeSilver.diffuse);
+            //m_lightMeshShader->setVec3("material.specular", Materials::materialTypeSilver.specular);
+            //m_lightMeshShader->setFloat("material.shininess", Materials::materialTypeSilver.shininess);
 
             // Set yellow rubber material
             //m_lightMeshShader->setVec3("material.ambient", Materials::materialTypeYellowRubber.ambient);
@@ -604,6 +657,14 @@ void Scene::deleteObject(int idx)
 
     // Clear the mesh
     delete m_meshList->at(idx)->mesh;
+
+    // Clear lights
+    if(m_meshList->at(idx)->light)
+        delete m_meshList->at(idx)->light;
+
+    // Clear material
+    if(m_meshList->at(idx)->material)
+        delete m_meshList->at(idx)->material;
 
     // Clear object
     delete m_meshList->at(idx);

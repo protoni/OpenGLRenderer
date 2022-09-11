@@ -29,6 +29,7 @@
 #include <crtdbg.h>
 #include <thread>
 
+
 enum MeshInstanceDirections
 {
     Left,
@@ -47,18 +48,46 @@ enum MeshType
     SphereType,
     TriangleType,
     LightType,
-    ReflectCubeType
+    ReflectCubeType,
+    UnknownType
 };
 
+struct MeshLights
+{
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+    float shininess;
+
+    MeshLights()
+    : ambient(0.2f, 0.2f, 0.2f)
+    , diffuse(0.5f, 0.5f, 0.5f)
+    , specular(1.0f, 1.0f, 1.0f)
+    , shininess(32.0f) {}
+};
 
 struct MeshObject
 {
     Repeater* mesh;
     std::string name;
-    bool selected = false;
+    bool selected;
+
+    // Mesh lighting settings
+    MeshLights* light;
+
+    // Mesh material settings
+    MaterialBase* material;
 
     // What type of mesh is this
-    int type = -1;
+    int type;
+
+    MeshObject()
+        : mesh(nullptr)
+        , light(nullptr)
+        , material(nullptr)
+        , name("")
+        , selected(false)
+        , type(-1) {}
 };
 
 class Scene
@@ -99,6 +128,8 @@ public:
 
     /* Add currently selected mesh to multi select vector */
     void multiPick();
+
+    void updateMeshMaterial(int selected, const std::string& newMaterial);
 
 private:
     void createPlane(bool instanced, Plane*& plane);

@@ -1,4 +1,5 @@
 #include "DebugUi.h"
+#include "MaterialBase.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -53,13 +54,91 @@ void DebugUi::newWindow()
     }
 }
 
+void DebugUi::materialSettings(int selected)
+{
+    ImGui::BeginChild("Material settings", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing() + 80)));
+    ImGui::Text("Material settings");
+
+    static float ambient[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
+    static float diffuse[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
+    static float specular[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
+    //glm::vec4 ambientVec;
+    //glm::vec4 diffuseVec;
+    //glm::vec4 specularVec;
+    float shininess;
+
+    std::vector<MeshObject*>* meshList = m_scene->getMeshList();
+    const std::string currentMaterial = meshList->at(selected)->material->name.c_str();
+
+    static int item_current = 0;
+    const char* items[] = { "Custom", "Default", "Emerald", "Silver", "GreenRubber", "YellowRubber" };
+    //ImGui::Combo("Predefined Material", &item_current, items, IM_ARRAYSIZE(items));
+
+    if (ImGui::BeginCombo("Predefined Material", currentMaterial.c_str()))
+    {
+        for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+        {
+            const bool is_selected = (item_current == n);
+            if (ImGui::Selectable(items[n], is_selected)) {
+                item_current = n;
+                if (currentMaterial.compare(std::string(items[item_current])) != 0) {
+                    std::cout << "Selected: " << items[item_current] << std::endl;
+                    m_scene->updateMeshMaterial(selected, std::string(items[item_current]));
+                }
+                
+            }
+
+            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+
+    ImGui::Separator();
+
+    ImGui::SliderFloat3("Ambient", ambient, 0.0f, 1.0f);
+    ImGui::SliderFloat3("Diffuse", diffuse, 0.0f, 1.0f);
+    ImGui::SliderFloat3("Specular", specular, 0.0f, 1.0f);
+    ImGui::SliderFloat("Specular Shininess", &shininess, 0.0f, 1.0f);
+
+    ImGui::EndChild();
+}
+
+void DebugUi::lightSettings(int selected)
+{
+    ImGui::BeginChild("Light settings", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing() + 80)));
+    ImGui::Text("Light settings");
+
+    static float ambient[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
+    static float diffuse[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
+    static float specular[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
+    //glm::vec4 ambientVec;
+    //glm::vec4 diffuseVec;
+    //glm::vec4 specularVec;
+    float shininess;
+
+    ImGui::SliderFloat3("Ambient Light", ambient, 0.0f, 1.0f);
+    ImGui::SliderFloat3("Diffuse Light", diffuse, 0.0f, 1.0f);
+    ImGui::SliderFloat3("Specular Light", specular, 0.0f, 1.0f);
+    ImGui::SliderFloat("Specular Shininess", &shininess, 0.0f, 1.0f);
+
+    ImGui::EndChild();
+}
+
 void DebugUi::meshSettings(int selected)
 {
-    ImGui::BeginChild("Mesh panel", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing() + 80))); // Leave room for 1 line below us and mesh edit view
+    ImGui::BeginChild("Mesh panel", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing() + 80))); // Leave room for 1 line below us
     
     ImGui::Text("Mesh settings");
 
     std::vector<MeshObject*>* meshList = m_scene->getMeshList();
+
+    if (meshList->size() == 0 && selected >= meshList->size()) {
+        ImGui::EndChild();
+        return;
+    }
+
     RepeaterState* state = meshList->at(selected)->mesh->getState();
 
     // Load current values
@@ -173,12 +252,6 @@ bool DebugUi::objectSettings(int selected)
             m_scene->resetMeshPointer();
     }
 
-    // Unselect all first
-    for (int i = 0; i < meshList->size(); i++) {
-        meshList->at(i)->selected = false;
-    }
-
-    
     ImGui::BeginChild("item view", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing() + 80))); // Leave room for 1 line below us and mesh edit view
 
     if (meshList->size() > selected) {
@@ -342,10 +415,15 @@ void DebugUi::objectLayout(bool* p_open)
         if (ImGui::Button("Add Reflect Cube", ImVec2(100, 0)))
             m_scene->addReflectingCube();
 
+        // Unselect all first
+        std::vector<MeshObject*> meshList = *m_scene->getMeshList();
+        for (int i = 0; i < meshList.size(); i++) {
+            meshList.at(i)->selected = false;
+        }
+
         // Mesh object selector
         static int selected = 0;
         {
-            std::vector<MeshObject*> meshList = *m_scene->getMeshList();
             ImGui::BeginChild("left pane", ImVec2(150, 0), true);
             for (int i = 0; i < meshList.size(); i++)
             {
@@ -366,8 +444,29 @@ void DebugUi::objectLayout(bool* p_open)
         if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
         {
 
+            // If reflecting light type, show light and material settings
+            if (meshList.size() != 0 && selected < meshList.size()) {
+                if (meshList.at(selected)->type == MeshType::ReflectCubeType) {
+                    if (ImGui::BeginTabItem("Light")) {
+                        lightSettings(selected);
+                        ImGui::EndTabItem();
+                    }
+
+                    if (ImGui::BeginTabItem("Material")) {
+                        materialSettings(selected);
+                        ImGui::EndTabItem();
+                    }
+                }
+            }
+
+            // Mesh settings
+            if (ImGui::BeginTabItem("Mesh")) {
+                meshSettings(selected);
+                ImGui::EndTabItem();
+            }
+
             // Repeater settings
-            if (ImGui::BeginTabItem("Object")) {
+            if (ImGui::BeginTabItem("Repeater")) {
                 if (!objectSettings(selected)) {
                     ImGui::EndTabItem();
                     ImGui::EndTabBar();
@@ -375,12 +474,6 @@ void DebugUi::objectLayout(bool* p_open)
                     ImGui::End();
                     return;
                 }
-                ImGui::EndTabItem();
-            }
-            
-            // Mesh settings
-            if (ImGui::BeginTabItem("Mesh")) {
-                meshSettings(selected);
                 ImGui::EndTabItem();
             }
 
@@ -404,7 +497,7 @@ void DebugUi::objectLayout(bool* p_open)
                     ImGui::EndChild();
                 }
             }
-
+            
             ImGui::EndTabBar();
         }
     }

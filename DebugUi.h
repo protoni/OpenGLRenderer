@@ -30,6 +30,8 @@ private:
     void showInfoWindow(bool* p_open);
     bool objectSettings(int selected);
     void meshSettings(int selected);
+    void lightSettings(int selected);
+    void materialSettings(int selected);
 
     Window* m_window;
     Scene* m_scene;
