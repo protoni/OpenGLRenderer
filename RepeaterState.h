@@ -41,6 +41,11 @@ struct MeshTransformations
     float yRotation;
     float zRotation;
 
+    // Position
+    float xPos;
+    float yPos;
+    float zPos;
+
     MeshTransformations()
         : scaleX(0.5)
         , scaleY(0.5)
@@ -55,6 +60,9 @@ struct MeshTransformations
         , xRotation(0.001)
         , yRotation(0.001)
         , zRotation(0.001)
+        , xPos(0.0)
+        , yPos(0.0)
+        , zPos(0.0)
     {}
 };
 

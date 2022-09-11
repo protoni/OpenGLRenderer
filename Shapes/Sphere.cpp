@@ -17,13 +17,15 @@ unsigned int sphere_indices[] = {
     0
 };
 
-Sphere::Sphere(Shader* shader, bool instanced)
+Sphere::Sphere(Shader* shader, bool instanced, bool isLight, bool useNormals)
     : Repeater(shader,
         instanced,
         sphere_vertices,
         sphere_indices,
         sizeof(sphere_vertices) / sizeof(sphere_vertices[0]),
-        sizeof(sphere_indices) / sizeof(sphere_indices[0]))
+        sizeof(sphere_indices) / sizeof(sphere_indices[0]),
+        isLight,
+        useNormals)
 {
 
     m_indices = new std::vector<unsigned int>;

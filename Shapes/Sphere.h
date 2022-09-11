@@ -6,7 +6,7 @@
 class Sphere : public Repeater
 {
 public:
-    Sphere(Shader* shader, bool instanced);
+    Sphere(Shader* shader, bool instanced, bool isLight = false, bool useNormals = false);
     ~Sphere();
 
     void buildVerticesSmooth();

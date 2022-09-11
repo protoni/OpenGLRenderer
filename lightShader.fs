@@ -32,7 +32,7 @@ void main()
         }
     }
     
-    FragColor = vec4(lightColor * objectColor, 1.0);
+    FragColor = vec4(1.0);
     
     //if(selected) {
     //    FragColor = vec4(1.0, 1.0, 0.1, 1.0);

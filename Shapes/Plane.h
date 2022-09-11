@@ -6,7 +6,7 @@
 class Plane : public Repeater
 {
 public:
-    Plane(Shader* shader, bool instanced);
+    Plane(Shader* shader, bool instanced, bool isLight = false, bool useNormals = false);
     ~Plane();
 };
 

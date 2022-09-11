@@ -6,12 +6,22 @@
 
 #include "DebugMacros.h"
 
-Repeater::Repeater(Shader* shader, bool instanced, float* vertices, unsigned int* indices, unsigned int verticeCount, unsigned int indiceCount)
-    : Mesh(shader,
+Repeater::Repeater(
+    Shader* shader,
+    bool instanced,
+    float* vertices,
+    unsigned int* indices,
+    unsigned int verticeCount,
+    unsigned int indiceCount,
+    bool isLight,
+    bool useNormals
+    ): Mesh(shader,
         vertices,
         indices,
         verticeCount,
-        indiceCount
+        indiceCount,
+        isLight,
+        useNormals
     ), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(indiceCount), m_deleteRemoved(0), m_oldObjectCount(0), m_selected(NULL)
 {
     std::cout << "vertex count: " << verticeCount << ", index count: " << indiceCount << std::endl;
@@ -30,8 +40,8 @@ Repeater::Repeater(Shader* shader, bool instanced, float* vertices, unsigned int
         createBuffer();
 }
 
-Repeater::Repeater(Shader* shader, bool instanced)
-    : Mesh(shader), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(0), m_oldObjectCount(0), m_selected(NULL)
+Repeater::Repeater(Shader* shader, bool instanced, bool isLight, bool useNormals)
+    : Mesh(shader, isLight, useNormals), m_buffer(0), m_matrices(NULL), m_shader(shader), m_state(), m_indiceCount(0), m_oldObjectCount(0), m_selected(NULL)
 {
     // Init state
     m_state = new RepeaterState();
@@ -194,15 +204,64 @@ void Repeater::update()
 
 void Repeater::drawNonInstanced()
 {
-    activate();
+    if (getIsLight())
+        activateLight();
+    else
+        activate();
+
+    int ptr = 0;
+
+    // Clear old mesh transformations if object count has changed
+    if (m_oldObjectCount != getObjCount()) {
+        for (int i = 0; i < m_state->modified->size(); i++) {
+            if (m_state->modified->at(i)) {
+                if (m_state->modified->at(i)->position) {
+                    delete m_state->modified->at(i)->position;
+                    m_state->modified->at(i)->position = NULL;
+                }
+                if (m_state->modified->at(i)->transformations) {
+                    delete m_state->modified->at(i)->transformations;
+                    m_state->modified->at(i)->transformations = NULL;
+                }
+                if (m_state->modified->at(i)) {
+                    delete m_state->modified->at(i);
+                    m_state->modified->at(i) = NULL;
+                }
+            }
+        }
+        m_state->modified->clear();
+    }
+
 
     for (int y = 0; y < m_state->stackCount; y++) {          // stacks  ( y-axis )
         for (int z = 0; z < m_state->rowCount; z++) {        // rows    ( z axis )
             for (int x = 0; x < m_state->columnCount; x++) { // columns ( x axis )
-                render(x, y, z, m_state);
+                render(x, y, z, m_state, ptr);
+
+                // Create new modified mesh data if object count has changed
+                if (m_oldObjectCount != getObjCount()) {
+                    ModifiedMesh* modifiedMesh = new ModifiedMesh();
+                    modifiedMesh->meshPointer = ptr;
+
+                    MeshPointerPosition* meshPointerPosition = new MeshPointerPosition();
+                    modifiedMesh->position = meshPointerPosition;
+                    modifiedMesh->position->meshPointer = ptr;
+                    modifiedMesh->position->stackPosition = y;
+                    modifiedMesh->position->rowPosition = z;
+                    modifiedMesh->position->columnPosition = x;
+
+                    MeshTransformations* meshTransformations = new MeshTransformations();
+                    modifiedMesh->transformations = meshTransformations;
+
+                    m_state->modified->push_back(modifiedMesh);
+                }
+
+                ptr++;
             }
         }
     }
+
+    m_oldObjectCount = getObjCount();
 
     deactivate();
 }

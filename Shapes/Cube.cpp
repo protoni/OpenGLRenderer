@@ -5,42 +5,42 @@
 float cube_vertices[] = {
 
     /* Bottom plane*/
-    // Location         // Texture coords
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // far left
-     0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // far rigt
-     0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // near right
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // near left
+    // Location         // Texture coords    // Normals
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,        0.0f, -1.0f,  0.0f, // far left
+     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,        0.0f, -1.0f,  0.0f, // far rigt
+     0.5f, -0.5f, -0.5f,  0.0f, 0.0f,        0.0f, -1.0f,  0.0f, // near right
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,        0.0f, -1.0f,  0.0f, // near left
 
     /* Top plane*/
     // Location         // Texture coords
-    -0.5f, 0.5f,  0.5f,  0.0f, 0.0f, // far left
-     0.5f, 0.5f,  0.5f,  0.0f, 0.0f, // far rigt
-     0.5f, 0.5f, -0.5f,  0.0f, 0.0f, // near right
-    -0.5f, 0.5f, -0.5f,  0.0f, 0.0f, // near left
+    -0.5f, 0.5f,  0.5f,  0.0f, 0.0f,         0.0f,  1.0f,  0.0f,  // far left
+     0.5f, 0.5f,  0.5f,  0.0f, 0.0f,         0.0f,  1.0f,  0.0f,  // far rigt
+     0.5f, 0.5f, -0.5f,  0.0f, 0.0f,         0.0f,  1.0f,  0.0f,  // near right
+    -0.5f, 0.5f, -0.5f,  0.0f, 0.0f,         0.0f,  1.0f,  0.0f,  // near left
 
     /* Left side plane */
-   -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // bottom front
-   -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, // bottom back
-   -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, // top back
-   -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, // top front
+   -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,         -1.0f,  0.0f,  0.0f,  // bottom front
+   -0.5f, -0.5f,  0.5f, 0.0f, 0.0f,         -1.0f,  0.0f,  0.0f,  // bottom back
+   -0.5f,  0.5f,  0.5f, 0.0f, 0.0f,         -1.0f,  0.0f,  0.0f,  // top back
+   -0.5f,  0.5f, -0.5f, 0.0f, 0.0f,         -1.0f,  0.0f,  0.0f,  // top front
 
    /* Right side plane */
-    0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // bottom front
-    0.5f, -0.5f,  0.5f, 0.0f, 0.0f, // bottom back
-    0.5f,  0.5f,  0.5f, 0.0f, 0.0f, // top back
-    0.5f,  0.5f, -0.5f, 0.0f, 0.0f, // top front
+    0.5f, -0.5f, -0.5f, 0.0f, 0.0f,          1.0f,  0.0f,  0.0f,  // bottom front
+    0.5f, -0.5f,  0.5f, 0.0f, 0.0f,          1.0f,  0.0f,  0.0f,  // bottom back
+    0.5f,  0.5f,  0.5f, 0.0f, 0.0f,          1.0f,  0.0f,  0.0f,  // top back
+    0.5f,  0.5f, -0.5f, 0.0f, 0.0f,          1.0f,  0.0f,  0.0f,  // top front
 
     /* Front plane */
-    0.5f,  0.5f, -0.5f,  0.0f, 0.0f, // top right
-    0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // bottom right
-   -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // bottom left
-   -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, // top left
+    0.5f,  0.5f, -0.5f,  0.0f, 0.0f,         0.0f,  0.0f, -1.0f,  // top right
+    0.5f, -0.5f, -0.5f,  0.0f, 0.0f,         0.0f,  0.0f, -1.0f,  // bottom right
+   -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,         0.0f,  0.0f, -1.0f,  // bottom left
+   -0.5f,  0.5f, -0.5f,  0.0f, 0.0f,         0.0f,  0.0f, -1.0f,  // top left
 
    /* Back plane */
-    0.5f,  0.5f,  0.5f,  0.0f, 0.0f, // top right
-    0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom right
-   -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom left
-   -0.5f,  0.5f,  0.5f,  0.0f, 0.0f  // top left
+    0.5f,  0.5f,  0.5f,  0.0f, 0.0f,         0.0f,  0.0f,  1.0f,  // top right
+    0.5f, -0.5f,  0.5f,  0.0f, 0.0f,         0.0f,  0.0f,  1.0f,  // bottom right
+   -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,         0.0f,  0.0f,  1.0f,  // bottom left
+   -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,         0.0f,  0.0f,  1.0f   // top left
 };
 
 unsigned int cube_indices[] = {
@@ -70,13 +70,15 @@ unsigned int cube_indices[] = {
     22, 23, 20
 };
 
-Cube::Cube(Shader* shader, bool instanced)
+Cube::Cube(Shader* shader, bool instanced, bool isLight, bool useNormals)
     : Repeater(shader,
         instanced,
         cube_vertices,
         cube_indices,
         sizeof(cube_vertices) / sizeof(cube_vertices[0]),
-        sizeof(cube_indices) / sizeof(cube_indices[0]))
+        sizeof(cube_indices) / sizeof(cube_indices[0]),
+        isLight,
+        useNormals)
 {
     std::cout << "Cube created!" << std::endl;
 }

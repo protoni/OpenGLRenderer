@@ -17,6 +17,7 @@
 #include "Triangle.h"
 #include "Sphere.h"
 #include "Custom.h"
+#include "MaterialBase.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -38,11 +39,26 @@ enum MeshInstanceDirections
     Backward
 };
 
+enum MeshType
+{
+    CubeType,
+    CustomType,
+    PlaneType,
+    SphereType,
+    TriangleType,
+    LightType,
+    ReflectCubeType
+};
+
+
 struct MeshObject
 {
     Repeater* mesh;
     std::string name;
     bool selected = false;
+
+    // What type of mesh is this
+    int type = -1;
 };
 
 class Scene
@@ -62,6 +78,8 @@ public:
     void addTriangle();
     void addSphere();
     void addCustom();
+    void addLight();
+    void addReflectingCube();
     void updateMeshPointer(int direction, bool multiselect = false);
     void resetMeshPointer();
     void deleteInstancedMesh(int selected);
@@ -93,6 +111,8 @@ private:
 
     Camera* m_camera;
     Shader* m_ourShader;
+    Shader* m_lightShader;
+    Shader* m_lightMeshShader;
     Shader* m_ourShaderInstanced;
     Texture* m_smiley_texture;
     ScreenSettings* m_screenSettings;
@@ -122,6 +142,8 @@ private:
     GLuint m_ssbo;
 
     bool m_multiPickMode = false;
+
+    glm::vec3 m_lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
 };
 
 #endif // SCENE_H

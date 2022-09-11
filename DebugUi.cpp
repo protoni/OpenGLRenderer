@@ -336,6 +336,12 @@ void DebugUi::objectLayout(bool* p_open)
         if (ImGui::Button("Add Custom", ImVec2(100, 0)))
             m_scene->addCustom();
 
+        if (ImGui::Button("Add Light", ImVec2(100, 0)))
+            m_scene->addLight();
+
+        if (ImGui::Button("Add Reflect Cube", ImVec2(100, 0)))
+            m_scene->addReflectingCube();
+
         // Mesh object selector
         static int selected = 0;
         {
