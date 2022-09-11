@@ -29,11 +29,27 @@ MaterialBase materialTypeEmerald(
     0.6
 );
 
+/* Silver */
+MaterialBase materialTypeSilver(
+    glm::vec3(0.19225f, 0.19225f, 0.19225f),
+    glm::vec3(0.50754f, 0.50754f, 0.50754f),
+    glm::vec3(0.508273f, 0.508273f, 0.508273f),
+    0.4
+);
+
 /* Green rubber */
 MaterialBase materialTypeGreenRubber(
     glm::vec3(0.0f, 0.05f, 0.0f),
     glm::vec3(0.4f, 0.5f, 0.4f),
     glm::vec3(0.04f, 0.7f, 0.04f),
+    0.078125
+);
+
+/* Yellow rubber */
+MaterialBase materialTypeYellowRubber(
+    glm::vec3(0.05f, 0.05f, 0.0f),
+    glm::vec3(0.5f, 0.5f, 0.4f),
+    glm::vec3(0.7f, 0.7f, 0.04f),
     0.078125
 );
 

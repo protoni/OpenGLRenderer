@@ -51,7 +51,7 @@ void main()
 
     // Calculate diffuse lighting
     vec3 norm = normalize(Normal);
-    vec3 lightDir = normalize(lightPos - FragPos);
+    vec3 lightDir = normalize(light.position - FragPos);
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = light.diffuse * (diff * material.diffuse);
     
@@ -72,7 +72,7 @@ void main()
     }
     
     // Combine Phong lighting
-    vec3 result = (ambient + diffuse + specular) * objectColor;
+    vec3 result = ambient + diffuse + specular;
     
     FragColor = vec4(result, 1.0);
     

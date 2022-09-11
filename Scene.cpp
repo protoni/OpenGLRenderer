@@ -449,14 +449,18 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             m_lightMeshShader->use();
             m_lightMeshShader->setMat4("projection", projection);
             m_lightMeshShader->setMat4("view", view);
-            m_lightMeshShader->setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+            //m_lightMeshShader->setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
             //m_lightMeshShader->setVec3("objectColor", glm::vec3(0.1f, 0.9f, 0.31f));
-            m_lightMeshShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+            //m_lightMeshShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
 
             std::cout << "light pos: X=" << m_lightPos.x << ", Y=" << m_lightPos.y << ", Z=" << m_lightPos.z << std::endl;
 
-            m_lightMeshShader->setVec3("lightPos", m_lightPos);
+            m_lightMeshShader->setVec3("light.position", m_lightPos);
             m_lightMeshShader->setVec3("viewPos", m_camera->Position);
+
+            m_lightMeshShader->setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+            m_lightMeshShader->setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+            m_lightMeshShader->setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 
             // Set material
             //m_lightMeshShader->setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
@@ -465,15 +469,32 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             //m_lightMeshShader->setFloat("material.shininess", 32);
             // 
             // Set emerald material
-            m_lightMeshShader->setVec3("material.ambient", Materials::materialTypeGreenRubber.ambient);
-            m_lightMeshShader->setVec3("material.diffuse", Materials::materialTypeGreenRubber.diffuse);
-            m_lightMeshShader->setVec3("material.specular", Materials::materialTypeGreenRubber.specular);
-            m_lightMeshShader->setFloat("material.shininess", Materials::materialTypeGreenRubber.shininess);
+            //m_lightMeshShader->setVec3("material.ambient", Materials::materialTypeEmerald.ambient);
+            //m_lightMeshShader->setVec3("material.diffuse", Materials::materialTypeEmerald.diffuse);
+            //m_lightMeshShader->setVec3("material.specular", Materials::materialTypeEmerald.specular);
+            //m_lightMeshShader->setFloat("material.shininess", Materials::materialTypeEmerald.shininess);
+
+            // Set green rubber material
+            //m_lightMeshShader->setVec3("material.ambient", Materials::materialTypeGreenRubber.ambient);
+            //m_lightMeshShader->setVec3("material.diffuse", Materials::materialTypeGreenRubber.diffuse);
+            //m_lightMeshShader->setVec3("material.specular", Materials::materialTypeGreenRubber.specular);
+            //m_lightMeshShader->setFloat("material.shininess", Materials::materialTypeGreenRubber.shininess);
+
+            // Set green rubber material
+            m_lightMeshShader->setVec3("material.ambient", Materials::materialTypeSilver.ambient);
+            m_lightMeshShader->setVec3("material.diffuse", Materials::materialTypeSilver.diffuse);
+            m_lightMeshShader->setVec3("material.specular", Materials::materialTypeSilver.specular);
+            m_lightMeshShader->setFloat("material.shininess", Materials::materialTypeSilver.shininess);
+
+            // Set yellow rubber material
+            //m_lightMeshShader->setVec3("material.ambient", Materials::materialTypeYellowRubber.ambient);
+            //m_lightMeshShader->setVec3("material.diffuse", Materials::materialTypeYellowRubber.diffuse);
+            //m_lightMeshShader->setVec3("material.specular", Materials::materialTypeYellowRubber.specular);
+            //m_lightMeshShader->setFloat("material.shininess", Materials::materialTypeYellowRubber.shininess);
 
             // Set lighting intensities for material
-            m_lightMeshShader->setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-            m_lightMeshShader->setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-            m_lightMeshShader->setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+
+            
         }
         else {
             m_ourShader->use();
