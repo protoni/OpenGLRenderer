@@ -32,7 +32,8 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_ourShaderInstanced(NULL), m_instanced_cube(false), m_meshPointer(0)
 {
     // Create and build shaders
-    m_ourShaderInstanced = new Shader("./shaderInstanced.vs", "./shader.fs");
+    //m_ourShaderInstanced = new Shader("./shaderInstanced.vs", "./shader.fs");
+    m_ourShaderInstanced = new Shader("./lightMeshShaderInstanced.vs", "./lightMeshShader.fs");
     m_ourShader = new Shader("./shader.vs", "./shader.fs");
     m_lightShader = new Shader("./shader.vs", "./lightShader.fs");
     m_lightMeshShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
@@ -81,7 +82,10 @@ Scene::~Scene()
 void Scene::updateMeshShader(bool instanced, int idx)
 {
     if (instanced) {
-        m_meshList->at(idx)->mesh->setShader(m_ourShaderInstanced);
+        //if (m_meshList->at(idx)->type == MeshType::ReflectCubeType)
+        //    m_meshList->at(idx)->mesh->setShader(m_ourShaderInstanced);
+        //else
+            m_meshList->at(idx)->mesh->setShader(m_ourShaderInstanced);
     }
     else {
         m_meshList->at(idx)->mesh->setShader(m_ourShader);
@@ -92,19 +96,36 @@ void Scene::updateMeshShader(bool instanced, int idx)
 
 void Scene::addCube()
 {
-    Cube* cube = new Cube(m_ourShader, false, false, true);
+    //Cube* cube = new Cube(m_ourShader, false, false, true);
+    //MeshObject* object = new MeshObject();
+    //object->mesh = cube;
+    //object->name = std::string("Cube_") + std::to_string(m_meshList->size());
+    //m_meshList->push_back(object);
+
+    Cube* cube = new Cube(m_lightMeshShader, false, false, true);
     MeshObject* object = new MeshObject();
+    MeshLights* light = new MeshLights();
+    MaterialBase* material = new MaterialDefault();
+    //MaterialBase* material = &MaterialDefault;
     object->mesh = cube;
     object->name = std::string("Cube_") + std::to_string(m_meshList->size());
+    object->type = MeshType::ReflectCubeType;
+    object->light = light;
+    object->material = material;
     m_meshList->push_back(object);
 }
 
 void Scene::addPlane()
 {
-    Plane* plane = new Plane(m_ourShader, false);
+    Plane* plane = new Plane(m_lightMeshShader, false, false, true);
     MeshObject* object = new MeshObject();
+    MeshLights* light = new MeshLights();
+    MaterialBase* material = new MaterialDefault();
     object->mesh = plane;
     object->name = std::string("Plane_") + std::to_string(m_meshList->size());
+    object->type = MeshType::ReflectCubeType;
+    object->light = light;
+    object->material = material;
     m_meshList->push_back(object);
 }
 
@@ -162,6 +183,9 @@ void Scene::addLight()
 
 void Scene::updateMeshPointer(int direction, bool multiselect)
 {
+    if (getSelectedMeshIndex() < 0)
+        return;
+
     RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
 
     // Figure out which stack are we on
@@ -478,6 +502,39 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             }
         
         }
+
+        m_ourShaderInstanced->setVec3("light.position", m_lightPos);
+        m_ourShaderInstanced->setVec3("viewPos", m_camera->Position);
+
+        // Set lights
+        if (m_meshList->at(idx)->light) {
+            m_ourShaderInstanced->setVec3("light.ambient", m_meshList->at(idx)->light->ambient);
+            m_ourShaderInstanced->setVec3("light.diffuse", m_meshList->at(idx)->light->diffuse);
+            m_ourShaderInstanced->setVec3("light.specular", m_meshList->at(idx)->light->specular);
+        }
+        else {
+            std::cout << "Error! Mesh doesn't have lights. Using defaults" << std::endl;
+            m_ourShaderInstanced->setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+            m_ourShaderInstanced->setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+            m_ourShaderInstanced->setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+        }
+
+        // Set material
+        if (m_meshList->at(idx)->material) {
+            m_ourShaderInstanced->setVec3("material.ambient", m_meshList->at(idx)->material->ambient);
+            m_ourShaderInstanced->setVec3("material.diffuse", m_meshList->at(idx)->material->diffuse);
+            m_ourShaderInstanced->setVec3("material.specular", m_meshList->at(idx)->material->specular);
+            m_ourShaderInstanced->setFloat("material.shininess", m_meshList->at(idx)->material->shininess);
+        }
+        else {
+            std::cout << "Error! Mesh doesn't have material. Using defaults" << std::endl;
+            m_ourShaderInstanced->setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+            m_ourShaderInstanced->setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+            m_ourShaderInstanced->setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+            m_ourShaderInstanced->setFloat("material.shininess", 32);
+        }
+
+        //std::cout << "light pos: X=" << m_lightPos.x << ", Y=" << m_lightPos.y << ", Z=" << m_lightPos.z << std::endl;
     }
     else {
         if (m_meshList->at(idx)->type == MeshType::ReflectCubeType) {
@@ -520,34 +577,6 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
                 m_lightMeshShader->setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
                 m_lightMeshShader->setFloat("material.shininess", 32);
             }
-            // 
-            // Set emerald material
-            //m_lightMeshShader->setVec3("material.ambient", Materials::materialTypeEmerald.ambient);
-            //m_lightMeshShader->setVec3("material.diffuse", Materials::materialTypeEmerald.diffuse);
-            //m_lightMeshShader->setVec3("material.specular", Materials::materialTypeEmerald.specular);
-            //m_lightMeshShader->setFloat("material.shininess", Materials::materialTypeEmerald.shininess);
-
-            // Set green rubber material
-            //m_lightMeshShader->setVec3("material.ambient", Materials::materialTypeGreenRubber.ambient);
-            //m_lightMeshShader->setVec3("material.diffuse", Materials::materialTypeGreenRubber.diffuse);
-            //m_lightMeshShader->setVec3("material.specular", Materials::materialTypeGreenRubber.specular);
-            //m_lightMeshShader->setFloat("material.shininess", Materials::materialTypeGreenRubber.shininess);
-
-            // Set green rubber material
-            //m_lightMeshShader->setVec3("material.ambient", Materials::materialTypeSilver.ambient);
-            //m_lightMeshShader->setVec3("material.diffuse", Materials::materialTypeSilver.diffuse);
-            //m_lightMeshShader->setVec3("material.specular", Materials::materialTypeSilver.specular);
-            //m_lightMeshShader->setFloat("material.shininess", Materials::materialTypeSilver.shininess);
-
-            // Set yellow rubber material
-            //m_lightMeshShader->setVec3("material.ambient", Materials::materialTypeYellowRubber.ambient);
-            //m_lightMeshShader->setVec3("material.diffuse", Materials::materialTypeYellowRubber.diffuse);
-            //m_lightMeshShader->setVec3("material.specular", Materials::materialTypeYellowRubber.specular);
-            //m_lightMeshShader->setFloat("material.shininess", Materials::materialTypeYellowRubber.shininess);
-
-            // Set lighting intensities for material
-
-            
         }
         else {
             m_ourShader->use();

@@ -3,10 +3,10 @@
 
 float plane_vertices[] = {
     // Location         // Texture coords
-    -0.5f, 0.0f,  0.5f,  0.0f, 0.0f, // far left
-     0.5f, 0.0f,  0.5f,  0.0f, 0.0f, // far rigt
-     0.5f, 0.0f, -0.5f,  0.0f, 0.0f, // near right
-    -0.5f, 0.0f, -0.5f,  0.0f, 0.0f, // near left
+    -0.5f, 0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f,// far left
+     0.5f, 0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f,// far rigt
+     0.5f, 0.0f, -0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f,// near right
+    -0.5f, 0.0f, -0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f// near left
 };
 
 unsigned int plane_indices[] = {

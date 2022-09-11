@@ -57,6 +57,8 @@ private:
     unsigned int m_deleteRemoved;
 
     int m_oldObjectCount;
+
+    bool m_useNormals;
 };
 
 #endif // REPEATER_H
