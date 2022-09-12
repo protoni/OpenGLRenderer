@@ -9,7 +9,7 @@ public:
     ~Texture();
 
     void load();
-    void use();
+    void use(int offset);
     unsigned int getTexture();
 
 private:

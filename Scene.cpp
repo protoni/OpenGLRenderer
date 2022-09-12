@@ -28,7 +28,7 @@ unsigned int hexagon_indices[] = {
 Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_camera(camera), m_screenSettings(screenSettings), m_faceCounter(3),
     m_ourShader(NULL), m_texture1(0), m_texture2(0), m_VAO(0), m_EBO(0),
-    m_smiley_texture(NULL), m_columns(1), m_meshList(), m_scale(1.0), m_rows(1), m_instanced(false),
+    m_columns(1), m_meshList(), m_scale(1.0), m_rows(1), m_instanced(false),
     m_ourShaderInstanced(NULL), m_instanced_cube(false), m_meshPointer(0)
 {
     // Create and build shaders
@@ -39,7 +39,8 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_lightMeshShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
     
     // Load texture
-    m_smiley_texture = new Texture("awesomeface.png");
+    m_container_texture = new Texture("container2.png");
+    m_container_texture_specular = new Texture("container2_specular.png");
 
     // Create mesh vector
     m_meshList = new std::vector<MeshObject*>;
@@ -53,9 +54,14 @@ Scene::~Scene()
         m_meshList = NULL;
     }
 
-    if (m_smiley_texture) {
-        delete m_smiley_texture;
-        m_smiley_texture = NULL;
+    if (m_container_texture) {
+        delete m_container_texture;
+        m_container_texture = NULL;
+    }
+
+    if (m_container_texture_specular) {
+        delete m_container_texture_specular;
+        m_container_texture_specular = NULL;
     }
 
     if (m_ourShaderInstanced) {
@@ -616,7 +622,16 @@ void Scene::renderScene()
         return;
     }
 
-    m_smiley_texture->use();
+    
+    m_lightMeshShader->setInt("material.diffuse", 0);
+    m_container_texture->use(0);
+    
+    m_lightMeshShader->setInt("material.specular", 1);
+    m_container_texture_specular->use(1);
+    
+
+    //glActiveTexture(GL_TEXTURE0);
+    //glBindTexture(GL_TEXTURE_2D, m_con);
 
     glm::mat4 projection = glm::perspective(glm::radians(m_camera->Zoom), (float)m_screenSettings->width / (float)m_screenSettings->height, 0.1f, 100.0f);
     glm::mat4 view = m_camera->GetViewMatrix();

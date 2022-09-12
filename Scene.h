@@ -145,7 +145,8 @@ private:
     Shader* m_lightShader;
     Shader* m_lightMeshShader;
     Shader* m_ourShaderInstanced;
-    Texture* m_smiley_texture;
+    Texture* m_container_texture;
+    Texture* m_container_texture_specular;
     ScreenSettings* m_screenSettings;
 
     unsigned int m_VAO;
