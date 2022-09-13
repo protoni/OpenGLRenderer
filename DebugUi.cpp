@@ -110,6 +110,10 @@ void DebugUi::lightSettings(int selected)
     ImGui::BeginChild("Light settings", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing() + 80)));
     ImGui::Text("Light settings");
 
+    if (ImGui::Button("Remove Light", ImVec2(100, 0))) {
+        m_scene->deleteDirectionalLight(selected);
+    }
+
     static float ambient[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
     static float diffuse[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
     static float specular[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
@@ -412,6 +416,9 @@ void DebugUi::objectLayout(bool* p_open)
         if (ImGui::Button("Add Light", ImVec2(100, 0)))
             m_scene->addLight();
 
+        if (ImGui::Button("Add Directional Light", ImVec2(100, 0)))
+            m_scene->addDirectionalLight();
+
         if (ImGui::Button("Add Reflect Cube", ImVec2(100, 0)))
             m_scene->addReflectingCube();
 
@@ -447,13 +454,15 @@ void DebugUi::objectLayout(bool* p_open)
             // If reflecting light type, show light and material settings
             if (meshList.size() != 0 && selected < meshList.size()) {
                 if (meshList.at(selected)->type == MeshType::ReflectCubeType) {
-                    if (ImGui::BeginTabItem("Light")) {
-                        lightSettings(selected);
-                        ImGui::EndTabItem();
-                    }
-
                     if (ImGui::BeginTabItem("Material")) {
                         materialSettings(selected);
+                        ImGui::EndTabItem();
+                    }
+                }
+                else if (meshList.at(selected)->type == MeshType::DirectionalLightType ||
+                    meshList.at(selected)->type == MeshType::LightType) {
+                    if (ImGui::BeginTabItem("Light")) {
+                        lightSettings(selected);
                         ImGui::EndTabItem();
                     }
                 }

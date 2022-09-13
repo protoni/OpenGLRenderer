@@ -187,6 +187,17 @@ void Scene::addLight()
     m_meshList->push_back(object);
 }
 
+void Scene::addDirectionalLight()
+{
+    Cube* cube = new Cube(m_lightShader, false, true, true);
+    MeshObject* object = new MeshObject();
+    object->mesh = cube;
+    object->name = std::string("DirectionalLight_") + std::to_string(m_meshList->size());
+    object->type = MeshType::DirectionalLightType;
+    m_directionalLights.push_back(glm::vec3(-1.0f, -1.0f, -1.0f));
+    m_meshList->push_back(object);
+}
+
 void Scene::updateMeshPointer(int direction, bool multiselect)
 {
     if (getSelectedMeshIndex() < 0)
@@ -330,6 +341,17 @@ void Scene::updateMeshPointer(int direction, bool multiselect)
 void Scene::resetMeshPointer()
 {
     m_meshPointer = 0;
+}
+
+void Scene::deleteDirectionalLight(int selected)
+{
+    if (m_meshList->at(selected)->type == MeshType::DirectionalLightType) {
+        m_directionalLights.clear(); // TODO: when multiple lights implemented, don't delete all
+        std::cout << "delete directional light!" << std::endl;
+    }
+    else if (m_meshList->at(selected)->type == MeshType::LightType) {
+        m_lightPos = glm::vec3(-0.0f, -0.0f, -0.0f);
+    }
 }
 
 void Scene::deleteInstancedMesh(int selected)
@@ -509,7 +531,18 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         
         }
 
-        m_ourShaderInstanced->setVec3("light.position", m_lightPos);
+        //m_ourShaderInstanced->setVec3("light.position", m_lightPos);
+        //m_ourShaderInstanced->setVec3("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+        if (m_directionalLights.size() > 0)
+            m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_directionalLights.at(0), 0.0f));
+        else 
+            m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_lightPos, 1.0f));
+        
+        // Set light fade-out values
+        m_ourShaderInstanced->setFloat("light.constant", 1.0f);
+        m_ourShaderInstanced->setFloat("light.linear", 0.09f);
+        m_ourShaderInstanced->setFloat("light.quadratic", 0.032f);
+
         m_ourShaderInstanced->setVec3("viewPos", m_camera->Position);
 
         // Set lights
@@ -553,7 +586,18 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 
             //std::cout << "light pos: X=" << m_lightPos.x << ", Y=" << m_lightPos.y << ", Z=" << m_lightPos.z << std::endl;
 
-            m_lightMeshShader->setVec3("light.position", m_lightPos);
+            //m_lightMeshShader->setVec3("light.position", m_lightPos);
+            //m_lightMeshShader->setVec3("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+            if (m_directionalLights.size() > 0)
+                m_lightMeshShader->setVec4("light.vector", glm::vec4(m_directionalLights.at(0), 0.0f));
+            else
+                m_lightMeshShader->setVec4("light.vector", glm::vec4(m_lightPos, 1.0f));
+            
+            // Set light fade-out values
+            m_ourShaderInstanced->setFloat("light.constant", 1.0f);
+            m_ourShaderInstanced->setFloat("light.linear", 0.09f);
+            m_ourShaderInstanced->setFloat("light.quadratic", 0.032f);
+
             m_lightMeshShader->setVec3("viewPos", m_camera->Position);
 
             // Set lights
@@ -609,6 +653,19 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 
             
 
+        }
+
+        // Update directional lights
+        if (m_meshList->at(idx)->type == MeshType::DirectionalLightType) {
+            m_lightShader->use();
+            m_lightShader->setMat4("projection", projection);
+            m_lightShader->setMat4("view", view);
+
+            if (state->modified->size() > 0 && m_directionalLights.size() > 0) {
+                m_directionalLights.at(0).x = state->modified->at(0)->transformations->xPos;
+                m_directionalLights.at(0).y = state->modified->at(0)->transformations->yPos;
+                m_directionalLights.at(0).z = state->modified->at(0)->transformations->zPos;
+            }
         }
     }
 

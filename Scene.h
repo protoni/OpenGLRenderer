@@ -48,6 +48,7 @@ enum MeshType
     SphereType,
     TriangleType,
     LightType,
+    DirectionalLightType,
     ReflectCubeType,
     UnknownType
 };
@@ -108,10 +109,12 @@ public:
     void addSphere();
     void addCustom();
     void addLight();
+    void addDirectionalLight();
     void addReflectingCube();
     void updateMeshPointer(int direction, bool multiselect = false);
     void resetMeshPointer();
     void deleteInstancedMesh(int selected);
+    void deleteDirectionalLight(int selected);
 
     std::vector<MeshObject*>* getMeshList();
 
@@ -176,6 +179,8 @@ private:
     bool m_multiPickMode = false;
 
     glm::vec3 m_lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    std::vector<glm::vec3> m_directionalLights;
 };
 
 #endif // SCENE_H
