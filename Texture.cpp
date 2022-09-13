@@ -43,9 +43,9 @@ void Texture::load()
 
 }
 
-void Texture::use()
+void Texture::use(int offset)
 {
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE0 + offset);
     glBindTexture(GL_TEXTURE_2D, m_texture);
 }
 

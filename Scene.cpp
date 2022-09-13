@@ -28,7 +28,7 @@ unsigned int hexagon_indices[] = {
 Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_camera(camera), m_screenSettings(screenSettings), m_faceCounter(3),
     m_ourShader(NULL), m_texture1(0), m_texture2(0), m_VAO(0), m_EBO(0),
-    m_smiley_texture(NULL), m_columns(1), m_meshList(), m_scale(1.0), m_rows(1), m_instanced(false),
+    m_columns(1), m_meshList(), m_scale(1.0), m_rows(1), m_instanced(false),
     m_ourShaderInstanced(NULL), m_instanced_cube(false), m_meshPointer(0)
 {
     // Create and build shaders
@@ -39,7 +39,8 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_lightMeshShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
     
     // Load texture
-    m_smiley_texture = new Texture("awesomeface.png");
+    m_container_texture = new Texture("container2.png");
+    m_container_texture_specular = new Texture("container2_specular.png");
 
     // Create mesh vector
     m_meshList = new std::vector<MeshObject*>;
@@ -53,9 +54,14 @@ Scene::~Scene()
         m_meshList = NULL;
     }
 
-    if (m_smiley_texture) {
-        delete m_smiley_texture;
-        m_smiley_texture = NULL;
+    if (m_container_texture) {
+        delete m_container_texture;
+        m_container_texture = NULL;
+    }
+
+    if (m_container_texture_specular) {
+        delete m_container_texture_specular;
+        m_container_texture_specular = NULL;
     }
 
     if (m_ourShaderInstanced) {
@@ -178,6 +184,17 @@ void Scene::addLight()
     object->mesh = cube;
     object->name = std::string("Light_") + std::to_string(m_meshList->size());
     object->type = MeshType::LightType;
+    m_meshList->push_back(object);
+}
+
+void Scene::addDirectionalLight()
+{
+    Cube* cube = new Cube(m_lightShader, false, true, true);
+    MeshObject* object = new MeshObject();
+    object->mesh = cube;
+    object->name = std::string("DirectionalLight_") + std::to_string(m_meshList->size());
+    object->type = MeshType::DirectionalLightType;
+    m_directionalLights.push_back(glm::vec3(-1.0f, -1.0f, -1.0f));
     m_meshList->push_back(object);
 }
 
@@ -324,6 +341,17 @@ void Scene::updateMeshPointer(int direction, bool multiselect)
 void Scene::resetMeshPointer()
 {
     m_meshPointer = 0;
+}
+
+void Scene::deleteDirectionalLight(int selected)
+{
+    if (m_meshList->at(selected)->type == MeshType::DirectionalLightType) {
+        m_directionalLights.clear(); // TODO: when multiple lights implemented, don't delete all
+        std::cout << "delete directional light!" << std::endl;
+    }
+    else if (m_meshList->at(selected)->type == MeshType::LightType) {
+        m_lightPos = glm::vec3(-0.0f, -0.0f, -0.0f);
+    }
 }
 
 void Scene::deleteInstancedMesh(int selected)
@@ -503,7 +531,18 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         
         }
 
-        m_ourShaderInstanced->setVec3("light.position", m_lightPos);
+        //m_ourShaderInstanced->setVec3("light.position", m_lightPos);
+        //m_ourShaderInstanced->setVec3("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+        if (m_directionalLights.size() > 0)
+            m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_directionalLights.at(0), 0.0f));
+        else 
+            m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_lightPos, 1.0f));
+        
+        // Set light fade-out values
+        m_ourShaderInstanced->setFloat("light.constant", 1.0f);
+        m_ourShaderInstanced->setFloat("light.linear", 0.09f);
+        m_ourShaderInstanced->setFloat("light.quadratic", 0.032f);
+
         m_ourShaderInstanced->setVec3("viewPos", m_camera->Position);
 
         // Set lights
@@ -547,7 +586,18 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 
             //std::cout << "light pos: X=" << m_lightPos.x << ", Y=" << m_lightPos.y << ", Z=" << m_lightPos.z << std::endl;
 
-            m_lightMeshShader->setVec3("light.position", m_lightPos);
+            //m_lightMeshShader->setVec3("light.position", m_lightPos);
+            //m_lightMeshShader->setVec3("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+            if (m_directionalLights.size() > 0)
+                m_lightMeshShader->setVec4("light.vector", glm::vec4(m_directionalLights.at(0), 0.0f));
+            else
+                m_lightMeshShader->setVec4("light.vector", glm::vec4(m_lightPos, 1.0f));
+            
+            // Set light fade-out values
+            m_ourShaderInstanced->setFloat("light.constant", 1.0f);
+            m_ourShaderInstanced->setFloat("light.linear", 0.09f);
+            m_ourShaderInstanced->setFloat("light.quadratic", 0.032f);
+
             m_lightMeshShader->setVec3("viewPos", m_camera->Position);
 
             // Set lights
@@ -604,6 +654,19 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             
 
         }
+
+        // Update directional lights
+        if (m_meshList->at(idx)->type == MeshType::DirectionalLightType) {
+            m_lightShader->use();
+            m_lightShader->setMat4("projection", projection);
+            m_lightShader->setMat4("view", view);
+
+            if (state->modified->size() > 0 && m_directionalLights.size() > 0) {
+                m_directionalLights.at(0).x = state->modified->at(0)->transformations->xPos;
+                m_directionalLights.at(0).y = state->modified->at(0)->transformations->yPos;
+                m_directionalLights.at(0).z = state->modified->at(0)->transformations->zPos;
+            }
+        }
     }
 
     m_meshList->at(idx)->mesh->draw();
@@ -616,7 +679,16 @@ void Scene::renderScene()
         return;
     }
 
-    m_smiley_texture->use();
+    
+    m_lightMeshShader->setInt("material.diffuse", 0);
+    m_container_texture->use(0);
+    
+    m_lightMeshShader->setInt("material.specular", 1);
+    m_container_texture_specular->use(1);
+    
+
+    //glActiveTexture(GL_TEXTURE0);
+    //glBindTexture(GL_TEXTURE_2D, m_con);
 
     glm::mat4 projection = glm::perspective(glm::radians(m_camera->Zoom), (float)m_screenSettings->width / (float)m_screenSettings->height, 0.1f, 100.0f);
     glm::mat4 view = m_camera->GetViewMatrix();
