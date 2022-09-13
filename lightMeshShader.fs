@@ -9,7 +9,14 @@ struct Material {
 struct Light {
     //vec3 position;
     //vec3 direction;
+    
+    // Use vector.w to select between pointlight / directional light / spotlight
     vec4 vector;
+    
+    // Spotlight settings
+    vec3 direction;
+    float cutOff;
+    float outerCutOff;
     
     vec3 ambient;
     vec3 diffuse;
@@ -54,11 +61,21 @@ void main()
     float ambientStrength = 0.1;
     float specularStrength = 0.5;
     bool selected = false;
+    bool isSpotLight = false;
 
 
     // Use positional light by default
     vec3 lightDir = normalize(vec3(light.vector.xyz) - FragPos);
-
+    
+    
+    // Calculate directional light / pointlight
+    if(light.vector.w == 0.0) { // Directional light
+        lightDir = normalize(vec3(light.vector.xyz));
+    }
+    else if (light.vector.w == 1.0){ // Pointlight
+        lightDir = normalize(vec3(light.vector.xyz) - FragPos);
+    }
+    
 
     // Calculate diffuse lighting
     vec3 norm = normalize(Normal);
@@ -83,18 +100,24 @@ void main()
                         light.quadratic * (distance * distance));
     
     
-    // Calculate directional light / positional based light
-    if(light.vector.w == 0.0) {
-        lightDir = normalize(vec3(light.vector.xyz));
-    }
-    else if (light.vector.w == 1.0){
-        lightDir = normalize(vec3(light.vector.xyz) - FragPos);
-        
-        ambient *= attenuation;
-        diffuse *= attenuation;
-        specular *= attenuation;
+    // Calculate Spotlight values
+    float theta = dot(lightDir, normalize(-light.direction));
+    float epsilon = light.cutOff - light.outerCutOff;
+    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+    if (light.vector.w == 0.5) { // Spotlight
+        diffuse *= intensity;
+        specular *= intensity;
     }
     
+    
+
+    ambient *= attenuation;
+    diffuse *= attenuation;
+    specular *= attenuation;
+    
+
+    // Combine Phong lighting
+    vec3 result = ambient + diffuse + specular;
     
     for(int i = 0; i < data_SSBO.length(); i++) {
         if(data_SSBO[i] == instanceID) {
@@ -102,10 +125,6 @@ void main()
         }
     }
     
-    // Combine Phong lighting
-    vec3 result = ambient + diffuse + specular;
-    
-    //FragColor = vec4(result, 1.0);
     
     if(selected) {
         FragColor = vec4(1.0, 1.0, 0.1, 1.0);
@@ -115,6 +134,12 @@ void main()
         FragColor = vec4(result, 1.0);
         //FragColor = vec4(0.1, 0.1, 0.1, 1.0);
     }
+        
+    
+    
+    
+    
+    
     
     
     

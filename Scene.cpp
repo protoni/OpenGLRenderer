@@ -535,9 +535,14 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         //m_ourShaderInstanced->setVec3("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
         if (m_directionalLights.size() > 0)
             m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_directionalLights.at(0), 0.0f));
-        else 
-            m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_lightPos, 1.0f));
-        
+        else {
+            //m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_lightPos, 1.0f));
+            m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_camera->Position, 0.5f));
+            m_ourShaderInstanced->setVec3("light.direction", m_camera->Front);
+            m_ourShaderInstanced->setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+            m_ourShaderInstanced->setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+        }
+
         // Set light fade-out values
         m_ourShaderInstanced->setFloat("light.constant", 1.0f);
         m_ourShaderInstanced->setFloat("light.linear", 0.09f);
@@ -590,13 +595,20 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             //m_lightMeshShader->setVec3("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
             if (m_directionalLights.size() > 0)
                 m_lightMeshShader->setVec4("light.vector", glm::vec4(m_directionalLights.at(0), 0.0f));
-            else
-                m_lightMeshShader->setVec4("light.vector", glm::vec4(m_lightPos, 1.0f));
+            else {
+                //m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_lightPos, 1.0f));
+                // Set light fade-out values
+                //m_lightMeshShader->setFloat("light.constant", 1.0f);
+                //m_lightMeshShader->setFloat("light.linear", 0.09f);
+                //m_lightMeshShader->setFloat("light.quadratic", 0.032f);
+
+                m_lightMeshShader->setVec4("light.vector", glm::vec4(m_camera->Position, 0.5f));
+                m_lightMeshShader->setVec3("light.direction", m_camera->Front);
+                m_lightMeshShader->setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+                m_lightMeshShader->setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+            }
             
-            // Set light fade-out values
-            m_ourShaderInstanced->setFloat("light.constant", 1.0f);
-            m_ourShaderInstanced->setFloat("light.linear", 0.09f);
-            m_ourShaderInstanced->setFloat("light.quadratic", 0.032f);
+            
 
             m_lightMeshShader->setVec3("viewPos", m_camera->Position);
 

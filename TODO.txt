@@ -17,7 +17,16 @@ Todo:
   - specular strength
   - specular shininess
   - ambient strength
+  - Fadeout options:
+    - linear
+    - quadratic
+    
+  - spotlight options
+    - cutOff
+    - outerCutOff
+    
 - Add Gouraud/Phong lighting option to light's parameters in debug UI
+
 
 Bugs:
 - When selecting an object, highlight color doesn't show up
