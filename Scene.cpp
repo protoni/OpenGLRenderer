@@ -530,38 +530,99 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             }
         
         }
-
+        m_ourShaderInstanced->setVec3("viewPos", m_camera->Position);
         //m_ourShaderInstanced->setVec3("light.position", m_lightPos);
         //m_ourShaderInstanced->setVec3("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
-        if (m_directionalLights.size() > 0)
-            m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_directionalLights.at(0), 0.0f));
-        else {
-            //m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_lightPos, 1.0f));
-            m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_camera->Position, 0.5f));
-            m_ourShaderInstanced->setVec3("light.direction", m_camera->Front);
-            m_ourShaderInstanced->setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
-            m_ourShaderInstanced->setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+
+        // Directional lights
+        if (m_directionalLights.size() > 0) {
+            m_ourShaderInstanced->setVec3("dirLight.direction", glm::vec3(m_directionalLights.at(0)));
+            m_ourShaderInstanced->setVec3("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
+            m_ourShaderInstanced->setVec3("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
+            m_ourShaderInstanced->setVec3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
         }
 
-        // Set light fade-out values
-        m_ourShaderInstanced->setFloat("light.constant", 1.0f);
-        m_ourShaderInstanced->setFloat("light.linear", 0.09f);
-        m_ourShaderInstanced->setFloat("light.quadratic", 0.032f);
-
-        m_ourShaderInstanced->setVec3("viewPos", m_camera->Position);
-
-        // Set lights
+        // Point lights
         if (m_meshList->at(idx)->light) {
+            m_ourShaderInstanced->setVec3("light.position", glm::vec3(m_lightPos));
+            
+            //m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_camera->Position, 0.5f));
+            //m_ourShaderInstanced->setVec3("light.direction", m_camera->Front);
+            //m_ourShaderInstanced->setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+            //m_ourShaderInstanced->setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+
+            // Directional light
+            //m_ourShaderInstanced->setVec3("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+            //m_ourShaderInstanced->setVec3("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
+            //m_ourShaderInstanced->setVec3("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
+            //m_ourShaderInstanced->setVec3("dirLight.specular", glm::vec3(0.9f, 0.9f, 0.9f));
+            //
+            //
+            //m_ourShaderInstanced->setVec3("pointLights[0].position", glm::vec3(m_lightPos));
+            //m_ourShaderInstanced->setVec3("pointLights[0].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+            //m_ourShaderInstanced->setVec3("pointLights[0].diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+            //m_ourShaderInstanced->setVec3("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+            //m_ourShaderInstanced->setFloat("pointLights[0].constant", 1.0f);
+            //m_ourShaderInstanced->setFloat("pointLights[0].linear", 0.09f);
+            //m_ourShaderInstanced->setFloat("pointLights[0].quadratic", 0.032f);
+            ////
+            //m_ourShaderInstanced->setVec3("pointLights[1].position", glm::vec3(2.3f, -3.3f, -4.0f));
+            //m_ourShaderInstanced->setVec3("pointLights[1].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+            //m_ourShaderInstanced->setVec3("pointLights[1].diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+            //m_ourShaderInstanced->setVec3("pointLights[1].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+            //m_ourShaderInstanced->setFloat("pointLights[1].constant", 1.0f);
+            //m_ourShaderInstanced->setFloat("pointLights[1].linear", 0.09f);
+            //m_ourShaderInstanced->setFloat("pointLights[1].quadratic", 0.032f);
+            //
+            //m_ourShaderInstanced->setVec3("pointLights[2].position", glm::vec3(-4.0f, 2.0f, -12.0f));
+            //m_ourShaderInstanced->setVec3("pointLights[2].ambient", glm::vec3(0.05f, 0.05f, 0.05f));
+            //m_ourShaderInstanced->setVec3("pointLights[2].diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
+            //m_ourShaderInstanced->setVec3("pointLights[2].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+            //m_ourShaderInstanced->setFloat("pointLights[2].constant", 1.0f);
+            //m_ourShaderInstanced->setFloat("pointLights[2].linear", 0.09f);
+            //m_ourShaderInstanced->setFloat("pointLights[2].constant", 0.032f);
+            //
+            //m_ourShaderInstanced->setVec3("pointLights[3].position", glm::vec3(0.0f, 0.0f, -3.0f));
+            //m_ourShaderInstanced->setVec3("pointLights[3].ambient", glm::vec3(0.05f, 0.05f, 0.05f));
+            //m_ourShaderInstanced->setVec3("pointLights[3].diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
+            //m_ourShaderInstanced->setVec3("pointLights[3].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+            //m_ourShaderInstanced->setFloat("pointLights[3].constant", 1.0f);
+            //m_ourShaderInstanced->setFloat("pointLights[3].linear", 0.09f);
+            //m_ourShaderInstanced->setFloat("pointLights[3].constant", 0.032f);
+            
+            //m_ourShaderInstanced->setVec3("spotLight.position", m_camera->Position);
+            //m_ourShaderInstanced->setVec3("spotLight.direction", m_camera->Front);
+            //m_ourShaderInstanced->setVec3("spotLight.ambient", glm::vec3(0.0f, 0.0f, 0.0f));
+            //m_ourShaderInstanced->setVec3("spotLight.ambient", glm::vec3(1.0f, 1.0f, 1.0f));
+            //m_ourShaderInstanced->setVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+            //m_ourShaderInstanced->setFloat("spotLight.constant", 1.0f);
+            //m_ourShaderInstanced->setFloat("spotLight.linear", 0.09f);
+            //m_ourShaderInstanced->setFloat("spotLight.quadratic", 0.032f);
+            //m_ourShaderInstanced->setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+            //m_ourShaderInstanced->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+
+            // Set lights
             m_ourShaderInstanced->setVec3("light.ambient", m_meshList->at(idx)->light->ambient);
             m_ourShaderInstanced->setVec3("light.diffuse", m_meshList->at(idx)->light->diffuse);
             m_ourShaderInstanced->setVec3("light.specular", m_meshList->at(idx)->light->specular);
+            
+            // Set light fade-out values
+            m_ourShaderInstanced->setFloat("light.constant", 1.0f);
+            m_ourShaderInstanced->setFloat("light.linear", 0.09f);
+            m_ourShaderInstanced->setFloat("light.quadratic", 0.032f);
         }
-        else {
-            std::cout << "Error! Mesh doesn't have lights. Using defaults" << std::endl;
-            m_ourShaderInstanced->setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-            m_ourShaderInstanced->setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-            m_ourShaderInstanced->setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-        }
+
+        // Spotlights
+        m_ourShaderInstanced->setVec3("spotLight.position", m_camera->Position);
+        m_ourShaderInstanced->setVec3("spotLight.direction", m_camera->Front);
+        m_ourShaderInstanced->setVec3("spotLight.ambient", glm::vec3(0.0f, 0.0f, 0.0f));
+        m_ourShaderInstanced->setVec3("spotLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
+        m_ourShaderInstanced->setVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+        m_ourShaderInstanced->setFloat("spotLight.constant", 1.0f);
+        m_ourShaderInstanced->setFloat("spotLight.linear", 0.09f);
+        m_ourShaderInstanced->setFloat("spotLight.quadratic", 0.032f);
+        m_ourShaderInstanced->setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+        m_ourShaderInstanced->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 
         // Set material
         if (m_meshList->at(idx)->material) {
@@ -602,10 +663,10 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
                 //m_lightMeshShader->setFloat("light.linear", 0.09f);
                 //m_lightMeshShader->setFloat("light.quadratic", 0.032f);
 
-                m_lightMeshShader->setVec4("light.vector", glm::vec4(m_camera->Position, 0.5f));
-                m_lightMeshShader->setVec3("light.direction", m_camera->Front);
-                m_lightMeshShader->setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
-                m_lightMeshShader->setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+                //m_lightMeshShader->setVec4("light.vector", glm::vec4(m_camera->Position, 0.5f));
+                //m_lightMeshShader->setVec3("light.direction", m_camera->Front);
+                //m_lightMeshShader->setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+                //m_lightMeshShader->setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
             }
             
             
