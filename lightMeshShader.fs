@@ -13,10 +13,8 @@ struct DirLight {
     vec3 diffuse;
     vec3 specular;
 };
-uniform DirLight dirLight;
 
-
-struct Light {
+struct PointLight {
     vec3 position;
 
     vec3 ambient;
@@ -70,13 +68,14 @@ uniform vec3 viewPos;
 uniform bool selectedInstance;
 
 uniform Material material;
-uniform Light light;
+uniform PointLight light;
 uniform SpotLight spotLight;
+uniform DirLight dirLight;
 
-//#define NR_POINT_LIGHTS 2
-//uniform PointLight pointLights[NR_POINT_LIGHTS];
+#define NR_POINT_LIGHTS 2
+uniform PointLight pointLights[NR_POINT_LIGHTS];
 
-vec3 calculatePointLight(Light light, vec3 viewPos)
+vec3 calculatePointLight(PointLight light, vec3 viewPos)
 {
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(light.position - FragPos);
@@ -170,20 +169,32 @@ vec3 calculateSpotLight(SpotLight light, vec3 viewPos)
 void main()
 {
     bool selected = false;
-
+    float defaultAmbience = 0.1;
+    
+    // Calculate default ambient lighting
+    vec3 ambient = defaultAmbience * vec3(texture(material.diffuse, TexCoord));
+    
     for(int i = 0; i < data_SSBO.length(); i++) {
         if(data_SSBO[i] == instanceID) {
             selected = true;
         }
     }
-
-    vec3 result = calculatePointLight(light, viewPos);
+    
+    // Create default result color
+    vec3 result = ambient;
+    
+    // Apply point lights
+    result += calculatePointLight(light, viewPos);
+    
+    // Apply directional lights
     result += calculateDirectionalLight(dirLight, viewPos);
     
+    // Apply spot lights
     vec3 spotEffect = calculateSpotLight(spotLight, viewPos);
     if(spotEffect.x > 0.0 && spotEffect.y > 0.0 && spotEffect.z > 0.0)
         result += spotEffect;
 
+    // If currently selected, set selected color, else set lights and material colors
     if(selected) {
         FragColor = vec4(1.0, 1.0, 0.1, 1.0);
         //FragColor = vec4(result, 1.0) * vec4(1.0, 1.0, 0.1, 0.7);
