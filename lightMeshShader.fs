@@ -73,6 +73,9 @@ uniform Material material;
 uniform Light light;
 uniform SpotLight spotLight;
 
+//#define NR_POINT_LIGHTS 2
+//uniform PointLight pointLights[NR_POINT_LIGHTS];
+
 vec3 calculatePointLight(Light light, vec3 viewPos)
 {
     vec3 norm = normalize(Normal);
@@ -178,7 +181,7 @@ void main()
     result += calculateDirectionalLight(dirLight, viewPos);
     
     vec3 spotEffect = calculateSpotLight(spotLight, viewPos);
-    //if(spotEffect.x > 0.0 && spotEffect.y > 0.0 && spotEffect.z > 0.0)
+    if(spotEffect.x > 0.0 && spotEffect.y > 0.0 && spotEffect.z > 0.0)
         result += spotEffect;
 
     if(selected) {
