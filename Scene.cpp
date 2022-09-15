@@ -196,7 +196,6 @@ void Scene::addDirectionalLight()
     object->mesh = cube;
     object->name = std::string("DirectionalLight_") + std::to_string(m_meshList->size());
     object->type = MeshType::DirectionalLightType;
-    object->light->ambient = glm::vec3(0.2f, 0.2f, 0.2f);
     
     m_meshList->push_back(object);
     m_directionalLights.push_back(object);
@@ -529,6 +528,41 @@ void Scene::renderDirectionalLight(int idx)
     // Return if max point light count
     if (idx >= 40)
         return;
+
+    // Get light's mesh state
+    RepeaterState* state = m_directionalLights.at(idx)->mesh->getState();
+
+    // Get light position
+    glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
+    if (state->modified->size() > 0) {
+        pos.x = state->modified->at(0)->transformations->xPos;
+        pos.y = state->modified->at(0)->transformations->yPos;
+        pos.z = state->modified->at(0)->transformations->zPos;
+    }
+
+    // Create uniform array location name
+    std::string prefix = "dirLights[";
+    std::string idxStr = std::to_string(idx);
+
+
+    // Set light position
+   std::string name = prefix + idxStr + "].direction";
+   // m_ourShaderInstanced->setVec3(name, pos);
+
+    // Set light direction
+    //name = prefix + idxStr + "].direction";
+    m_ourShaderInstanced->setVec3(name, pos);
+
+    // Set light values
+    name = prefix + idxStr + "].ambient";
+    m_ourShaderInstanced->setVec3(name, glm::vec3(0.05f, 0.05f, 0.05f));
+
+    name = prefix + idxStr + "].diffuse";
+    m_ourShaderInstanced->setVec3(name, glm::vec3(0.4f, 0.4f, 0.4f));
+
+    name = prefix + idxStr + "].specular";
+    m_ourShaderInstanced->setVec3(name, glm::vec3(0.5f, 0.5f, 0.5f));
+
 }
 
 void Scene::renderSpotLight(int idx)
