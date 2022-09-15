@@ -419,8 +419,11 @@ void DebugUi::objectLayout(bool* p_open)
         if (ImGui::Button("Add Directional Light", ImVec2(100, 0)))
             m_scene->addDirectionalLight();
 
-        if (ImGui::Button("Add Reflect Cube", ImVec2(100, 0)))
-            m_scene->addReflectingCube();
+        if (ImGui::Button("Add Spot Light", ImVec2(100, 0)))
+            m_scene->addSpotLight();
+
+        //if (ImGui::Button("Add Reflect Cube", ImVec2(100, 0)))
+        //    m_scene->addReflectingCube();
 
         // Unselect all first
         std::vector<MeshObject*> meshList = *m_scene->getMeshList();

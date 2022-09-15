@@ -50,6 +50,7 @@ enum MeshType
     LightType,
     DirectionalLightType,
     ReflectCubeType,
+    SpotLightType,
     UnknownType
 };
 
@@ -117,6 +118,7 @@ public:
     void addCustom();
     void addLight();
     void addDirectionalLight();
+    void addSpotLight();
     void addReflectingCube();
     void updateMeshPointer(int direction, bool multiselect = false);
     void resetMeshPointer();
@@ -150,6 +152,8 @@ private:
     int getSelectedMeshIndex();
     void highlightSelectedMeshes();
     void renderPointLight(int idx);
+    void renderDirectionalLight(int idx);
+    void renderSpotLight(int idx);
 
     Camera* m_camera;
     Shader* m_ourShader;
@@ -190,8 +194,8 @@ private:
 
     // Lights
     std::vector<MeshObject*> m_pointLights;
-    std::vector<glm::vec3> m_directionalLights;
-    std::vector<glm::vec3> m_spotlLights;
+    std::vector<MeshObject*> m_directionalLights;
+    std::vector<MeshObject*> m_spotLights;
 };
 
 #endif // SCENE_H

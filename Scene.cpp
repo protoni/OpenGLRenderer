@@ -197,8 +197,21 @@ void Scene::addDirectionalLight()
     object->name = std::string("DirectionalLight_") + std::to_string(m_meshList->size());
     object->type = MeshType::DirectionalLightType;
     object->light->ambient = glm::vec3(0.2f, 0.2f, 0.2f);
-    m_directionalLights.push_back(glm::vec3(-1.0f, -1.0f, -1.0f));
+    
     m_meshList->push_back(object);
+    m_directionalLights.push_back(object);
+}
+
+void Scene::addSpotLight()
+{
+    Cube* cube = new Cube(m_lightShader, false, true, true);
+    MeshObject* object = new MeshObject();
+    object->mesh = cube;
+    object->name = std::string("Spotlight_") + std::to_string(m_meshList->size());
+    object->type = MeshType::SpotLightType;
+
+    m_meshList->push_back(object);
+    m_spotLights.push_back(object);
 }
 
 void Scene::updateMeshPointer(int direction, bool multiselect)
@@ -511,6 +524,74 @@ void Scene::highlightSelectedMeshes()
     m_oldMeshPointer = m_meshPointer;
 }
 
+void Scene::renderDirectionalLight(int idx)
+{
+    // Return if max point light count
+    if (idx >= 40)
+        return;
+}
+
+void Scene::renderSpotLight(int idx)
+{
+    // Return if max point light count
+    if (idx >= 40)
+        return;
+
+    // Get light's mesh state
+    RepeaterState* state = m_spotLights.at(idx)->mesh->getState();
+
+    // Get light position
+    glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
+    if (state->modified->size() > 0) {
+        pos.x = state->modified->at(0)->transformations->xPos;
+        pos.y = state->modified->at(0)->transformations->yPos;
+        pos.z = state->modified->at(0)->transformations->zPos;
+    }
+
+    // Create uniform array location name
+    std::string prefix = "spotLights[";
+    std::string idxStr = std::to_string(idx);
+    
+
+    // Set light position
+    std::string name = prefix + idxStr + "].position";
+    m_ourShaderInstanced->setVec3(name, pos);
+
+    // Set light direction
+    name = prefix + idxStr + "].direction";
+    m_ourShaderInstanced->setVec3(name, glm::vec3(1.0f, 0.0f, 0.0f));
+
+
+    // Set light values
+    name = prefix + idxStr + "].ambient";
+    m_ourShaderInstanced->setVec3(name, glm::vec3(0.0f, 0.0f, 0.0f));
+
+    name = prefix + idxStr + "].diffuse";
+    m_ourShaderInstanced->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
+
+    name = prefix + idxStr + "].specular";
+    m_ourShaderInstanced->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
+
+
+    // Set fade-out values
+    name = prefix + idxStr + "].constant";
+    m_ourShaderInstanced->setFloat(name, 1.0f);
+
+    name = prefix + idxStr + "].linear";
+    m_ourShaderInstanced->setFloat(name, 0.09f);
+
+    name = prefix + idxStr + "].quadratic";
+    m_ourShaderInstanced->setFloat(name, 0.032f);
+
+
+    // Set spot area values
+    name = prefix + idxStr + "].cutOff";
+    m_ourShaderInstanced->setFloat(name, glm::cos(glm::radians(12.5f)));
+
+    name = prefix + idxStr + "].outerCutOff";
+    m_ourShaderInstanced->setFloat(name, glm::cos(glm::radians(15.0f)));
+}
+
 void Scene::renderPointLight(int idx)
 {
     // Return if max point light count
@@ -536,7 +617,7 @@ void Scene::renderPointLight(int idx)
     // Set light position
     m_ourShaderInstanced->setVec3(name, pos);
 
-    name = prefix + idxStr + "].diffuse";
+    name = prefix + idxStr + "].ambient";
     m_ourShaderInstanced->setVec3(name, glm::vec3(0.05f, 0.05f, 0.05f));
 
     name = prefix + idxStr + "].diffuse";
@@ -577,34 +658,30 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         m_ourShaderInstanced->setVec3("viewPos", m_camera->Position);
 
         // Directional lights
-        if (m_directionalLights.size() > 0) {
-            m_ourShaderInstanced->setInt("dirLightCount", 1);
-            m_ourShaderInstanced->setVec3("dirLight.direction", glm::vec3(m_directionalLights.at(0)));
-            m_ourShaderInstanced->setVec3("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
-            m_ourShaderInstanced->setVec3("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
-            m_ourShaderInstanced->setVec3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+        m_ourShaderInstanced->setInt("dirLightCount", m_directionalLights.size());
+        for (int i = 0; i < m_directionalLights.size(); i++) {
+            renderDirectionalLight(i);
         }
+        //if (m_directionalLights.size() > 0) {
+        //    m_ourShaderInstanced->setInt("dirLightCount", 1);
+        //    m_ourShaderInstanced->setVec3("dirLight.direction", glm::vec3(m_directionalLights.at(0)));
+        //    m_ourShaderInstanced->setVec3("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
+        //    m_ourShaderInstanced->setVec3("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
+        //    m_ourShaderInstanced->setVec3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+        //}
 
         // Point lights
         m_ourShaderInstanced->setInt("pointLightCount", m_pointLights.size());
-        
         for (int i = 0; i < m_pointLights.size(); i++) {
             renderPointLight(i);
         }
 
         // Spotlights
-        //m_ourShaderInstanced->setInt("spotLightCount", 1);
-        //m_ourShaderInstanced->setVec3("spotLight.position", m_camera->Position);
-        //m_ourShaderInstanced->setVec3("spotLight.direction", m_camera->Front);
-        //m_ourShaderInstanced->setVec3("spotLight.ambient", glm::vec3(0.0f, 0.0f, 0.0f));
-        //m_ourShaderInstanced->setVec3("spotLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
-        //m_ourShaderInstanced->setVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-        //m_ourShaderInstanced->setFloat("spotLight.constant", 1.0f);
-        //m_ourShaderInstanced->setFloat("spotLight.linear", 0.09f);
-        //m_ourShaderInstanced->setFloat("spotLight.quadratic", 0.032f);
-        //m_ourShaderInstanced->setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-        //m_ourShaderInstanced->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
-        
+        m_ourShaderInstanced->setInt("spotLightCount", m_spotLights.size());
+        for (int i = 0; i < m_spotLights.size(); i++) {
+            renderSpotLight(i);
+        }
+
         // Set material
         if (m_meshList->at(idx)->material) {
             m_ourShaderInstanced->setVec3("material.ambient", m_meshList->at(idx)->material->ambient);
@@ -635,20 +712,20 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 
             //m_lightMeshShader->setVec3("light.position", m_lightPos);
             //m_lightMeshShader->setVec3("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
-            if (m_directionalLights.size() > 0)
-                m_lightMeshShader->setVec4("light.vector", glm::vec4(m_directionalLights.at(0), 0.0f));
-            else {
-                //m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_lightPos, 1.0f));
-                // Set light fade-out values
-                //m_lightMeshShader->setFloat("light.constant", 1.0f);
-                //m_lightMeshShader->setFloat("light.linear", 0.09f);
-                //m_lightMeshShader->setFloat("light.quadratic", 0.032f);
-
-                //m_lightMeshShader->setVec4("light.vector", glm::vec4(m_camera->Position, 0.5f));
-                //m_lightMeshShader->setVec3("light.direction", m_camera->Front);
-                //m_lightMeshShader->setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
-                //m_lightMeshShader->setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
-            }
+            //if (m_directionalLights.size() > 0)
+            //    m_lightMeshShader->setVec4("light.vector", glm::vec4(m_directionalLights.at(0), 0.0f));
+            //else {
+            //    //m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_lightPos, 1.0f));
+            //    // Set light fade-out values
+            //    //m_lightMeshShader->setFloat("light.constant", 1.0f);
+            //    //m_lightMeshShader->setFloat("light.linear", 0.09f);
+            //    //m_lightMeshShader->setFloat("light.quadratic", 0.032f);
+            //
+            //    //m_lightMeshShader->setVec4("light.vector", glm::vec4(m_camera->Position, 0.5f));
+            //    //m_lightMeshShader->setVec3("light.direction", m_camera->Front);
+            //    //m_lightMeshShader->setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+            //    //m_lightMeshShader->setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+            //}
             
             
 
@@ -715,11 +792,24 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             m_lightShader->setMat4("projection", projection);
             m_lightShader->setMat4("view", view);
 
-            if (state->modified->size() > 0 && m_directionalLights.size() > 0) {
-                m_directionalLights.at(0).x = state->modified->at(0)->transformations->xPos;
-                m_directionalLights.at(0).y = state->modified->at(0)->transformations->yPos;
-                m_directionalLights.at(0).z = state->modified->at(0)->transformations->zPos;
-            }
+            //if (state->modified->size() > 0 && m_directionalLights.size() > 0) {
+            //    m_directionalLights.at(0).x = state->modified->at(0)->transformations->xPos;
+            //    m_directionalLights.at(0).y = state->modified->at(0)->transformations->yPos;
+            //    m_directionalLights.at(0).z = state->modified->at(0)->transformations->zPos;
+            //}
+        }
+
+        // Update spot lights
+        if (m_meshList->at(idx)->type == MeshType::SpotLightType) {
+            m_lightShader->use();
+            m_lightShader->setMat4("projection", projection);
+            m_lightShader->setMat4("view", view);
+
+            //if (state->modified->size() > 0 && m_directionalLights.size() > 0) {
+            //    m_directionalLights.at(0).x = state->modified->at(0)->transformations->xPos;
+            //    m_directionalLights.at(0).y = state->modified->at(0)->transformations->yPos;
+            //    m_directionalLights.at(0).z = state->modified->at(0)->transformations->zPos;
+            //}
         }
     }
 
@@ -774,6 +864,22 @@ void Scene::deleteObject(int idx)
         for (int i = 0; i < m_pointLights.size(); i++) {
             if (!m_pointLights.at(i)->name.compare(m_meshList->at(idx)->name))
             m_pointLights.erase(m_pointLights.begin() + i);
+        }
+    }
+
+    // Delete directional lights
+    if (m_meshList->at(idx)->type == MeshType::DirectionalLightType) {
+        for (int i = 0; i < m_directionalLights.size(); i++) {
+            if (!m_directionalLights.at(i)->name.compare(m_meshList->at(idx)->name))
+                m_directionalLights.erase(m_directionalLights.begin() + i);
+        }
+    }
+
+    // Delete spot lights
+    if (m_meshList->at(idx)->type == MeshType::SpotLightType) {
+        for (int i = 0; i < m_spotLights.size(); i++) {
+            if (!m_spotLights.at(i)->name.compare(m_meshList->at(idx)->name))
+                m_spotLights.erase(m_spotLights.begin() + i);
         }
     }
     

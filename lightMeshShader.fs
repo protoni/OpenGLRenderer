@@ -75,6 +75,12 @@ uniform DirLight dirLight;
 #define NR_POINT_LIGHTS 40
 uniform PointLight pointLights[NR_POINT_LIGHTS];
 
+#define NR_DIR_LIGHTS 40
+uniform DirLight dirLights[NR_DIR_LIGHTS];
+
+#define NR_SPOT_LIGHTS 40
+uniform SpotLight spotLights[NR_SPOT_LIGHTS];
+
 uniform int pointLightCount;
 uniform int dirLightCount;
 uniform int spotLightCount;
@@ -187,25 +193,21 @@ void main()
     // Create default result color
     vec3 result = ambient;
     
+    // Apply point lights
     if(pointLightCount > 0) {
         for(int i = 0; i < pointLightCount; i++)
             result += calculatePointLight(pointLights[i], viewPos);
     }
     
-    // Apply point lights
-//    vec3 pointLightEffect = calculatePointLight(light, viewPos);
-//    if(pointLightCount > 0)
-//        result += calculatePointLight(light, viewPos);
-//    
-//    // Apply directional lights
-//    vec3 dirLightEffect= calculateDirectionalLight(dirLight, viewPos);
-//    if(pointLightEffect.x > 0.0 && pointLightEffect.y > 0.0 && pointLightEffect.z > 0.0)
-//        result += dirLightEffect;
-//    
-//    // Apply spot lights
-//    vec3 spotEffect = calculateSpotLight(spotLight, viewPos);
-//    if(spotEffect.x > 0.0 && spotEffect.y > 0.0 && spotEffect.z > 0.0)
-//        result += spotEffect;
+    // Apply directional lights
+    if(dirLightCount > 0)
+        for(int i = 0; i < dirLightCount; i++)
+            result += calculateDirectionalLight(dirLights[i], viewPos);
+    
+    // Apply spot lights
+    if(spotLightCount > 0)
+        for(int i = 0; i < spotLightCount; i++)
+            result += calculateSpotLight(spotLights[i], viewPos);
 
     // If currently selected, set selected color, else set lights and material colors
     if(selected) {
