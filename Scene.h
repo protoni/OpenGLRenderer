@@ -60,11 +60,18 @@ struct MeshLights
     glm::vec3 specular;
     float shininess;
 
+    float constant;
+    float linear;
+    float quadratic;
+
     MeshLights()
     : ambient(0.2f, 0.2f, 0.2f)
     , diffuse(0.5f, 0.5f, 0.5f)
     , specular(1.0f, 1.0f, 1.0f)
-    , shininess(32.0f) {}
+    , shininess(32.0f)
+    , constant(1.0f)
+    , linear(0.09f)
+    , quadratic(32.0f) {}
 };
 
 struct MeshObject
@@ -142,6 +149,7 @@ private:
     void draw(int idx, glm::mat4& projection, glm::mat4& view);
     int getSelectedMeshIndex();
     void highlightSelectedMeshes();
+    void renderPointLight(int idx);
 
     Camera* m_camera;
     Shader* m_ourShader;
@@ -180,7 +188,10 @@ private:
 
     glm::vec3 m_lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
 
+    // Lights
+    std::vector<MeshObject*> m_pointLights;
     std::vector<glm::vec3> m_directionalLights;
+    std::vector<glm::vec3> m_spotlLights;
 };
 
 #endif // SCENE_H

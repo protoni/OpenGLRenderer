@@ -26,7 +26,7 @@ Todo:
     - outerCutOff
     
 - Add Gouraud/Phong lighting option to light's parameters in debug UI
-
+- Add fragment shader's default ambience to system wide settings in debug UI
 
 Bugs:
 - When selecting an object, highlight color doesn't show up

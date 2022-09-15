@@ -184,7 +184,9 @@ void Scene::addLight()
     object->mesh = cube;
     object->name = std::string("Light_") + std::to_string(m_meshList->size());
     object->type = MeshType::LightType;
+    
     m_meshList->push_back(object);
+    m_pointLights.push_back(object);
 }
 
 void Scene::addDirectionalLight()
@@ -194,6 +196,7 @@ void Scene::addDirectionalLight()
     object->mesh = cube;
     object->name = std::string("DirectionalLight_") + std::to_string(m_meshList->size());
     object->type = MeshType::DirectionalLightType;
+    object->light->ambient = glm::vec3(0.2f, 0.2f, 0.2f);
     m_directionalLights.push_back(glm::vec3(-1.0f, -1.0f, -1.0f));
     m_meshList->push_back(object);
 }
@@ -508,6 +511,52 @@ void Scene::highlightSelectedMeshes()
     m_oldMeshPointer = m_meshPointer;
 }
 
+void Scene::renderPointLight(int idx)
+{
+    // Return if max point light count
+    if (idx >= 40) 
+        return;
+
+    // Get light's mesh state
+    RepeaterState* state = m_pointLights.at(idx)->mesh->getState();
+
+    // Get light position
+    glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
+    if (state->modified->size() > 0) {
+        pos.x = state->modified->at(0)->transformations->xPos;
+        pos.y = state->modified->at(0)->transformations->yPos;
+        pos.z = state->modified->at(0)->transformations->zPos;
+    }
+
+    // Create uniform array location name
+    std::string prefix = "pointLights[";
+    std::string idxStr = std::to_string(idx);
+    std::string name = prefix + idxStr + "].position";
+
+    // Set light position
+    m_ourShaderInstanced->setVec3(name, pos);
+
+    name = prefix + idxStr + "].diffuse";
+    m_ourShaderInstanced->setVec3(name, glm::vec3(0.05f, 0.05f, 0.05f));
+
+    name = prefix + idxStr + "].diffuse";
+    m_ourShaderInstanced->setVec3(name, glm::vec3(0.8f, 0.8f, 0.8f));
+
+    name = prefix + idxStr + "].specular";
+    m_ourShaderInstanced->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
+
+
+    // Set light fade-out values
+    name = prefix + idxStr + "].constant";
+    m_ourShaderInstanced->setFloat(name, 1.0f);
+
+    name = prefix + idxStr + "].linear";
+    m_ourShaderInstanced->setFloat(name, 0.09f);
+
+    name = prefix + idxStr + "].quadratic";
+    m_ourShaderInstanced->setFloat(name, 0.032f);
+}
+
 void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 {
     
@@ -518,11 +567,6 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         m_ourShaderInstanced->setMat4("view", view);
         m_ourShaderInstanced->setInt("selectedMesh", m_meshPointer);
         m_ourShaderInstanced->setInt("selectedInstance", m_meshList->at(idx)->selected);
-        //if (m_meshList->at(i)->selected) {
-        //    m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
-        //}
-        //else
-        //    m_ourShaderInstanced->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
 
         if (m_multiSelectVec.size() > 0) {
             if (m_multiSelectVec.size() != m_oldMultiSelectVecSize || m_oldMeshPointer != m_meshPointer) {
@@ -531,11 +575,10 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         
         }
         m_ourShaderInstanced->setVec3("viewPos", m_camera->Position);
-        //m_ourShaderInstanced->setVec3("light.position", m_lightPos);
-        //m_ourShaderInstanced->setVec3("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
 
         // Directional lights
         if (m_directionalLights.size() > 0) {
+            m_ourShaderInstanced->setInt("dirLightCount", 1);
             m_ourShaderInstanced->setVec3("dirLight.direction", glm::vec3(m_directionalLights.at(0)));
             m_ourShaderInstanced->setVec3("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
             m_ourShaderInstanced->setVec3("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
@@ -543,87 +586,25 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         }
 
         // Point lights
-        if (m_meshList->at(idx)->light) {
-            m_ourShaderInstanced->setVec3("light.position", glm::vec3(m_lightPos));
-            
-            //m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_camera->Position, 0.5f));
-            //m_ourShaderInstanced->setVec3("light.direction", m_camera->Front);
-            //m_ourShaderInstanced->setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
-            //m_ourShaderInstanced->setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
-
-            // Directional light
-            //m_ourShaderInstanced->setVec3("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
-            //m_ourShaderInstanced->setVec3("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
-            //m_ourShaderInstanced->setVec3("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
-            //m_ourShaderInstanced->setVec3("dirLight.specular", glm::vec3(0.9f, 0.9f, 0.9f));
-            //
-            //
-            //m_ourShaderInstanced->setVec3("pointLights[0].position", glm::vec3(m_lightPos));
-            //m_ourShaderInstanced->setVec3("pointLights[0].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-            //m_ourShaderInstanced->setVec3("pointLights[0].diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-            //m_ourShaderInstanced->setVec3("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-            //m_ourShaderInstanced->setFloat("pointLights[0].constant", 1.0f);
-            //m_ourShaderInstanced->setFloat("pointLights[0].linear", 0.09f);
-            //m_ourShaderInstanced->setFloat("pointLights[0].quadratic", 0.032f);
-            ////
-            //m_ourShaderInstanced->setVec3("pointLights[1].position", glm::vec3(2.3f, -3.3f, -4.0f));
-            //m_ourShaderInstanced->setVec3("pointLights[1].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-            //m_ourShaderInstanced->setVec3("pointLights[1].diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-            //m_ourShaderInstanced->setVec3("pointLights[1].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-            //m_ourShaderInstanced->setFloat("pointLights[1].constant", 1.0f);
-            //m_ourShaderInstanced->setFloat("pointLights[1].linear", 0.09f);
-            //m_ourShaderInstanced->setFloat("pointLights[1].quadratic", 0.032f);
-            //
-            //m_ourShaderInstanced->setVec3("pointLights[2].position", glm::vec3(-4.0f, 2.0f, -12.0f));
-            //m_ourShaderInstanced->setVec3("pointLights[2].ambient", glm::vec3(0.05f, 0.05f, 0.05f));
-            //m_ourShaderInstanced->setVec3("pointLights[2].diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
-            //m_ourShaderInstanced->setVec3("pointLights[2].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-            //m_ourShaderInstanced->setFloat("pointLights[2].constant", 1.0f);
-            //m_ourShaderInstanced->setFloat("pointLights[2].linear", 0.09f);
-            //m_ourShaderInstanced->setFloat("pointLights[2].constant", 0.032f);
-            //
-            //m_ourShaderInstanced->setVec3("pointLights[3].position", glm::vec3(0.0f, 0.0f, -3.0f));
-            //m_ourShaderInstanced->setVec3("pointLights[3].ambient", glm::vec3(0.05f, 0.05f, 0.05f));
-            //m_ourShaderInstanced->setVec3("pointLights[3].diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
-            //m_ourShaderInstanced->setVec3("pointLights[3].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-            //m_ourShaderInstanced->setFloat("pointLights[3].constant", 1.0f);
-            //m_ourShaderInstanced->setFloat("pointLights[3].linear", 0.09f);
-            //m_ourShaderInstanced->setFloat("pointLights[3].constant", 0.032f);
-            
-            //m_ourShaderInstanced->setVec3("spotLight.position", m_camera->Position);
-            //m_ourShaderInstanced->setVec3("spotLight.direction", m_camera->Front);
-            //m_ourShaderInstanced->setVec3("spotLight.ambient", glm::vec3(0.0f, 0.0f, 0.0f));
-            //m_ourShaderInstanced->setVec3("spotLight.ambient", glm::vec3(1.0f, 1.0f, 1.0f));
-            //m_ourShaderInstanced->setVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-            //m_ourShaderInstanced->setFloat("spotLight.constant", 1.0f);
-            //m_ourShaderInstanced->setFloat("spotLight.linear", 0.09f);
-            //m_ourShaderInstanced->setFloat("spotLight.quadratic", 0.032f);
-            //m_ourShaderInstanced->setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-            //m_ourShaderInstanced->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
-
-            // Set lights
-            m_ourShaderInstanced->setVec3("light.ambient", m_meshList->at(idx)->light->ambient);
-            m_ourShaderInstanced->setVec3("light.diffuse", m_meshList->at(idx)->light->diffuse);
-            m_ourShaderInstanced->setVec3("light.specular", m_meshList->at(idx)->light->specular);
-            
-            // Set light fade-out values
-            m_ourShaderInstanced->setFloat("light.constant", 1.0f);
-            m_ourShaderInstanced->setFloat("light.linear", 0.09f);
-            m_ourShaderInstanced->setFloat("light.quadratic", 0.032f);
+        m_ourShaderInstanced->setInt("pointLightCount", m_pointLights.size());
+        
+        for (int i = 0; i < m_pointLights.size(); i++) {
+            renderPointLight(i);
         }
 
         // Spotlights
-        m_ourShaderInstanced->setVec3("spotLight.position", m_camera->Position);
-        m_ourShaderInstanced->setVec3("spotLight.direction", m_camera->Front);
-        m_ourShaderInstanced->setVec3("spotLight.ambient", glm::vec3(0.0f, 0.0f, 0.0f));
-        m_ourShaderInstanced->setVec3("spotLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
-        m_ourShaderInstanced->setVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-        m_ourShaderInstanced->setFloat("spotLight.constant", 1.0f);
-        m_ourShaderInstanced->setFloat("spotLight.linear", 0.09f);
-        m_ourShaderInstanced->setFloat("spotLight.quadratic", 0.032f);
-        m_ourShaderInstanced->setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-        m_ourShaderInstanced->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
-
+        //m_ourShaderInstanced->setInt("spotLightCount", 1);
+        //m_ourShaderInstanced->setVec3("spotLight.position", m_camera->Position);
+        //m_ourShaderInstanced->setVec3("spotLight.direction", m_camera->Front);
+        //m_ourShaderInstanced->setVec3("spotLight.ambient", glm::vec3(0.0f, 0.0f, 0.0f));
+        //m_ourShaderInstanced->setVec3("spotLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
+        //m_ourShaderInstanced->setVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+        //m_ourShaderInstanced->setFloat("spotLight.constant", 1.0f);
+        //m_ourShaderInstanced->setFloat("spotLight.linear", 0.09f);
+        //m_ourShaderInstanced->setFloat("spotLight.quadratic", 0.032f);
+        //m_ourShaderInstanced->setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+        //m_ourShaderInstanced->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+        
         // Set material
         if (m_meshList->at(idx)->material) {
             m_ourShaderInstanced->setVec3("material.ambient", m_meshList->at(idx)->material->ambient);
@@ -637,8 +618,8 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             m_ourShaderInstanced->setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
             m_ourShaderInstanced->setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
             m_ourShaderInstanced->setFloat("material.shininess", 32);
+            
         }
-
         //std::cout << "light pos: X=" << m_lightPos.x << ", Y=" << m_lightPos.y << ", Z=" << m_lightPos.z << std::endl;
     }
     else {
@@ -788,6 +769,14 @@ void Scene::update()
 
 void Scene::deleteObject(int idx)
 {
+    // Delete pointlights
+    if (m_meshList->at(idx)->type == MeshType::LightType) {
+        for (int i = 0; i < m_pointLights.size(); i++) {
+            if (!m_pointLights.at(i)->name.compare(m_meshList->at(idx)->name))
+            m_pointLights.erase(m_pointLights.begin() + i);
+        }
+    }
+    
     // Clear individual deleted meshes inside an instance
     RepeaterState* state = m_meshList->at(idx)->mesh->getState();
     if (state->deleted) {

@@ -72,8 +72,12 @@ uniform PointLight light;
 uniform SpotLight spotLight;
 uniform DirLight dirLight;
 
-#define NR_POINT_LIGHTS 2
+#define NR_POINT_LIGHTS 40
 uniform PointLight pointLights[NR_POINT_LIGHTS];
+
+uniform int pointLightCount;
+uniform int dirLightCount;
+uniform int spotLightCount;
 
 vec3 calculatePointLight(PointLight light, vec3 viewPos)
 {
@@ -169,7 +173,7 @@ vec3 calculateSpotLight(SpotLight light, vec3 viewPos)
 void main()
 {
     bool selected = false;
-    float defaultAmbience = 0.1;
+    float defaultAmbience = 0.05;
     
     // Calculate default ambient lighting
     vec3 ambient = defaultAmbience * vec3(texture(material.diffuse, TexCoord));
@@ -183,16 +187,25 @@ void main()
     // Create default result color
     vec3 result = ambient;
     
+    if(pointLightCount > 0) {
+        for(int i = 0; i < pointLightCount; i++)
+            result += calculatePointLight(pointLights[i], viewPos);
+    }
+    
     // Apply point lights
-    result += calculatePointLight(light, viewPos);
-    
-    // Apply directional lights
-    result += calculateDirectionalLight(dirLight, viewPos);
-    
-    // Apply spot lights
-    vec3 spotEffect = calculateSpotLight(spotLight, viewPos);
-    if(spotEffect.x > 0.0 && spotEffect.y > 0.0 && spotEffect.z > 0.0)
-        result += spotEffect;
+//    vec3 pointLightEffect = calculatePointLight(light, viewPos);
+//    if(pointLightCount > 0)
+//        result += calculatePointLight(light, viewPos);
+//    
+//    // Apply directional lights
+//    vec3 dirLightEffect= calculateDirectionalLight(dirLight, viewPos);
+//    if(pointLightEffect.x > 0.0 && pointLightEffect.y > 0.0 && pointLightEffect.z > 0.0)
+//        result += dirLightEffect;
+//    
+//    // Apply spot lights
+//    vec3 spotEffect = calculateSpotLight(spotLight, viewPos);
+//    if(spotEffect.x > 0.0 && spotEffect.y > 0.0 && spotEffect.z > 0.0)
+//        result += spotEffect;
 
     // If currently selected, set selected color, else set lights and material colors
     if(selected) {
