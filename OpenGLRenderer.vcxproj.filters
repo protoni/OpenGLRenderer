@@ -93,6 +93,12 @@
     <ClCompile Include="Shapes\Custom.cpp">
       <Filter>Source Files\Shapes</Filter>
     </ClCompile>
+    <ClCompile Include="ModelMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -171,6 +177,12 @@
       <Filter>Header Files\Shapes</Filter>
     </ClInclude>
     <ClInclude Include="MaterialBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

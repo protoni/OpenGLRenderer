@@ -171,6 +171,8 @@
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="ModelMesh.cpp" />
     <ClCompile Include="Repeater.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shapes\Cube.cpp" />
@@ -198,6 +200,8 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="MaterialBase.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="ModelMesh.h" />
     <ClInclude Include="Repeater.h" />
     <ClInclude Include="RepeaterState.h" />
     <ClInclude Include="Scene.h" />

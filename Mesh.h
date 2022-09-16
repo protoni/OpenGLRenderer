@@ -5,10 +5,6 @@
 #include "Shader.h"
 #include <vector>
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
 class Mesh
 {
 
@@ -84,7 +80,6 @@ private:
     bool m_isLight;
     bool m_useNormals;
 
-    Assimp::Importer importer;
 };
 
 #endif // MESH_H

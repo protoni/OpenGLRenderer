@@ -18,6 +18,7 @@
 #include "Sphere.h"
 #include "Custom.h"
 #include "MaterialBase.h"
+#include "Model.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -161,6 +162,7 @@ private:
     Shader* m_lightShader;
     Shader* m_lightMeshShader;
     Shader* m_ourShaderInstanced;
+    Shader* m_modelLoadingShader;
     Texture* m_container_texture;
     Texture* m_container_texture_specular;
     ScreenSettings* m_screenSettings;
@@ -198,7 +200,7 @@ private:
     std::vector<MeshObject*> m_directionalLights;
     std::vector<MeshObject*> m_spotLights;
 
-    
+    Model* m_backpackModel;
 };
 
 #endif // SCENE_H

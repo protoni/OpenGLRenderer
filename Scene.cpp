@@ -29,7 +29,8 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_camera(camera), m_screenSettings(screenSettings), m_faceCounter(3),
     m_ourShader(NULL), m_texture1(0), m_texture2(0), m_VAO(0), m_EBO(0),
     m_columns(1), m_meshList(), m_scale(1.0), m_rows(1), m_instanced(false),
-    m_ourShaderInstanced(NULL), m_instanced_cube(false), m_meshPointer(0)
+    m_ourShaderInstanced(NULL), m_instanced_cube(false), m_meshPointer(0), m_backpackModel(NULL),
+    m_modelLoadingShader(NULL)
 {
     // Create and build shaders
     //m_ourShaderInstanced = new Shader("./shaderInstanced.vs", "./shader.fs");
@@ -37,6 +38,7 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_ourShader = new Shader("./shader.vs", "./shader.fs");
     m_lightShader = new Shader("./shader.vs", "./lightShader.fs");
     m_lightMeshShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
+    m_modelLoadingShader = new Shader("./modelLoading.vs", "./modelLoading.fs");
     
     // Load texture
     m_container_texture = new Texture("container2.png");
@@ -45,6 +47,8 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     // Create mesh vector
     m_meshList = new std::vector<MeshObject*>;
 
+    // Load example model
+    m_backpackModel = new Model("Models/backpack/backpack.obj");
 }
 
 Scene::~Scene()
@@ -82,6 +86,16 @@ Scene::~Scene()
     if (m_lightMeshShader) {
         delete m_lightMeshShader;
         m_lightMeshShader = NULL;
+    }
+
+    if (m_backpackModel) {
+        delete m_backpackModel;
+        m_backpackModel = NULL;
+    }
+
+    if (m_modelLoadingShader) {
+        delete m_modelLoadingShader;
+        m_modelLoadingShader = NULL;
     }
 }
 
@@ -738,6 +752,7 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             m_lightMeshShader->use();
             m_lightMeshShader->setMat4("projection", projection);
             m_lightMeshShader->setMat4("view", view);
+
             //m_lightMeshShader->setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
             //m_lightMeshShader->setVec3("objectColor", glm::vec3(0.1f, 0.9f, 0.31f));
             //m_lightMeshShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
@@ -802,6 +817,8 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
                 m_ourShader->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
             else
                 m_ourShader->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
+            
+            
         }
 
         if (m_meshList->at(idx)->type == MeshType::LightType) {
@@ -864,12 +881,25 @@ void Scene::renderScene()
     m_lightMeshShader->setInt("material.specular", 1);
     m_container_texture_specular->use(1);
     
-
     //glActiveTexture(GL_TEXTURE0);
     //glBindTexture(GL_TEXTURE_2D, m_con);
 
     glm::mat4 projection = glm::perspective(glm::radians(m_camera->Zoom), (float)m_screenSettings->width / (float)m_screenSettings->height, 0.1f, 100.0f);
     glm::mat4 view = m_camera->GetViewMatrix();
+
+    // Render example model
+    m_modelLoadingShader->use();
+    m_modelLoadingShader->setMat4("projection", projection);
+    m_modelLoadingShader->setMat4("view", view);
+
+    // render the loaded model
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+    m_modelLoadingShader->setMat4("model", model);
+
+    m_backpackModel->draw(*m_modelLoadingShader);
+    std::cout << "Drawing non instanced model!" << std::endl;
 
     int lastDrawn = 0;
     for (int i = 0; i < m_meshList->size(); i++) {
