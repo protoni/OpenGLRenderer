@@ -30,6 +30,7 @@
 #include <thread>
 
 
+
 enum MeshInstanceDirections
 {
     Left,
@@ -196,6 +197,8 @@ private:
     std::vector<MeshObject*> m_pointLights;
     std::vector<MeshObject*> m_directionalLights;
     std::vector<MeshObject*> m_spotLights;
+
+    
 };
 
 #endif // SCENE_H
