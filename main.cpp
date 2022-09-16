@@ -57,8 +57,12 @@ double fps = 0.0f;
 
 int main(int argc, char** argv)
 {
-    // Auto dump memory leak info
-    //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    /* Auto dump memory leak info
+       ( This fixes an issue where if manually dumping memory leak info at the end of the application, it would count
+       static objects as memory leaks because they will be freed after the main() execution )
+    */
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    
 
     // Take a snapshot of heap memory
     _CrtMemCheckpoint(&sOld); 
@@ -159,25 +163,13 @@ int main(int argc, char** argv)
 
     std::cout << "Exiting.." << std::endl;
 
-    _CrtMemCheckpoint(&sNew); //take a snapshot 
-    if (_CrtMemDifference(&sDiff, &sOld, &sNew)) // if there is a difference
-    {
-        _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
-        _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
-        _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-        _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDOUT);
-        _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
-        _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDOUT);
-
-        OutputDebugString(L"-----------_CrtMemDumpStatistics ---------");
-        _CrtMemDumpStatistics(&sDiff);
-        //OutputDebugString(L"-----------_CrtMemDumpAllObjectsSince ---------");
-        //_CrtMemDumpAllObjectsSince(&sOld);
-        OutputDebugString(L"-----------_CrtDumpMemoryLeaks ---------");
-        _CrtDumpMemoryLeaks();
-
-        
-    }
+    // Re-direct possible memory leaks to sysout
+    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+    _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
+    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
+    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDOUT);
+    _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
+    _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDOUT);
 
     return 0;
 }
