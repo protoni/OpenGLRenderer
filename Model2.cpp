@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-Model2::Model2()
+Model2::Model2(Shader* shader) : m_shader(shader)
 {
 }
 
@@ -22,14 +22,22 @@ void Model2::RenderModel()
             textureList[materialIndex]->use(0);
         }
 
-        meshList[i]->RenderMesh();
+        //meshList[i]->RenderMesh();
+        meshList[i]->drawNonInstanced();
     }
 }
 
 void Model2::LoadModel(const std::string& fileName)
 {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(fileName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices);
+    const aiScene* scene = importer.ReadFile(
+        fileName,
+        aiProcess_Triangulate |
+        aiProcess_FlipUVs |
+        //aiProcess_GenSmoothNormals |
+        aiProcess_JoinIdenticalVertices |
+        aiProcess_OptimizeMeshes
+    );
 
     if (!scene)
     {
@@ -82,8 +90,8 @@ void Model2::LoadMesh(aiMesh* mesh, const aiScene* scene)
         }
     }
 
-    ModelMesh2* newMesh = new ModelMesh2();
-    newMesh->CreateMesh(&vertices[0], &indices[0], vertices.size(), indices.size());
+    ModelMesh2* newMesh = new ModelMesh2(m_shader);
+    newMesh->CreateMesh(vertices, indices, vertices.size(), indices.size());
     meshList.push_back(newMesh);
     meshToTex.push_back(mesh->mMaterialIndex);
 }
@@ -152,5 +160,43 @@ void Model2::ClearModel()
             delete textureList[i];
             textureList[i] = nullptr;
         }
+    }
+}
+
+std::vector<ModelMesh2*>* Model2::getMeshList()
+{
+    return &meshList;
+}
+
+void Model2::setInstanced(bool instanced)
+{
+    for (size_t i = 0; i < meshList.size(); i++)
+    {
+        meshList.at(i)->setInstanced(instanced);
+    }
+}
+
+int Model2::getObjectCount()
+{
+    return meshList.at(0)->getObjCount();
+}
+
+int Model2::getTriangleCount()
+{
+    return meshList.at(0)->getObjCount() * meshList.at(0)->getIndexCount();// * meshList.size()) * (meshList.at(0)->getIndexCount() * meshList.size());
+}
+
+void Model2::update()
+{
+    for (size_t i = 0; i < meshList.size(); i++)
+    {
+        if (i > 0)
+            meshList.at(i)->getState()->columnCount = meshList.at(0)->getState()->columnCount;
+            meshList.at(i)->getState()->rowCount = meshList.at(0)->getState()->rowCount;
+            meshList.at(i)->getState()->stackCount = meshList.at(0)->getState()->stackCount;
+
+            meshList.at(i)->getState()->transformations->paddingX = meshList.at(0)->getState()->transformations->paddingX;
+            meshList.at(i)->getState()->transformations->paddingY = meshList.at(0)->getState()->transformations->paddingY;
+            meshList.at(i)->getState()->transformations->paddingZ = meshList.at(0)->getState()->transformations->paddingZ;
     }
 }

@@ -49,9 +49,9 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
 
     // Load example model
     //m_backpackModel = new Model("Models/backpack/backpack.obj");
-    m_backpackModel = new Model2();
+    //m_backpackModel = new Model2(m_modelLoadingShader);
     //m_backpackModel->LoadModel("Models/troll_hotel01.obj");
-    m_backpackModel->LoadModel("Models/backpack/backpack.obj");
+    //m_backpackModel->LoadModel("Models/backpack/backpack.obj");
 }
 
 Scene::~Scene()
@@ -104,17 +104,22 @@ Scene::~Scene()
 
 void Scene::updateMeshShader(bool instanced, int idx)
 {
-    if (instanced) {
-        //if (m_meshList->at(idx)->type == MeshType::ReflectCubeType)
-        //    m_meshList->at(idx)->mesh->setShader(m_ourShaderInstanced);
-        //else
-            m_meshList->at(idx)->mesh->setShader(m_ourShaderInstanced);
+    if (m_meshList->at(idx)->type == MeshType::ModelType) {
+        m_meshList->at(idx)->model->setInstanced(instanced);
     }
     else {
-        m_meshList->at(idx)->mesh->setShader(m_ourShader);
-    }
+        if (instanced) {
+            //if (m_meshList->at(idx)->type == MeshType::ReflectCubeType)
+            //    m_meshList->at(idx)->mesh->setShader(m_ourShaderInstanced);
+            //else
+            m_meshList->at(idx)->mesh->setShader(m_ourShaderInstanced);
+        }
+        else {
+            m_meshList->at(idx)->mesh->setShader(m_ourShader);
+        }
 
-    m_meshList->at(idx)->mesh->setInstanced(instanced);
+        m_meshList->at(idx)->mesh->setInstanced(instanced);
+    }
 }
 
 void Scene::addCube()
@@ -230,12 +235,32 @@ void Scene::addSpotLight()
     m_spotLights.push_back(object);
 }
 
+void Scene::addModel()
+{
+    Model2* model = new Model2(m_lightMeshShader);
+    model->LoadModel("Models/backpack/backpack.obj");
+    MeshObject* object = new MeshObject();
+    object->model = model;
+    object->name = std::string("Model_") + std::to_string(m_meshList->size());
+    object->type = MeshType::ModelType;
+
+    m_meshList->push_back(object);
+    //m_modelList->push_back(object);
+    //m_backpackModel->LoadModel("Models/troll_hotel01.obj");
+    //m_backpackModel->LoadModel("Models/backpack/backpack.obj");
+}
+
 void Scene::updateMeshPointer(int direction, bool multiselect)
 {
     if (getSelectedMeshIndex() < 0)
         return;
 
-    RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
+    RepeaterState* state;
+
+    if (m_meshList->at(getSelectedMeshIndex())->type == MeshType::ModelType)
+        state = m_meshList->at(getSelectedMeshIndex())->model->getMeshList()->at(0)->getState();
+    else
+        state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
 
     // Figure out which stack are we on
     int stackPosition = 0;
@@ -455,7 +480,15 @@ bool Scene::updateObjectMesh(int idx)
         }
     }
 
-    m_meshList->at(idx)->mesh->update();
+    if (m_meshList->at(idx)->type == MeshType::ModelType) {
+        m_meshList->at(idx)->model->update();
+        //std::vector<ModelMesh2*> meshes = *m_meshList->at(idx)->model->getMeshList();
+        //for (int i = 0; i < meshes.size(); i++) {
+        //    meshes.at(i)->update();
+        //}
+    }
+    else
+        m_meshList->at(idx)->mesh->update();
 
     std::cout << "Triangle count: " << getTriangleCount() << std::endl;
 
@@ -497,7 +530,15 @@ int Scene::getTriangleCount()
     int count = 0;
     
     for (int i = 0; i < m_meshList->size(); i++) {
-        count += m_meshList->at(i)->mesh->getObjCount() * m_meshList->at(i)->mesh->getIndexCount();
+        if (m_meshList->at(i)->type == MeshType::ModelType) {
+            count += m_meshList->at(i)->model->getTriangleCount();
+            //std::vector<ModelMesh2*> meshes = *m_meshList->at(i)->model->getMeshList();
+            //for (int j = 0; j < meshes.size(); j++) {
+            //    count += meshes.at(j)->getObjCount() * meshes.at(j)->getIndexCount();
+            //}
+        }
+        else
+            count += m_meshList->at(i)->mesh->getObjCount() * m_meshList->at(i)->mesh->getIndexCount();
     }
 
     return count;
@@ -508,11 +549,16 @@ int Scene::getObjectCount()
     int count = 0;
     RepeaterState* state;
     for (int i = 0; i < m_meshList->size(); i++) {
-        state = m_meshList->at(i)->mesh->getState();
-        if (state->deleted)
-            count += m_meshList->at(i)->mesh->getObjCount() - state->deleted->size();
-        else
-            count += m_meshList->at(i)->mesh->getObjCount();
+        if (m_meshList->at(i)->type == MeshType::ModelType) {
+            count += m_meshList->at(i)->model->getObjectCount();
+        }
+        else {
+            state = m_meshList->at(i)->mesh->getState();
+            if (state->deleted)
+                count += m_meshList->at(i)->mesh->getObjCount() - state->deleted->size();
+            else
+                count += m_meshList->at(i)->mesh->getObjCount();
+        }
     }
 
     return count;
@@ -540,14 +586,18 @@ void Scene::highlightSelectedMeshes()
     m_oldMeshPointer = m_meshPointer;
 }
 
-void Scene::renderDirectionalLight(int idx)
+void Scene::renderDirectionalLight(int idx, Shader* shader)
 {
     // Return if max point light count
     if (idx >= 40)
         return;
 
     // Get light's mesh state
-    RepeaterState* state = m_directionalLights.at(idx)->mesh->getState();
+    RepeaterState* state;
+    if (m_pointLights.at(idx)->type == MeshType::ModelType)
+        state = m_pointLights.at(idx)->model->getMeshList()->at(0)->getState();
+    else
+        state = m_pointLights.at(idx)->mesh->getState();
 
     // Get light position
     glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -582,14 +632,18 @@ void Scene::renderDirectionalLight(int idx)
 
 }
 
-void Scene::renderSpotLight(int idx)
+void Scene::renderSpotLight(int idx, Shader* shader)
 {
     // Return if max point light count
     if (idx >= 40)
         return;
 
     // Get light's mesh state
-    RepeaterState* state = m_spotLights.at(idx)->mesh->getState();
+    RepeaterState* state;
+    if (m_pointLights.at(idx)->type == MeshType::ModelType)
+        state = m_pointLights.at(idx)->model->getMeshList()->at(0)->getState();
+    else
+        state = m_pointLights.at(idx)->mesh->getState();
 
     // Get light position
     glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -643,14 +697,18 @@ void Scene::renderSpotLight(int idx)
     m_ourShaderInstanced->setFloat(name, glm::cos(glm::radians(15.0f)));
 }
 
-void Scene::renderPointLight(int idx)
+void Scene::renderPointLight(int idx, Shader* shader)
 {
     // Return if max point light count
     if (idx >= 40) 
         return;
 
     // Get light's mesh state
-    RepeaterState* state = m_pointLights.at(idx)->mesh->getState();
+    RepeaterState* state;
+    if (m_pointLights.at(idx)->type == MeshType::ModelType)
+        state = m_pointLights.at(idx)->model->getMeshList()->at(0)->getState();
+    else
+        state = m_pointLights.at(idx)->mesh->getState();
 
     // Get light position
     glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -666,32 +724,79 @@ void Scene::renderPointLight(int idx)
     std::string name = prefix + idxStr + "].position";
 
     // Set light position
-    m_ourShaderInstanced->setVec3(name, pos);
+    shader->setVec3(name, -pos);
 
     name = prefix + idxStr + "].ambient";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(0.05f, 0.05f, 0.05f));
+    shader->setVec3(name, glm::vec3(0.05f, 0.05f, 0.05f));
 
     name = prefix + idxStr + "].diffuse";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(0.8f, 0.8f, 0.8f));
+    shader->setVec3(name, glm::vec3(0.8f, 0.8f, 0.8f));
 
     name = prefix + idxStr + "].specular";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
+    shader->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
 
 
     // Set light fade-out values
     name = prefix + idxStr + "].constant";
-    m_ourShaderInstanced->setFloat(name, 1.0f);
+    shader->setFloat(name, 1.0f);
 
     name = prefix + idxStr + "].linear";
-    m_ourShaderInstanced->setFloat(name, 0.09f);
+    shader->setFloat(name, 0.09f);
 
     name = prefix + idxStr + "].quadratic";
-    m_ourShaderInstanced->setFloat(name, 0.032f);
+    shader->setFloat(name, 0.032f);
+}
+
+void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)
+{
+    Model2* model = m_meshList->at(idx)->model;
+
+    m_lightMeshShader->use();
+    m_lightMeshShader->setMat4("projection", projection);
+    m_lightMeshShader->setMat4("view", view);
+
+    // Set viewer position
+    m_lightMeshShader->setVec3("viewPos", m_camera->Position);
+
+    // Directional lights
+    m_lightMeshShader->setInt("dirLightCount", m_directionalLights.size());
+    for (int i = 0; i < m_directionalLights.size(); i++) {
+        renderDirectionalLight(i, m_lightMeshShader);
+    }
+
+    // Point lights
+    m_lightMeshShader->setInt("pointLightCount", m_pointLights.size());
+    for (int i = 0; i < m_pointLights.size(); i++) {
+        renderPointLight(i, m_lightMeshShader);
+    }
+
+    // Spotlights
+    m_lightMeshShader->setInt("spotLightCount", m_spotLights.size());
+    for (int i = 0; i < m_spotLights.size(); i++) {
+        renderSpotLight(i, m_lightMeshShader);
+    }
+
+    // Set material
+    if (m_meshList->at(idx)->material) {
+        m_lightMeshShader->setVec3("material.ambient", m_meshList->at(idx)->material->ambient);
+        m_lightMeshShader->setVec3("material.diffuse", m_meshList->at(idx)->material->diffuse);
+        m_lightMeshShader->setVec3("material.specular", m_meshList->at(idx)->material->specular);
+        m_lightMeshShader->setFloat("material.shininess", m_meshList->at(idx)->material->shininess);
+    }
+    else {
+        std::cout << "Error! Mesh doesn't have material. Using defaults" << std::endl;
+        m_lightMeshShader->setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+        m_lightMeshShader->setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+        m_lightMeshShader->setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+        m_lightMeshShader->setFloat("material.shininess", 32);
+    
+    }
+
+    model->RenderModel();
 }
 
 void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 {
-    
     RepeaterState* state = m_meshList->at(idx)->mesh->getState();
     if (state->instanced) {
         m_ourShaderInstanced->use();
@@ -711,7 +816,7 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         // Directional lights
         m_ourShaderInstanced->setInt("dirLightCount", m_directionalLights.size());
         for (int i = 0; i < m_directionalLights.size(); i++) {
-            renderDirectionalLight(i);
+            renderDirectionalLight(i, m_ourShaderInstanced);
         }
         //if (m_directionalLights.size() > 0) {
         //    m_ourShaderInstanced->setInt("dirLightCount", 1);
@@ -724,13 +829,13 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         // Point lights
         m_ourShaderInstanced->setInt("pointLightCount", m_pointLights.size());
         for (int i = 0; i < m_pointLights.size(); i++) {
-            renderPointLight(i);
+            renderPointLight(i, m_ourShaderInstanced);
         }
 
         // Spotlights
         m_ourShaderInstanced->setInt("spotLightCount", m_spotLights.size());
         for (int i = 0; i < m_spotLights.size(); i++) {
-            renderSpotLight(i);
+            renderSpotLight(i, m_ourShaderInstanced);
         }
 
         // Set material
@@ -891,18 +996,18 @@ void Scene::renderScene()
     glm::mat4 view = m_camera->GetViewMatrix();
 
     // Render example model
-    m_modelLoadingShader->use();
-    m_modelLoadingShader->setMat4("projection", projection);
-    m_modelLoadingShader->setMat4("view", view);
+   //m_modelLoadingShader->use();
+   //m_modelLoadingShader->setMat4("projection", projection);
+   //m_modelLoadingShader->setMat4("view", view);
 
     // render the loaded model
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-    m_modelLoadingShader->setMat4("model", model);
+    //glm::mat4 model = glm::mat4(1.0f);
+    //model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+    //model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+    //m_modelLoadingShader->setMat4("model", model);
 
     //m_backpackModel->draw(*m_modelLoadingShader);
-    m_backpackModel->RenderModel();
+    //m_backpackModel->RenderModel();
 
 
     int lastDrawn = 0;
@@ -910,6 +1015,10 @@ void Scene::renderScene()
         //if (m_meshList->at(i)->selected)
         //    lastDrawn = i;
         //else
+        RepeaterState* state;
+        if (m_meshList->at(i)->type == MeshType::ModelType)
+            drawModel(i, projection, view);
+        else
             draw(i, projection, view);
     }
 
@@ -1010,18 +1119,128 @@ void Scene::deleteObject(int idx)
     m_meshList->erase(m_meshList->begin() + idx);
 }
 
+void Scene::deleteModel(int idx)
+{
+    std::vector<ModelMesh2*> meshes = *m_meshList->at(idx)->model->getMeshList();
+
+    for (int i = 0; i < meshes.size(); i++) {
+        std::cout << "Deleting model mesh: " << i << std::endl;
+        RepeaterState* state = meshes.at(i)->getState();
+
+        if (state->deleted) {
+            delete state->deleted;
+        }
+
+        // Clear mesh pointer position
+        if (state->position)
+            delete state->position;
+
+        // Clear mesh transformations
+        if (state->transformations)
+            delete state->transformations;
+
+        // Cler modified mesh list
+        if (state->modified) {
+            //for (int i = 0; i < state->modified->size(); i++) {
+            //    delete state->modified->at(i);
+            //}
+
+            // Clear old mesh transformations
+            for (int i = 0; i < state->modified->size(); i++) {
+                if (state->modified->at(i)) {
+                    if (state->modified->at(i)->position) {
+                        delete state->modified->at(i)->position;
+                        state->modified->at(i)->position = NULL;
+                    }
+                    if (state->modified->at(i)->transformations) {
+                        delete state->modified->at(i)->transformations;
+                        state->modified->at(i)->transformations = NULL;
+                    }
+                    if (state->modified->at(i)) {
+                        delete state->modified->at(i);
+                        state->modified->at(i) = NULL;
+                    }
+                }
+            }
+
+            delete state->modified;
+        }
+    }
+
+    // Clear model
+    delete m_meshList->at(idx)->model;
+
+    // Clear model object
+    delete m_meshList->at(idx);
+    
+}
+
 void Scene::clean()
 {
-    if (m_backpackModel) {
-        delete m_backpackModel;
-        m_backpackModel = NULL;
-    }
+    
 
     std::cout << "Cleaning: " << m_meshList->size() << " objects!" << std::endl;
 
     for (int i = m_meshList->size() -1; i >= 0; i--) {
-        deleteObject(i);
+        if (m_meshList->at(i)->type == MeshType::ModelType)
+            deleteModel(i);
+        else
+            deleteObject(i);
     }
+
+    // Clear models
+    if (m_backpackModel) {
+        std::vector<ModelMesh2*> meshes = *m_backpackModel->getMeshList();
+        
+        for (int i = 0; i < meshes.size(); i++) {
+            std::cout << "Deleting model mesh: " << i << std::endl;
+            RepeaterState* state = meshes.at(i)->getState();
+            
+            if (state->deleted) {
+                delete state->deleted;
+            }
+
+            // Clear mesh pointer position
+            if (state->position)
+                delete state->position;
+
+            // Clear mesh transformations
+            if (state->transformations)
+                delete state->transformations;
+
+            // Cler modified mesh list
+            if (state->modified) {
+                //for (int i = 0; i < state->modified->size(); i++) {
+                //    delete state->modified->at(i);
+                //}
+
+                // Clear old mesh transformations
+                for (int i = 0; i < state->modified->size(); i++) {
+                    if (state->modified->at(i)) {
+                        if (state->modified->at(i)->position) {
+                            delete state->modified->at(i)->position;
+                            state->modified->at(i)->position = NULL;
+                        }
+                        if (state->modified->at(i)->transformations) {
+                            delete state->modified->at(i)->transformations;
+                            state->modified->at(i)->transformations = NULL;
+                        }
+                        if (state->modified->at(i)) {
+                            delete state->modified->at(i);
+                            state->modified->at(i) = NULL;
+                        }
+                    }
+                }
+
+                delete state->modified;
+            }
+        }
+
+        // Clear model itself
+        delete m_backpackModel;
+        m_backpackModel = NULL;
+    }
+
 
     m_meshList->clear();
 }

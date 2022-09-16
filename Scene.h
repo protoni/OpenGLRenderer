@@ -54,6 +54,7 @@ enum MeshType
     DirectionalLightType,
     ReflectCubeType,
     SpotLightType,
+    ModelType,
     UnknownType
 };
 
@@ -81,6 +82,7 @@ struct MeshLights
 struct MeshObject
 {
     Repeater* mesh;
+    Model2* model;
     std::string name;
     bool selected;
 
@@ -95,6 +97,7 @@ struct MeshObject
 
     MeshObject()
         : mesh(nullptr)
+        , model(nullptr)
         , light(nullptr)
         , material(nullptr)
         , name("")
@@ -123,6 +126,7 @@ public:
     void addDirectionalLight();
     void addSpotLight();
     void addReflectingCube();
+    void addModel();
     void updateMeshPointer(int direction, bool multiselect = false);
     void resetMeshPointer();
     void deleteInstancedMesh(int selected);
@@ -131,6 +135,7 @@ public:
     std::vector<MeshObject*>* getMeshList();
 
     void deleteObject(int idx);
+    void deleteModel(int idx);
     void clean();
     int getTriangleCount();
     int getObjectCount();
@@ -152,11 +157,12 @@ private:
     void renderPlane();
     void dumpMemory();
     void draw(int idx, glm::mat4& projection, glm::mat4& view);
+    void drawModel(int idx, glm::mat4& projection, glm::mat4& view);
     int getSelectedMeshIndex();
     void highlightSelectedMeshes();
-    void renderPointLight(int idx);
-    void renderDirectionalLight(int idx);
-    void renderSpotLight(int idx);
+    void renderPointLight(int idx, Shader* shader);
+    void renderDirectionalLight(int idx, Shader* shader);
+    void renderSpotLight(int idx, Shader* shader);
 
     Camera* m_camera;
     Shader* m_ourShader;

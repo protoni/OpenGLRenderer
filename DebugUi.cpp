@@ -143,7 +143,11 @@ void DebugUi::meshSettings(int selected)
         return;
     }
 
-    RepeaterState* state = meshList->at(selected)->mesh->getState();
+    RepeaterState* state;
+    if (meshList->at(selected)->type == MeshType::ModelType)
+        state = meshList->at(selected)->model->getMeshList()->at(0)->getState();
+    else
+        state = meshList->at(selected)->mesh->getState();
 
     // Load current values
     if (m_scene->getMeshPointer() >= 0 && m_scene->getMeshPointer() < state->modified->size()) {
@@ -274,7 +278,11 @@ bool DebugUi::objectSettings(int selected)
         meshList->at(selected)->selected = true;
 
         // Load current values
-        RepeaterState* state = meshList->at(selected)->mesh->getState();
+        RepeaterState* state;
+        if (meshList->at(selected)->type == MeshType::ModelType)
+            state = meshList->at(selected)->model->getMeshList()->at(0)->getState();
+        else
+            state = meshList->at(selected)->mesh->getState();
         m_planeState->instanced = state->instanced;
         m_planeState->columnCount = state->columnCount;
         m_planeState->rowCount = state->rowCount;
@@ -422,6 +430,9 @@ void DebugUi::objectLayout(bool* p_open)
         if (ImGui::Button("Add Spot Light", ImVec2(100, 0)))
             m_scene->addSpotLight();
 
+        if (ImGui::Button("Add Model", ImVec2(100, 0)))
+            m_scene->addModel();
+
         //if (ImGui::Button("Add Reflect Cube", ImVec2(100, 0)))
         //    m_scene->addReflectingCube();
 
@@ -500,7 +511,11 @@ void DebugUi::objectLayout(bool* p_open)
                     }
                     ImGui::SameLine();
 
-                    RepeaterState* state = meshList->at(selected)->mesh->getState();
+                    RepeaterState* state;
+                    if (meshList->at(selected)->type == MeshType::ModelType)
+                        state = meshList->at(selected)->model->getMeshList()->at(0)->getState();
+                    else
+                        state = meshList->at(selected)->mesh->getState();
                     ImGui::Text("Mesh pointer: %d", state->position->meshPointer);
                     ImGui::Text("Stack position:  %d", state->position->stackPosition);
                     ImGui::Text("Row position:    %d", state->position->rowPosition);

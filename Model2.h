@@ -12,17 +12,24 @@
 
 #include "ModelMesh2.h"
 #include "Texture.h"
+#include "Shader.h"
 
 class Model2
 {
 public:
-    Model2();
+    Model2(Shader* shader);
 
     void LoadModel(const std::string& fileName);
     void RenderModel();
     void ClearModel();
 
     ~Model2();
+    std::vector<ModelMesh2*>* getMeshList();
+
+    void setInstanced(bool instanced);
+    int getObjectCount();
+    int getTriangleCount();
+    void update();
 
 private:
 
@@ -33,5 +40,7 @@ private:
     std::vector<ModelMesh2*> meshList;
     std::vector<Texture*> textureList;
     std::vector<unsigned int> meshToTex;
+
+    Shader* m_shader;
 };
 
