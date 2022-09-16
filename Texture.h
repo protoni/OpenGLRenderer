@@ -8,7 +8,7 @@ public:
     Texture(const char* path);
     ~Texture();
 
-    void load();
+    bool load(bool useRGB = false);
     void use(int offset);
     unsigned int getTexture();
 

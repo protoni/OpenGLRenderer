@@ -19,6 +19,7 @@
 #include "Custom.h"
 #include "MaterialBase.h"
 #include "Model.h"
+#include "Model2.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -200,7 +201,8 @@ private:
     std::vector<MeshObject*> m_directionalLights;
     std::vector<MeshObject*> m_spotLights;
 
-    Model* m_backpackModel;
+    //Model* m_backpackModel;
+    Model2* m_backpackModel;
 };
 
 #endif // SCENE_H

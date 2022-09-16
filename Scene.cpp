@@ -48,7 +48,10 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_meshList = new std::vector<MeshObject*>;
 
     // Load example model
-    m_backpackModel = new Model("Models/backpack/backpack.obj");
+    //m_backpackModel = new Model("Models/backpack/backpack.obj");
+    m_backpackModel = new Model2();
+    //m_backpackModel->LoadModel("Models/troll_hotel01.obj");
+    m_backpackModel->LoadModel("Models/backpack/backpack.obj");
 }
 
 Scene::~Scene()
@@ -898,8 +901,9 @@ void Scene::renderScene()
     model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
     m_modelLoadingShader->setMat4("model", model);
 
-    m_backpackModel->draw(*m_modelLoadingShader);
-    std::cout << "Drawing non instanced model!" << std::endl;
+    //m_backpackModel->draw(*m_modelLoadingShader);
+    m_backpackModel->RenderModel();
+
 
     int lastDrawn = 0;
     for (int i = 0; i < m_meshList->size(); i++) {
@@ -1008,6 +1012,11 @@ void Scene::deleteObject(int idx)
 
 void Scene::clean()
 {
+    if (m_backpackModel) {
+        delete m_backpackModel;
+        m_backpackModel = NULL;
+    }
+
     std::cout << "Cleaning: " << m_meshList->size() << " objects!" << std::endl;
 
     for (int i = m_meshList->size() -1; i >= 0; i--) {
