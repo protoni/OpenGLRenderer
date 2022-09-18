@@ -111,7 +111,6 @@ public:
     ~Scene();
 
     void renderScene();
-    void update();
     bool updateObjectMesh(int idx);
 
     void updateMeshShader(bool instanced, int idx);
@@ -151,10 +150,6 @@ public:
     void updateMeshMaterial(int selected, const std::string& newMaterial);
 
 private:
-    void createPlane(bool instanced, Plane*& plane);
-    void createCube(bool instanced, Cube*& cube);
-    void renderPlane();
-    void dumpMemory();
     void draw(int idx, glm::mat4& projection, glm::mat4& view);
     void drawModel(int idx, glm::mat4& projection, glm::mat4& view);
     int getSelectedMeshIndex();

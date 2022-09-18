@@ -137,9 +137,6 @@ int main(int argc, char** argv)
             std::cout << "FPS: " << fpsCounter << std::endl;
             fps = fpsCounter;
             fpsCounter = 0.0f;
-
-            // Update the scene
-            scene->update();
         }
 
         // Draw debug UI
