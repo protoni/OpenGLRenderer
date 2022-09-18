@@ -20,6 +20,9 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
 
     // Create mesh vector
     m_meshList = new std::vector<MeshObject*>;
+
+    // Create a mesh list handler
+    m_meshListHandler = new MeshListHandler(m_meshList);
 }
 
 Scene::~Scene()
@@ -363,7 +366,7 @@ void Scene::deleteInstancedMesh(int selected)
 {
     bool deleted = false;
     std::cout << "selected idx: " << getSelectedMeshIndex() << std::endl;
-    if (getSelectedMeshIndex() < m_meshList->size()) {
+    if (getSelectedMeshIndex() >= 0 && getSelectedMeshIndex() < m_meshList->size()) {
         RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
 
         // Delete single mesh

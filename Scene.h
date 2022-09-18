@@ -19,6 +19,8 @@
 #include "Custom.h"
 #include "MaterialBase.h"
 #include "Model.h"
+#include "MeshListHandler.h"
+#include "MeshObject.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -42,67 +44,6 @@ enum MeshInstanceDirections
     Backward
 };
 
-enum MeshType
-{
-    CubeType,
-    CustomType,
-    PlaneType,
-    SphereType,
-    TriangleType,
-    LightType,
-    DirectionalLightType,
-    ReflectCubeType,
-    SpotLightType,
-    ModelType,
-    UnknownType
-};
-
-struct MeshLights
-{
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-    float shininess;
-
-    float constant;
-    float linear;
-    float quadratic;
-
-    MeshLights()
-    : ambient(0.2f, 0.2f, 0.2f)
-    , diffuse(0.5f, 0.5f, 0.5f)
-    , specular(1.0f, 1.0f, 1.0f)
-    , shininess(32.0f)
-    , constant(1.0f)
-    , linear(0.09f)
-    , quadratic(32.0f) {}
-};
-
-struct MeshObject
-{
-    Repeater* mesh;
-    Model* model;
-    std::string name;
-    bool selected;
-
-    // Mesh lighting settings
-    MeshLights* light;
-
-    // Mesh material settings
-    MaterialBase* material;
-
-    // What type of mesh is this
-    int type;
-
-    MeshObject()
-        : mesh(nullptr)
-        , model(nullptr)
-        , light(nullptr)
-        , material(nullptr)
-        , name("")
-        , selected(false)
-        , type(-1) {}
-};
 
 class Scene
 {
@@ -167,6 +108,7 @@ private:
     Texture* m_container_texture;
     Texture* m_container_texture_specular;
     ScreenSettings* m_screenSettings;
+    MeshListHandler* m_meshListHandler;
 
     unsigned int m_VAO;
     unsigned int m_EBO;
