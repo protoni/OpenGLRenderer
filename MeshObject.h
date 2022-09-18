@@ -15,7 +15,7 @@ enum MeshType
     PlaneType,
     SphereType,
     TriangleType,
-    LightType,
+    PointLightType,
     DirectionalLightType,
     ReflectCubeType,
     SpotLightType,
@@ -60,6 +60,9 @@ struct MeshObject
     // What type of mesh is this
     int type;
 
+    // Is the object reflecting light
+    bool lightsEnabled;
+
     MeshObject()
         : mesh(nullptr)
         , model(nullptr)
@@ -67,6 +70,7 @@ struct MeshObject
         , material(nullptr)
         , name("")
         , selected(false)
+        , lightsEnabled(false)
         , type(-1) {}
 };
 

@@ -50,12 +50,15 @@ public:
     void addTriangle();
     void addSphere();
     void addCustom();
-    void addLight();
+    void addPointLight();
     void addDirectionalLight();
     void addSpotLight();
     void addReflectingCube();
     void addModel();
 
+    /* Add new objects to mesh list */
+    void addMeshObject(Repeater* mesh, MeshType type);
+    
     /* Update mesh object state */
     bool updateMeshObjects(MeshObjectChange& change);
 

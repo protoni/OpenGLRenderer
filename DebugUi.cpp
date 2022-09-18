@@ -433,8 +433,8 @@ void DebugUi::objectLayout(bool* p_open)
         if (ImGui::Button("Add Custom", ImVec2(100, 0)))
             m_scene->addCustom();
 
-        if (ImGui::Button("Add Light", ImVec2(100, 0)))
-            m_scene->addLight();
+        if (ImGui::Button("Add PointLight", ImVec2(100, 0)))
+            m_scene->addPointLight();
 
         if (ImGui::Button("Add Directional Light", ImVec2(100, 0)))
             m_scene->addDirectionalLight();
@@ -486,7 +486,8 @@ void DebugUi::objectLayout(bool* p_open)
                     }
                 }
                 else if (meshList.at(selected)->type == MeshType::DirectionalLightType ||
-                    meshList.at(selected)->type == MeshType::LightType) {
+                    meshList.at(selected)->type == MeshType::PointLightType ||
+                    meshList.at(selected)->type == MeshType::SpotLightType) {
                     if (ImGui::BeginTabItem("Light")) {
                         lightSettings(selected);
                         ImGui::EndTabItem();

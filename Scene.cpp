@@ -90,111 +90,115 @@ void Scene::updateMeshShader(bool instanced, int idx)
     }
 }
 
-void Scene::addCube()
+void Scene::addMeshObject(Repeater* mesh, MeshType type)
 {
-    Cube* cube = new Cube(m_lightMeshShader, false, false, true);
     MeshObject* object = new MeshObject();
     MeshLights* light = new MeshLights();
     MaterialBase* material = new MaterialDefault();
-
-    object->mesh = cube;
-    object->name = std::string("Cube_") + std::to_string(m_meshList->size());
-    object->type = MeshType::ReflectCubeType;
+    object->mesh = mesh;
     object->light = light;
     object->material = material;
+    object->type = type;
+
+    switch (type)
+    {
+    case CubeType:
+        object->name = std::string("Cube_") + std::to_string(m_meshList->size());
+        object->lightsEnabled = true;
+        break;
+    case CustomType:
+        object->name = std::string("Custom_") + std::to_string(m_meshList->size());
+        break;
+    case PlaneType:
+        object->name = std::string("Plane_") + std::to_string(m_meshList->size());
+        object->lightsEnabled = true;
+        break;
+    case SphereType:
+        object->name = std::string("Sphere_") + std::to_string(m_meshList->size());
+        break;
+    case TriangleType:
+        object->name = std::string("Triangle_") + std::to_string(m_meshList->size());
+        break;
+    case PointLightType:
+        object->name = std::string("PointLight_") + std::to_string(m_meshList->size());
+        m_pointLights.push_back(object);
+        break;
+    case DirectionalLightType:
+        object->name = std::string("DirectionalLight_") + std::to_string(m_meshList->size());
+        m_directionalLights.push_back(object);
+        break;
+    case ReflectCubeType:
+        object->name = std::string("ReflectingCube_") + std::to_string(m_meshList->size());
+        object->lightsEnabled = true;
+        break;
+    case SpotLightType:
+        object->name = std::string("Spotlight_") + std::to_string(m_meshList->size());
+        m_spotLights.push_back(object);
+        break;
+    case ModelType:
+        break;
+    case UnknownType:
+        break;
+    default:
+        std::cout << "Can't add unknown object type to the scene!" << std::endl;
+        return;
+    }
+
     m_meshList->push_back(object);
+}
+
+void Scene::addCube()
+{
+    Cube* cube = new Cube(m_lightMeshShader, false, false, true);
+    addMeshObject(cube, MeshType::CubeType);
 }
 
 void Scene::addPlane()
 {
     Plane* plane = new Plane(m_lightMeshShader, false, false, true);
-    MeshObject* object = new MeshObject();
-    MeshLights* light = new MeshLights();
-    MaterialBase* material = new MaterialDefault();
-    object->mesh = plane;
-    object->name = std::string("Plane_") + std::to_string(m_meshList->size());
-    object->type = MeshType::ReflectCubeType;
-    object->light = light;
-    object->material = material;
-    m_meshList->push_back(object);
+    addMeshObject(plane, MeshType::CubeType);
 }
 
 void Scene::addTriangle()
 {
     Triangle* triangle = new Triangle(m_ourShader, false);
-    MeshObject* object = new MeshObject();
-    object->mesh = triangle;
-    object->name = std::string("Triangle_") + std::to_string(m_meshList->size());
-    m_meshList->push_back(object);
+    addMeshObject(triangle, MeshType::TriangleType);
 }
 
 void Scene::addSphere()
 {
     Sphere* sphere = new Sphere(m_ourShader, false);
-    MeshObject* object = new MeshObject();
-    object->mesh = sphere;
-    object->name = std::string("Sphere_") + std::to_string(m_meshList->size());
-    m_meshList->push_back(object);
+    addMeshObject(sphere, MeshType::SphereType);
 }
 
 void Scene::addCustom()
 {
     Custom* custom = new Custom(m_ourShader, false);
-    MeshObject* object = new MeshObject();
-    object->mesh = custom;
-    object->name = std::string("Custom_") + std::to_string(m_meshList->size());
-    m_meshList->push_back(object);
+    addMeshObject(custom, MeshType::CustomType);
 }
 
 void Scene::addReflectingCube()
 {
     Cube* cube = new Cube(m_lightMeshShader, false, false, true);
-    MeshObject* object = new MeshObject();
-    MeshLights* light = new MeshLights();
-    MaterialBase* material = new MaterialDefault();
-
-    object->mesh = cube;
-    object->name = std::string("ReflectingCube_") + std::to_string(m_meshList->size());
-    object->type = MeshType::ReflectCubeType;
-    object->light = light;
-    object->material = material;
-    m_meshList->push_back(object);
+    addMeshObject(cube, MeshType::ReflectCubeType);
 }
 
-void Scene::addLight()
+void Scene::addPointLight()
 {
     Cube* cube = new Cube(m_lightShader, false, true, true);
-    MeshObject* object = new MeshObject();
-    object->mesh = cube;
-    object->name = std::string("Light_") + std::to_string(m_meshList->size());
-    object->type = MeshType::LightType;
-    
-    m_meshList->push_back(object);
-    m_pointLights.push_back(object);
+    addMeshObject(cube, MeshType::PointLightType);
 }
 
 void Scene::addDirectionalLight()
 {
     Cube* cube = new Cube(m_lightShader, false, true, true);
-    MeshObject* object = new MeshObject();
-    object->mesh = cube;
-    object->name = std::string("DirectionalLight_") + std::to_string(m_meshList->size());
-    object->type = MeshType::DirectionalLightType;
-    
-    m_meshList->push_back(object);
-    m_directionalLights.push_back(object);
+    addMeshObject(cube, MeshType::DirectionalLightType);
 }
 
 void Scene::addSpotLight()
 {
     Cube* cube = new Cube(m_lightShader, false, true, true);
-    MeshObject* object = new MeshObject();
-    object->mesh = cube;
-    object->name = std::string("Spotlight_") + std::to_string(m_meshList->size());
-    object->type = MeshType::SpotLightType;
-
-    m_meshList->push_back(object);
-    m_spotLights.push_back(object);
+    addMeshObject(cube, MeshType::SpotLightType);
 }
 
 void Scene::addModel()
@@ -265,7 +269,7 @@ void Scene::deleteDirectionalLight(int selected)
         m_directionalLights.clear(); // TODO: when multiple lights implemented, don't delete all
         std::cout << "delete directional light!" << std::endl;
     }
-    else if (m_meshList->at(selected)->type == MeshType::LightType) {
+    else if (m_meshList->at(selected)->type == MeshType::PointLightType) {
         m_lightPos = glm::vec3(-0.0f, -0.0f, -0.0f);
     }
 }
@@ -563,7 +567,7 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         }
     }
     else {
-        if (m_meshList->at(idx)->type == MeshType::ReflectCubeType) {
+        if (m_meshList->at(idx)->lightsEnabled) {
             m_lightMeshShader->use();
             m_lightMeshShader->setMat4("projection", projection);
             m_lightMeshShader->setMat4("view", view);
@@ -610,7 +614,7 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             
         }
 
-        if (m_meshList->at(idx)->type == MeshType::LightType) {
+        if (m_meshList->at(idx)->type == MeshType::PointLightType) {
             m_lightShader->use();
             m_lightShader->setMat4("projection", projection);
             m_lightShader->setMat4("view", view);
@@ -674,7 +678,7 @@ void Scene::renderScene()
 void Scene::deleteObject(int idx)
 {
     // Delete pointlights
-    if (m_meshList->at(idx)->type == MeshType::LightType) {
+    if (m_meshList->at(idx)->type == MeshType::PointLightType) {
         for (int i = 0; i < m_pointLights.size(); i++) {
             if (!m_pointLights.at(i)->name.compare(m_meshList->at(idx)->name))
             m_pointLights.erase(m_pointLights.begin() + i);
