@@ -1,7 +1,7 @@
 #ifndef MATERIAL_BASE_H
 #define MATERIAL_BASE_H
 
-#include <glad_opengl4_3/glad.h>
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <vector>
 #include <string>

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "DebugMacros.h"
+#include "MeshListHandler.h"
 
 DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene),
     m_debugModeOn(false), m_wireframeModeOn(false), m_debounceCounter(0.0),
@@ -237,7 +238,11 @@ void DebugUi::meshSettings(int selected)
                 state->modified->at(m_scene->getMeshPointer())->transformations->zRotation = m_meshState.zRotation;
 
                 std::cout << "Changed!" << std::endl;
-                m_scene->updateObjectMesh(selected);
+
+                MeshObjectChange change;
+                change.selectedMesh = selected;
+                change.action = MeshObjectChangeAction::UpdateObject;
+                m_scene->updateMeshObjects(change);
 
                 m_debounceCounter = 0;
             }
@@ -256,8 +261,11 @@ bool DebugUi::objectSettings(int selected)
 
     // Reset mesh pointer
     if (selected < meshList->size()) {
-        if (!meshList->at(selected)->selected)
-            m_scene->resetMeshPointer();
+        if (!meshList->at(selected)->selected) {
+            MeshObjectChange change;
+            change.action = MeshObjectChangeAction::ResetMeshPointer;
+            m_scene->updateMeshObjects(change);
+        }
     }
 
     ImGui::BeginChild("item view", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing() + 80))); // Leave room for 1 line below us and mesh edit view
@@ -382,7 +390,11 @@ bool DebugUi::objectSettings(int selected)
                 state->transformations->zRotation = m_planeState->transformations->zRotation;
 
                 std::cout << "Changed!" << std::endl;
-                m_scene->updateObjectMesh(selected);
+
+                MeshObjectChange change;
+                change.selectedMesh = selected;
+                change.action = MeshObjectChangeAction::UpdateObject;
+                m_scene->updateMeshObjects(change);
 
                 m_debounceCounter = 0;
             }
@@ -507,7 +519,10 @@ void DebugUi::objectLayout(bool* p_open)
                     ImGui::BeginChild("Rightmost pane", ImVec2(0, 0), true);
 
                     if (ImGui::Button("Remove Mesh", ImVec2(100, 0))) {
-                        m_scene->deleteInstancedMesh(selected);
+                        MeshObjectChange change;
+                        change.selectedMesh = selected;
+                        change.action = MeshObjectChangeAction::DeleteInstancedMesh;
+                        m_scene->updateMeshObjects(change);
                     }
                     ImGui::SameLine();
 

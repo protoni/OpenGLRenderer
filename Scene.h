@@ -2,7 +2,7 @@
 #define SCENE_H
 
 //#include <glad/glad.h>
-#include <glad_opengl4_3/glad.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include "Shader.h"
@@ -32,30 +32,19 @@
 #include <crtdbg.h>
 #include <thread>
 
-
-
-enum MeshInstanceDirections
-{
-    Left,
-    Right,
-    Up,
-    Down,
-    Forward,
-    Backward
-};
-
-
 class Scene
 {
 public:
     Scene(Camera *camera, ScreenSettings* screenSettings);
     ~Scene();
 
+    /* Render all objects on the screen currently */
     void renderScene();
-    bool updateObjectMesh(int idx);
 
+    /* Update the the object's shader based on if it is instanced or not */
     void updateMeshShader(bool instanced, int idx);
 
+    /* Add different type of objects to the screen */
     void addCube();
     void addPlane();
     void addTriangle();
@@ -66,9 +55,16 @@ public:
     void addSpotLight();
     void addReflectingCube();
     void addModel();
-    void updateMeshPointer(int direction, bool multiselect = false);
-    void resetMeshPointer();
-    void deleteInstancedMesh(int selected);
+
+    /* Update mesh object state */
+    bool updateMeshObjects(MeshObjectChange& change);
+
+    /* Count all objects in the scene and return the count */
+    int getObjectCount();
+
+    /* Count the total amount of triangles of the meshes on the Scene currently and return the count */
+    int getTriangleCount();
+
     void deleteDirectionalLight(int selected);
 
     std::vector<MeshObject*>* getMeshList();
@@ -76,17 +72,8 @@ public:
     void deleteObject(int idx);
     void deleteModel(int idx);
     void clean();
-    int getTriangleCount();
-    int getObjectCount();
 
     int getMeshPointer() { return m_meshPointer; }
-
-    /* Control multi-pick mode ( individual mesh picker )*/
-    void toggleMultiPickMode() { m_multiPickMode = !m_multiPickMode; }
-    void setMultiPickMode(bool mode) { m_multiPickMode = mode; }
-
-    /* Add currently selected mesh to multi select vector */
-    void multiPick();
 
     void updateMeshMaterial(int selected, const std::string& newMaterial);
 
@@ -126,15 +113,8 @@ private:
     bool m_instanced;
     bool m_instanced_cube;
 
+    /* All of the meshes currently in the scene */
     std::vector<MeshObject*>* m_meshList;
-    std::vector<int> m_multiSelectVec;
-
-    int m_oldMultiSelectVecSize = 0;
-    unsigned int m_oldMeshPointer = 0;
-
-    GLuint m_ssbo;
-
-    bool m_multiPickMode = false;
 
     glm::vec3 m_lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
 
