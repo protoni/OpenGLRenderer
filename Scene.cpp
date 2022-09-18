@@ -29,7 +29,7 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_camera(camera), m_screenSettings(screenSettings), m_faceCounter(3),
     m_ourShader(NULL), m_texture1(0), m_texture2(0), m_VAO(0), m_EBO(0),
     m_columns(1), m_meshList(), m_scale(1.0), m_rows(1), m_instanced(false),
-    m_ourShaderInstanced(NULL), m_instanced_cube(false), m_meshPointer(0), m_backpackModel(NULL),
+    m_ourShaderInstanced(NULL), m_instanced_cube(false), m_meshPointer(0),
     m_modelLoadingShader(NULL)
 {
     // Create and build shaders
@@ -46,12 +46,6 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
 
     // Create mesh vector
     m_meshList = new std::vector<MeshObject*>;
-
-    // Load example model
-    //m_backpackModel = new Model("Models/backpack/backpack.obj");
-    //m_backpackModel = new Model2(m_modelLoadingShader);
-    //m_backpackModel->LoadModel("Models/troll_hotel01.obj");
-    //m_backpackModel->LoadModel("Models/backpack/backpack.obj");
 }
 
 Scene::~Scene()
@@ -89,11 +83,6 @@ Scene::~Scene()
     if (m_lightMeshShader) {
         delete m_lightMeshShader;
         m_lightMeshShader = NULL;
-    }
-
-    if (m_backpackModel) {
-        delete m_backpackModel;
-        m_backpackModel = NULL;
     }
 
     if (m_modelLoadingShader) {
@@ -237,7 +226,7 @@ void Scene::addSpotLight()
 
 void Scene::addModel()
 {
-    Model2* model = new Model2(m_lightMeshShader);
+    Model* model = new Model(m_lightMeshShader);
     model->LoadModel("Models/backpack/backpack.obj");
     MeshObject* object = new MeshObject();
     object->model = model;
@@ -749,7 +738,7 @@ void Scene::renderPointLight(int idx, Shader* shader)
 
 void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)
 {
-    Model2* model = m_meshList->at(idx)->model;
+    Model* model = m_meshList->at(idx)->model;
 
     m_lightMeshShader->use();
     m_lightMeshShader->setMat4("projection", projection);
@@ -1121,7 +1110,7 @@ void Scene::deleteObject(int idx)
 
 void Scene::deleteModel(int idx)
 {
-    std::vector<ModelMesh2*> meshes = *m_meshList->at(idx)->model->getMeshList();
+    std::vector<ModelMesh*> meshes = *m_meshList->at(idx)->model->getMeshList();
 
     for (int i = 0; i < meshes.size(); i++) {
         std::cout << "Deleting model mesh: " << i << std::endl;
@@ -1187,60 +1176,6 @@ void Scene::clean()
         else
             deleteObject(i);
     }
-
-    // Clear models
-    if (m_backpackModel) {
-        std::vector<ModelMesh2*> meshes = *m_backpackModel->getMeshList();
-        
-        for (int i = 0; i < meshes.size(); i++) {
-            std::cout << "Deleting model mesh: " << i << std::endl;
-            RepeaterState* state = meshes.at(i)->getState();
-            
-            if (state->deleted) {
-                delete state->deleted;
-            }
-
-            // Clear mesh pointer position
-            if (state->position)
-                delete state->position;
-
-            // Clear mesh transformations
-            if (state->transformations)
-                delete state->transformations;
-
-            // Cler modified mesh list
-            if (state->modified) {
-                //for (int i = 0; i < state->modified->size(); i++) {
-                //    delete state->modified->at(i);
-                //}
-
-                // Clear old mesh transformations
-                for (int i = 0; i < state->modified->size(); i++) {
-                    if (state->modified->at(i)) {
-                        if (state->modified->at(i)->position) {
-                            delete state->modified->at(i)->position;
-                            state->modified->at(i)->position = NULL;
-                        }
-                        if (state->modified->at(i)->transformations) {
-                            delete state->modified->at(i)->transformations;
-                            state->modified->at(i)->transformations = NULL;
-                        }
-                        if (state->modified->at(i)) {
-                            delete state->modified->at(i);
-                            state->modified->at(i) = NULL;
-                        }
-                    }
-                }
-
-                delete state->modified;
-            }
-        }
-
-        // Clear model itself
-        delete m_backpackModel;
-        m_backpackModel = NULL;
-    }
-
 
     m_meshList->clear();
 }

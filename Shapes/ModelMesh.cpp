@@ -1,4 +1,4 @@
-#include "ModelMesh2.h"
+#include "ModelMesh.h"
 
 float model_vertices[] = {
     // Location         // Texture coords
@@ -10,7 +10,7 @@ unsigned int model_indices[] = {
     0
 };
 
-ModelMesh2::ModelMesh2(Shader* shader)
+ModelMesh::ModelMesh(Shader* shader)
     : Repeater(shader,
     false,
         model_vertices,
@@ -27,7 +27,7 @@ ModelMesh2::ModelMesh2(Shader* shader)
 }
 
 //void ModelMesh2::CreateMesh(GLfloat* vertices, unsigned int* indices, unsigned int numOfVertices, unsigned int numOfIndices)
-void ModelMesh2::CreateMesh(std::vector<GLfloat>& vertices, std::vector<unsigned int>& indices, unsigned int numOfVertices, unsigned int numOfIndices)
+void ModelMesh::CreateMesh(std::vector<GLfloat>& vertices, std::vector<unsigned int>& indices, unsigned int numOfVertices, unsigned int numOfIndices)
 {
     setIndiceCount(indices.size());
     //create();
@@ -73,7 +73,7 @@ void ModelMesh2::CreateMesh(std::vector<GLfloat>& vertices, std::vector<unsigned
     //glBindVertexArray(0);
 }
 
-void ModelMesh2::RenderMesh()
+void ModelMesh::RenderMesh()
 {
     glBindVertexArray(VAO);
 
@@ -86,7 +86,7 @@ void ModelMesh2::RenderMesh()
     glBindVertexArray(0);
 }
 
-void ModelMesh2::ClearMesh()
+void ModelMesh::ClearMesh()
 {
     if (IBO != 0)
     {
@@ -109,7 +109,7 @@ void ModelMesh2::ClearMesh()
     indexCount = 0;
 }
 
-ModelMesh2::~ModelMesh2()
+ModelMesh::~ModelMesh()
 {
     ClearMesh();
 }

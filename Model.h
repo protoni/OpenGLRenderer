@@ -1,37 +1,46 @@
-#ifndef MODEL_H
-#define MODEL_H
+#pragma once
 
-#include "ModelMesh.h"
-
-#include "stb_image.h"
-
-#include <string>
 #include <vector>
+#include <string>
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include <glad_opengl4_3/glad.h>
+#include <GLFW/glfw3.h>
 
-unsigned int TextureFromFile(const std::string& path, const std::string& directory, bool gamma = false);
+#include <assimp\Importer.hpp>
+#include <assimp\scene.h>
+#include <assimp\postprocess.h>
+
+#include "Shapes/ModelMesh.h"
+#include "Texture.h"
+#include "Shader.h"
 
 class Model
 {
 public:
-    Model(const std::string& path);
+    Model(Shader* shader);
+
+    void LoadModel(const std::string& fileName);
+    void RenderModel();
+    void ClearModel();
+
     ~Model();
+    std::vector<ModelMesh*>* getMeshList();
 
-    void draw(Shader& shader);
+    void setInstanced(bool instanced);
+    int getObjectCount();
+    int getTriangleCount();
+    void update();
+
 private:
-    void loadModel(const std::string& path);
-    void processNode(aiNode* node, const aiScene* scene);
-    ModelMesh processMesh(aiMesh* mesh, const aiScene* scene);
-    std::vector<ModelTexture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
 
-    std::vector<ModelMesh> m_meshes;
-    std::string m_directory;
+    void LoadNode(aiNode* node, const aiScene* scene);
+    void LoadMesh(aiMesh* mesh, const aiScene* scene);
+    void LoadMaterials(const aiScene* scene);
 
-    // Store all loaded textures
-    std::vector<ModelTexture> m_textures_loaded;
+    std::vector<ModelMesh*> meshList;
+    std::vector<Texture*> textureList;
+    std::vector<unsigned int> meshToTex;
+
+    Shader* m_shader;
 };
 
-#endif // MODEL_H

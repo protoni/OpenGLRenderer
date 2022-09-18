@@ -1,182 +1,202 @@
 #include "Model.h"
 
 #include <iostream>
-#include <string>
 
-Model::Model(const std::string& path)
+Model::Model(Shader* shader) : m_shader(shader)
 {
-    loadModel(path);
 }
 
 Model::~Model()
 {
+    ClearModel();
 }
 
-void Model::draw(Shader& shader)
+void Model::RenderModel()
 {
-    for (unsigned int i = 0; i < m_meshes.size(); i++) {
-        m_meshes.at(i).draw(shader);
+    for (size_t i = 0; i < meshList.size(); i++)
+    {
+        unsigned int materialIndex = meshToTex[i];
+
+        if (materialIndex < textureList.size() && textureList[materialIndex])
+        {
+            textureList[materialIndex]->use(0);
+        }
+
+        //meshList[i]->RenderMesh();
+        meshList[i]->drawNonInstanced();
     }
 }
 
-void Model::loadModel(const std::string& path)
+void Model::LoadModel(const std::string& fileName)
 {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene* scene = importer.ReadFile(
+        fileName,
+        aiProcess_Triangulate |
+        aiProcess_FlipUVs |
+        //aiProcess_GenSmoothNormals |
+        aiProcess_JoinIdenticalVertices |
+        aiProcess_OptimizeMeshes
+    );
 
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE | !scene->mRootNode) {
-        std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
+    if (!scene)
+    {
+        printf("Model (%s) failed to load: %s", fileName, importer.GetErrorString());
         return;
     }
 
-    m_directory = path.substr(0, path.find_last_of('/'));
+    LoadNode(scene->mRootNode, scene);
 
-    processNode(scene->mRootNode, scene);
+    LoadMaterials(scene);
 }
 
-void Model::processNode(aiNode* node, const aiScene* scene)
+void Model::LoadNode(aiNode* node, const aiScene* scene)
 {
-
-    // Process node meshes
-    for (unsigned int i = 0; i < node->mNumMeshes; i++) {
-        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        m_meshes.push_back(processMesh(mesh, scene));
+    for (size_t i = 0; i < node->mNumMeshes; i++)
+    {
+        LoadMesh(scene->mMeshes[node->mMeshes[i]], scene);
     }
 
-    // Process node's children
-    for (unsigned int i = 0; i < node->mNumChildren; i++) {
-        processNode(node->mChildren[i], scene);
+    for (size_t i = 0; i < node->mNumChildren; i++)
+    {
+        LoadNode(node->mChildren[i], scene);
     }
 }
 
-ModelMesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
+void Model::LoadMesh(aiMesh* mesh, const aiScene* scene)
 {
-    std::vector<Vertex> vertices;
+    std::vector<GLfloat> vertices;
     std::vector<unsigned int> indices;
-    std::vector<ModelTexture> textures;
 
-    // Get vertex info
-    for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-        Vertex vertex;
-        glm::vec3 vector;
-
-        // Get vertex
-        vector.x = mesh->mVertices[i].x;
-        vector.y = mesh->mVertices[i].y;
-        vector.z = mesh->mVertices[i].z;
-        vertex.Position = vector;
-
-        // Get normal
-        if (mesh->HasNormals()) {
-            vector.x = mesh->mNormals[i].x;
-            vector.y = mesh->mNormals[i].y;
-            vector.z = mesh->mNormals[i].z;
-            vertex.Normal = vector;
+    for (size_t i = 0; i < mesh->mNumVertices; i++)
+    {
+        vertices.insert(vertices.end(), { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z });
+        if (mesh->mTextureCoords[0])
+        {
+            vertices.insert(vertices.end(), { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y });
         }
-
-        // Get texture
-        if (mesh->mTextureCoords[0]) {
-            glm::vec2 vec;
-            vec.x = mesh->mTextureCoords[0][i].x;
-            vec.y = mesh->mTextureCoords[0][i].y;
-            vertex.TexCoords = vec;
+        else {
+            vertices.insert(vertices.end(), { 0.0f, 0.0f });
         }
-        else
-            vertex.TexCoords = glm::vec2(0.0f, 0.0f);
-
-        vertices.push_back(vertex);
+        vertices.insert(vertices.end(), { -mesh->mNormals[i].x, -mesh->mNormals[i].y, -mesh->mNormals[i].z });
     }
 
-    // Get index data
-    for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+    for (size_t i = 0; i < mesh->mNumFaces; i++)
+    {
         aiFace face = mesh->mFaces[i];
-        for (unsigned int j = 0; j < face.mNumIndices; j++)
+        for (size_t j = 0; j < face.mNumIndices; j++)
+        {
             indices.push_back(face.mIndices[j]);
-    }
-
-    // Get material
-    if (mesh->mMaterialIndex >= 0) {
-        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-        
-        // Get diffuse map
-        std::vector<ModelTexture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-        textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-
-        // Get specular map
-        std::vector<ModelTexture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-    }
-
-    return ModelMesh(vertices, indices, textures);
-}
-
-std::vector<ModelTexture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
-{
-    std::vector<ModelTexture> textures;
-
-    for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) { 
-        aiString str;
-        mat->GetTexture(type, i, &str);
-        bool skip = false;
-
-        // Check if texture already loaded
-        for (unsigned int j = 0; j < m_textures_loaded.size(); j++) {
-            if (std::strcmp(m_textures_loaded.at(j).path.data(), str.C_Str()) == 0) {
-                textures.push_back(m_textures_loaded.at(j));
-                skip = true;
-                break;
-            }
-
-            if (!skip) {
-                ModelTexture texture;
-                std::string aiStr = str.C_Str();
-                texture.id = TextureFromFile(aiStr, m_directory);
-                texture.type = typeName;
-                texture.path = aiStr;
-                textures.push_back(texture);
-            }
         }
     }
 
-    return textures;
+    ModelMesh* newMesh = new ModelMesh(m_shader);
+    newMesh->CreateMesh(vertices, indices, vertices.size(), indices.size());
+    meshList.push_back(newMesh);
+    meshToTex.push_back(mesh->mMaterialIndex);
 }
 
-unsigned int TextureFromFile(const std::string& path, const std::string& directory, bool gamma)
+void Model::LoadMaterials(const aiScene* scene)
 {
-    std::string filename = path;
-    filename = directory + '/' + filename;
+    textureList.resize(scene->mNumMaterials);
 
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-
-    int width, height, nrComponents;
-    unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-    if (data)
+    for (size_t i = 0; i < scene->mNumMaterials; i++)
     {
-        GLenum format;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
+        aiMaterial* material = scene->mMaterials[i];
 
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        textureList[i] = nullptr;
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        if (material->GetTextureCount(aiTextureType_DIFFUSE))
+        {
+            aiString path;
+            if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS)
+            {
+                int idx = std::string(path.data).rfind("\\");
+                std::string filename = std::string(path.data).substr(idx + 1);
 
-        stbi_image_free(data);
+                std::string texPath = std::string("Textures/") + filename;
+
+                textureList[i] = new Texture(texPath.c_str());
+
+                std::cout << "Loading file:" << texPath << std::endl;
+                if (!textureList[i]->load(true))
+                {
+                    printf("Failed to load texture at: %s\n", texPath);
+                    delete textureList[i];
+                    textureList[i] = nullptr;
+                }
+                else {
+                    std::cout << "Loaded texture: " << filename << std::endl;
+                    //printf("Loaded texture: %s \n", filename);
+                }
+            }
+        }
+
+        if (!textureList[i])
+        {
+            std::cout << "Loading file: Textures/plain.png" << std::endl;
+            textureList[i] = new Texture("Textures/plain.png");
+            textureList[i]->load(true);
+        }
     }
-    else
+}
+
+void Model::ClearModel()
+{
+    std::cout << "Clearing model!" << std::endl;
+    for (size_t i = 0; i < meshList.size(); i++)
     {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
-        stbi_image_free(data);
+        if (meshList[i])
+        {
+            delete meshList[i];
+            meshList[i] = nullptr;
+        }
     }
 
-    return textureID;
+    for (size_t i = 0; i < textureList.size(); i++)
+    {
+        if (textureList[i])
+        {
+            delete textureList[i];
+            textureList[i] = nullptr;
+        }
+    }
+}
+
+std::vector<ModelMesh*>* Model::getMeshList()
+{
+    return &meshList;
+}
+
+void Model::setInstanced(bool instanced)
+{
+    for (size_t i = 0; i < meshList.size(); i++)
+    {
+        meshList.at(i)->setInstanced(instanced);
+    }
+}
+
+int Model::getObjectCount()
+{
+    return meshList.at(0)->getObjCount();
+}
+
+int Model::getTriangleCount()
+{
+    return meshList.at(0)->getObjCount() * meshList.at(0)->getIndexCount();// * meshList.size()) * (meshList.at(0)->getIndexCount() * meshList.size());
+}
+
+void Model::update()
+{
+    for (size_t i = 0; i < meshList.size(); i++)
+    {
+        if (i > 0)
+            meshList.at(i)->getState()->columnCount = meshList.at(0)->getState()->columnCount;
+            meshList.at(i)->getState()->rowCount = meshList.at(0)->getState()->rowCount;
+            meshList.at(i)->getState()->stackCount = meshList.at(0)->getState()->stackCount;
+
+            meshList.at(i)->getState()->transformations->paddingX = meshList.at(0)->getState()->transformations->paddingX;
+            meshList.at(i)->getState()->transformations->paddingY = meshList.at(0)->getState()->transformations->paddingY;
+            meshList.at(i)->getState()->transformations->paddingZ = meshList.at(0)->getState()->transformations->paddingZ;
+    }
 }
