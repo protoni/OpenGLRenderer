@@ -6,7 +6,7 @@
 
 #include "DebugMacros.h"
 
-Texture::Texture(const char* path) : m_path(path), m_texture(0)
+Texture::Texture(const char* path, bool useRGBA) : m_path(path), m_texture(0), m_useRGBA(useRGBA)
 {
     load();
 }
@@ -16,7 +16,7 @@ Texture::~Texture()
 
 }
 
-bool Texture::load(bool useRGB)
+bool Texture::load()
 {
     bool ret = false;
     // Generate and load texture
@@ -34,13 +34,15 @@ bool Texture::load(bool useRGB)
     stbi_set_flip_vertically_on_load(true);
 
     unsigned char* data;
-    if (useRGB)
-        data = stbi_load(m_path, &width, &height, &nrChannels, 4);
-    else
-        data = stbi_load(m_path, &width, &height, &nrChannels, 0);
+
+    int desiredChannels = 0;
+    if (m_useRGBA)
+        desiredChannels = 4;
+
+    data = stbi_load(m_path, &width, &height, &nrChannels, desiredChannels);
 
     if (data) {
-        if(useRGB)
+        if(m_useRGBA)
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         else
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -58,6 +60,11 @@ void Texture::use(int offset)
 {
     glActiveTexture(GL_TEXTURE0 + offset);
     glBindTexture(GL_TEXTURE_2D, m_texture);
+}
+
+void Texture::deactivate()
+{
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 unsigned int Texture::getTexture()

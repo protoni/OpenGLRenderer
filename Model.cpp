@@ -24,6 +24,8 @@ void Model::RenderModel()
 
         //meshList[i]->RenderMesh();
         meshList[i]->drawNonInstanced();
+        
+        Texture::deactivate();
     }
 }
 
@@ -116,10 +118,10 @@ void Model::LoadMaterials(const aiScene* scene)
 
                 std::string texPath = std::string("Textures/") + filename;
 
-                textureList[i] = new Texture(texPath.c_str());
+                textureList[i] = new Texture(texPath.c_str(), true);
 
                 std::cout << "Loading file:" << texPath << std::endl;
-                if (!textureList[i]->load(true))
+                if (!textureList[i]->load())
                 {
                     printf("Failed to load texture at: %s\n", texPath);
                     delete textureList[i];
@@ -136,7 +138,7 @@ void Model::LoadMaterials(const aiScene* scene)
         {
             std::cout << "Loading file: Textures/plain.png" << std::endl;
             textureList[i] = new Texture("Textures/plain.png");
-            textureList[i]->load(true);
+            textureList[i]->load();
         }
     }
 }

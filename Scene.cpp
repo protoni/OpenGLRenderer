@@ -12,17 +12,20 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_ourShader = new Shader("./shader.vs", "./shader.fs");
     m_lightShader = new Shader("./shader.vs", "./lightShader.fs");
     m_lightMeshShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
-    m_modelLoadingShader = new Shader("./modelLoading.vs", "./modelLoading.fs");
+    m_modelLoadingShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
     
     // Load texture
-    m_container_texture = new Texture("container2.png");
-    m_container_texture_specular = new Texture("container2_specular.png");
+    m_container_texture = new Texture("container2.png", true);
+    m_container_texture_specular = new Texture("container2_specular.png", true);
 
     // Create mesh vector
     m_meshList = new std::vector<MeshObject*>;
 
     // Create a mesh list handler
     m_meshListHandler = new MeshListHandler(m_meshList);
+
+    // Create a material handler
+    m_materialHandler = new MaterialHandler();
 }
 
 Scene::~Scene()
@@ -70,6 +73,11 @@ Scene::~Scene()
     if (m_meshListHandler) {
         delete m_meshListHandler;
         m_meshListHandler = NULL;
+    }
+
+    if (m_materialHandler) {
+        delete m_materialHandler;
+        m_materialHandler = NULL;
     }
 }
 
@@ -156,7 +164,7 @@ void Scene::addCube()
 void Scene::addPlane()
 {
     Plane* plane = new Plane(m_lightMeshShader, false, false, true);
-    addMeshObject(plane, MeshType::CubeType);
+    addMeshObject(plane, MeshType::PlaneType);
 }
 
 void Scene::addTriangle()
@@ -206,9 +214,11 @@ void Scene::addModel()
     Model* model = new Model(m_lightMeshShader);
     model->LoadModel("Models/backpack/backpack.obj");
     MeshObject* object = new MeshObject();
+    MaterialBase* material = new MaterialDefault();
     object->model = model;
     object->name = std::string("Model_") + std::to_string(m_meshList->size());
     object->type = MeshType::ModelType;
+    object->material = material;
 
     m_meshList->push_back(object);
 }
@@ -283,10 +293,10 @@ void Scene::updateMeshMaterial(int selected, const std::string& newMaterial)
 {
     // Clear old material
     delete m_meshList->at(selected)->material;
-
+    
     MaterialBase* material;
     MaterialCollection materialCollection;
-
+    
     // Set new material
     if (newMaterial.compare(materialCollection.materialDefault.name) == 0) {
         material = new MaterialDefault();
@@ -305,7 +315,7 @@ void Scene::updateMeshMaterial(int selected, const std::string& newMaterial)
     }
     else
         material = new MaterialDefault();
-
+    
     m_meshList->at(selected)->material = material;
 }
 
@@ -317,10 +327,10 @@ void Scene::renderDirectionalLight(int idx, Shader* shader)
 
     // Get light's mesh state
     RepeaterState* state;
-    if (m_pointLights.at(idx)->type == MeshType::ModelType)
-        state = m_pointLights.at(idx)->model->getMeshList()->at(0)->getState();
+    if (m_directionalLights.at(idx)->type == MeshType::ModelType)
+        state = m_directionalLights.at(idx)->model->getMeshList()->at(0)->getState();
     else
-        state = m_pointLights.at(idx)->mesh->getState();
+        state = m_directionalLights.at(idx)->mesh->getState();
 
     // Get light position
     glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -341,17 +351,17 @@ void Scene::renderDirectionalLight(int idx, Shader* shader)
 
     // Set light direction
     //name = prefix + idxStr + "].direction";
-    m_ourShaderInstanced->setVec3(name, pos);
+   shader->setVec3(name, pos);
 
     // Set light values
     name = prefix + idxStr + "].ambient";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(0.05f, 0.05f, 0.05f));
+    shader->setVec3(name, glm::vec3(0.05f, 0.05f, 0.05f));
 
     name = prefix + idxStr + "].diffuse";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(0.4f, 0.4f, 0.4f));
+    shader->setVec3(name, glm::vec3(0.4f, 0.4f, 0.4f));
 
     name = prefix + idxStr + "].specular";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(0.5f, 0.5f, 0.5f));
+    shader->setVec3(name, glm::vec3(0.5f, 0.5f, 0.5f));
 
 }
 
@@ -363,10 +373,10 @@ void Scene::renderSpotLight(int idx, Shader* shader)
 
     // Get light's mesh state
     RepeaterState* state;
-    if (m_pointLights.at(idx)->type == MeshType::ModelType)
-        state = m_pointLights.at(idx)->model->getMeshList()->at(0)->getState();
+    if (m_spotLights.at(idx)->type == MeshType::ModelType)
+        state = m_spotLights.at(idx)->model->getMeshList()->at(0)->getState();
     else
-        state = m_pointLights.at(idx)->mesh->getState();
+        state = m_spotLights.at(idx)->mesh->getState();
 
     // Get light position
     glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -383,41 +393,41 @@ void Scene::renderSpotLight(int idx, Shader* shader)
 
     // Set light position
     std::string name = prefix + idxStr + "].position";
-    m_ourShaderInstanced->setVec3(name, pos);
+    shader->setVec3(name, pos);
 
     // Set light direction
     name = prefix + idxStr + "].direction";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(1.0f, 0.0f, 0.0f));
+    shader->setVec3(name, glm::vec3(1.0f, 0.0f, 0.0f));
 
 
     // Set light values
     name = prefix + idxStr + "].ambient";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(0.0f, 0.0f, 0.0f));
+    shader->setVec3(name, glm::vec3(0.0f, 0.0f, 0.0f));
 
     name = prefix + idxStr + "].diffuse";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
+    shader->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
 
     name = prefix + idxStr + "].specular";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
+    shader->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
 
 
     // Set fade-out values
     name = prefix + idxStr + "].constant";
-    m_ourShaderInstanced->setFloat(name, 1.0f);
+    shader->setFloat(name, 1.0f);
 
     name = prefix + idxStr + "].linear";
-    m_ourShaderInstanced->setFloat(name, 0.09f);
+    shader->setFloat(name, 0.09f);
 
     name = prefix + idxStr + "].quadratic";
-    m_ourShaderInstanced->setFloat(name, 0.032f);
+    shader->setFloat(name, 0.032f);
 
 
     // Set spot area values
     name = prefix + idxStr + "].cutOff";
-    m_ourShaderInstanced->setFloat(name, glm::cos(glm::radians(12.5f)));
+    shader->setFloat(name, glm::cos(glm::radians(12.5f)));
 
     name = prefix + idxStr + "].outerCutOff";
-    m_ourShaderInstanced->setFloat(name, glm::cos(glm::radians(15.0f)));
+    shader->setFloat(name, glm::cos(glm::radians(15.0f)));
 }
 
 void Scene::renderPointLight(int idx, Shader* shader)
@@ -427,9 +437,12 @@ void Scene::renderPointLight(int idx, Shader* shader)
         return;
 
     // Get light's mesh state
+    bool isModel = false;
     RepeaterState* state;
-    if (m_pointLights.at(idx)->type == MeshType::ModelType)
+    if (m_pointLights.at(idx)->type == MeshType::ModelType) {
         state = m_pointLights.at(idx)->model->getMeshList()->at(0)->getState();
+        isModel = true;
+    }
     else
         state = m_pointLights.at(idx)->mesh->getState();
 
@@ -447,7 +460,10 @@ void Scene::renderPointLight(int idx, Shader* shader)
     std::string name = prefix + idxStr + "].position";
 
     // Set light position
-    shader->setVec3(name, -pos);
+    if(isModel) // Invert light position when rendering a model
+        shader->setVec3(name, -pos);
+    else
+        shader->setVec3(name, pos);
 
     name = prefix + idxStr + "].ambient";
     shader->setVec3(name, glm::vec3(0.05f, 0.05f, 0.05f));
@@ -500,6 +516,7 @@ void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)
     }
 
     // Set material
+    m_lightMeshShader->setBool("materialOverride", false);
     if (m_meshList->at(idx)->material) {
         m_lightMeshShader->setVec3("material.ambient", m_meshList->at(idx)->material->ambient);
         m_lightMeshShader->setVec3("material.diffuse", m_meshList->at(idx)->material->diffuse);
@@ -507,11 +524,10 @@ void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)
         m_lightMeshShader->setFloat("material.shininess", m_meshList->at(idx)->material->shininess);
     }
     else {
-        std::cout << "Error! Mesh doesn't have material. Using defaults" << std::endl;
         m_lightMeshShader->setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
         m_lightMeshShader->setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
         m_lightMeshShader->setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-        m_lightMeshShader->setFloat("material.shininess", 32);
+        m_lightMeshShader->setFloat("material.shininess", 64);
     
     }
 
@@ -531,6 +547,14 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         m_meshListHandler->highlightChanged();
 
         m_ourShaderInstanced->setVec3("viewPos", m_camera->Position);
+
+        // Set textures
+        m_ourShaderInstanced->setBool("materialOverride", true);
+        //m_ourShaderInstanced->setInt("material.diffuse", 0);
+        //m_container_texture->use(0);
+        //
+        //m_ourShaderInstanced->setInt("material.specular", 1);
+        //m_container_texture_specular->use(1);
 
         // Directional lights
         m_ourShaderInstanced->setInt("dirLightCount", m_directionalLights.size());
@@ -552,17 +576,17 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 
         // Set material
         if (m_meshList->at(idx)->material) {
-            m_ourShaderInstanced->setVec3("material.ambient", m_meshList->at(idx)->material->ambient);
-            m_ourShaderInstanced->setVec3("material.diffuse", m_meshList->at(idx)->material->diffuse);
-            m_ourShaderInstanced->setVec3("material.specular", m_meshList->at(idx)->material->specular);
-            m_ourShaderInstanced->setFloat("material.shininess", m_meshList->at(idx)->material->shininess);
+            m_ourShaderInstanced->setVec3("materialBase.ambient", m_meshList->at(idx)->material->ambient);
+            m_ourShaderInstanced->setVec3("materialBase.diffuse", m_meshList->at(idx)->material->diffuse);
+            m_ourShaderInstanced->setVec3("materialBase.specular", m_meshList->at(idx)->material->specular);
+            m_ourShaderInstanced->setFloat("materialBase.shininess", m_meshList->at(idx)->material->shininess);
         }
         else {
             std::cout << "Error! Mesh doesn't have material. Using defaults" << std::endl;
-            m_ourShaderInstanced->setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
-            m_ourShaderInstanced->setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
-            m_ourShaderInstanced->setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-            m_ourShaderInstanced->setFloat("material.shininess", 32);
+            m_ourShaderInstanced->setVec3("materialBase.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+            m_ourShaderInstanced->setVec3("materialBase.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+            m_ourShaderInstanced->setVec3("materialBase.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+            m_ourShaderInstanced->setFloat("materialBase.shininess", 32);
             
         }
     }
@@ -573,72 +597,52 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             m_lightMeshShader->setMat4("view", view);
             m_lightMeshShader->setVec3("viewPos", m_camera->Position);
 
-            // Set lights
-            if (m_meshList->at(idx)->light) {
-                m_lightMeshShader->setVec3("light.ambient", m_meshList->at(idx)->light->ambient);
-                m_lightMeshShader->setVec3("light.diffuse", m_meshList->at(idx)->light->diffuse);
-                m_lightMeshShader->setVec3("light.specular", m_meshList->at(idx)->light->specular);
-            }
-            else {
-                std::cout << "Error! Mesh doesn't have lights. Using defaults" << std::endl;
-                m_lightMeshShader->setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-                m_lightMeshShader->setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-                m_lightMeshShader->setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+            // Set textures
+            //m_lightMeshShader->setInt("material.diffuse", 0);
+            //m_container_texture->use(0);
+            //
+            //m_lightMeshShader->setInt("material.specular", 1);
+            //m_container_texture_specular->use(1);
+
+            // Directional lights
+            m_lightMeshShader->setInt("dirLightCount", m_directionalLights.size());
+            for (int i = 0; i < m_directionalLights.size(); i++) {
+                renderDirectionalLight(i, m_lightMeshShader);
             }
 
+            // Point lights
+            m_lightMeshShader->setInt("pointLightCount", m_pointLights.size());
+            for (int i = 0; i < m_pointLights.size(); i++) {
+                renderPointLight(i, m_lightMeshShader);
+            }
+
+            // Spotlights
+            m_lightMeshShader->setInt("spotLightCount", m_spotLights.size());
+            for (int i = 0; i < m_spotLights.size(); i++) {
+                renderSpotLight(i, m_lightMeshShader);
+            }
+            m_lightMeshShader->setBool("materialOverride", false);
             // Set material
             if (m_meshList->at(idx)->material) {
-                m_lightMeshShader->setVec3("material.ambient", m_meshList->at(idx)->material->ambient);
-                m_lightMeshShader->setVec3("material.diffuse", m_meshList->at(idx)->material->diffuse);
-                m_lightMeshShader->setVec3("material.specular", m_meshList->at(idx)->material->specular);
-                m_lightMeshShader->setFloat("material.shininess", m_meshList->at(idx)->material->shininess);
+                
+                m_lightMeshShader->setVec3("materialBase.ambient", m_meshList->at(idx)->material->ambient);
+                m_lightMeshShader->setVec3("materialBase.diffuse", m_meshList->at(idx)->material->diffuse);
+                m_lightMeshShader->setVec3("materialBase.specular", m_meshList->at(idx)->material->specular);
+                m_lightMeshShader->setFloat("materialBase.shininess", m_meshList->at(idx)->material->shininess);
             }
             else {
                 std::cout << "Error! Mesh doesn't have material. Using defaults" << std::endl;
-                m_lightMeshShader->setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
-                m_lightMeshShader->setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
-                m_lightMeshShader->setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-                m_lightMeshShader->setFloat("material.shininess", 32);
+                m_lightMeshShader->setVec3("materialBase.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+                m_lightMeshShader->setVec3("materialBase.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+                m_lightMeshShader->setVec3("materialBase.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+                m_lightMeshShader->setFloat("materialBase.shininess", 32);
             }
         }
-        else {
-            m_ourShader->use();
-            m_ourShader->setMat4("projection", projection);
-            m_ourShader->setMat4("view", view);
 
-            if (m_meshList->at(idx)->selected)
-                m_ourShader->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
-            else
-                m_ourShader->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
-            
-            
-        }
-
-        if (m_meshList->at(idx)->type == MeshType::PointLightType) {
-            m_lightShader->use();
-            m_lightShader->setMat4("projection", projection);
-            m_lightShader->setMat4("view", view);
-
-            // Update light position
-            if (state->modified->size() > 0) {
-                m_lightPos.x = state->modified->at(0)->transformations->xPos;
-                m_lightPos.y = state->modified->at(0)->transformations->yPos;
-                m_lightPos.z = state->modified->at(0)->transformations->zPos;
-            }
-
-            
-
-        }
-
-        // Update directional lights
-        if (m_meshList->at(idx)->type == MeshType::DirectionalLightType) {
-            m_lightShader->use();
-            m_lightShader->setMat4("projection", projection);
-            m_lightShader->setMat4("view", view);
-        }
-
-        // Update spot lights
-        if (m_meshList->at(idx)->type == MeshType::SpotLightType) {
+        // Set light shader
+        if (m_meshList->at(idx)->type == MeshType::PointLightType ||
+            m_meshList->at(idx)->type == MeshType::DirectionalLightType ||
+            m_meshList->at(idx)->type == MeshType::SpotLightType) {
             m_lightShader->use();
             m_lightShader->setMat4("projection", projection);
             m_lightShader->setMat4("view", view);
@@ -650,19 +654,10 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 
 void Scene::renderScene()
 {
-    if (!m_ourShader || !m_ourShaderInstanced) {
-        std::cout << "Scene::renderScene::shader error!" << std::endl;
-        return;
-    }
-
-    
-    m_lightMeshShader->setInt("material.diffuse", 0);
-    m_container_texture->use(0);
-    
-    m_lightMeshShader->setInt("material.specular", 1);
-    m_container_texture_specular->use(1);
-    
-    glm::mat4 projection = glm::perspective(glm::radians(m_camera->Zoom), (float)m_screenSettings->width / (float)m_screenSettings->height, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(
+        glm::radians(m_camera->Zoom),
+        (float)m_screenSettings->width / (float)m_screenSettings->height, 0.1f, 100.0f
+    );
     glm::mat4 view = m_camera->GetViewMatrix();
 
     int lastDrawn = 0;
@@ -808,12 +803,17 @@ void Scene::deleteModel(int idx)
         }
     }
 
+    // Clear material
+    delete m_meshList->at(idx)->material;
+
     // Clear model
     delete m_meshList->at(idx)->model;
 
     // Clear model object
     delete m_meshList->at(idx);
     
+    // Clear the object list
+    m_meshList->erase(m_meshList->begin() + idx);
 }
 
 void Scene::clean()

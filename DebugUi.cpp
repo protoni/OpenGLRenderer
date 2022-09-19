@@ -69,7 +69,8 @@ void DebugUi::materialSettings(int selected)
     float shininess;
 
     std::vector<MeshObject*>* meshList = m_scene->getMeshList();
-    const std::string currentMaterial = meshList->at(selected)->material->name.c_str();
+    std::string currentMaterial = meshList->at(selected)->material->name.c_str();
+
 
     static int item_current = 0;
     const char* items[] = { "Custom", "Default", "Emerald", "Silver", "GreenRubber", "YellowRubber" };
@@ -274,7 +275,10 @@ bool DebugUi::objectSettings(int selected)
         ImGui::Text(meshList->at(selected)->name.c_str(), selected);
 
         if (ImGui::Button("Remove Object", ImVec2(100, 0))) {
-            m_scene->deleteObject(selected);
+            if (meshList->at(selected)->type == MeshType::ModelType)
+                m_scene->deleteModel(selected);
+            else
+                m_scene->deleteObject(selected);
 
             ImGui::EndChild();
             return false;
@@ -479,13 +483,13 @@ void DebugUi::objectLayout(bool* p_open)
 
             // If reflecting light type, show light and material settings
             if (meshList.size() != 0 && selected < meshList.size()) {
-                if (meshList.at(selected)->type == MeshType::ReflectCubeType) {
+                //if (meshList.at(selected)->type == MeshType::ReflectCubeType) {
                     if (ImGui::BeginTabItem("Material")) {
                         materialSettings(selected);
                         ImGui::EndTabItem();
                     }
-                }
-                else if (meshList.at(selected)->type == MeshType::DirectionalLightType ||
+                //}
+                if (meshList.at(selected)->type == MeshType::DirectionalLightType ||
                     meshList.at(selected)->type == MeshType::PointLightType ||
                     meshList.at(selected)->type == MeshType::SpotLightType) {
                     if (ImGui::BeginTabItem("Light")) {

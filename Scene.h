@@ -99,6 +99,7 @@ private:
     Texture* m_container_texture_specular;
     ScreenSettings* m_screenSettings;
     MeshListHandler* m_meshListHandler;
+    MaterialHandler* m_materialHandler;
 
     unsigned int m_VAO;
     unsigned int m_EBO;

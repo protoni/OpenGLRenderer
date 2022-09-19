@@ -1,5 +1,15 @@
 #version 430 core
 
+struct MaterialBase {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    
+    float shininess;
+};
+uniform MaterialBase materialBase;
+uniform bool materialOverride;
+
 struct Material {
     sampler2D diffuse;
     sampler2D specular;
@@ -85,23 +95,40 @@ uniform int pointLightCount;
 uniform int dirLightCount;
 uniform int spotLightCount;
 
-vec3 calculatePointLight(PointLight light, vec3 viewPos)
+vec3 calculatePointLight(PointLight light, vec3 viewPos, bool onlyMaterial)
 {
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(light.position - FragPos);
     
     // Calculate diffuse lighting
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoord));
+    vec3 diffuse;
+    if(onlyMaterial)
+        diffuse = light.diffuse * diff * materialBase.diffuse;
+    else
+        diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoord));
     
     // Calculate ambient lighting
-    vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoord));
+    vec3 ambient;
+    if(onlyMaterial)
+        ambient = light.ambient * materialBase.ambient;
+    else
+        ambient = light.ambient * vec3(texture(material.diffuse, TexCoord));
     
     // Calculate specular lighting
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoord));
+    
+    vec3 specular;
+    float spec;
+    if(onlyMaterial) {
+        spec = pow(max(dot(viewDir, reflectDir), 0.0), materialBase.shininess);
+        specular = light.specular * spec * materialBase.specular;
+    }
+    else {
+        spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+        specular = light.specular * spec * vec3(texture(material.specular, TexCoord));
+    }
     
     // Calculate spotlight fade-out values
     float distance = length(light.position - FragPos);
@@ -179,7 +206,7 @@ vec3 calculateSpotLight(SpotLight light, vec3 viewPos)
 void main()
 {
     bool selected = false;
-    float defaultAmbience = 0.05;
+    float defaultAmbience = 0.07;
     
     // Calculate default ambient lighting
     vec3 ambient = defaultAmbience * vec3(texture(material.diffuse, TexCoord));
@@ -196,18 +223,18 @@ void main()
     // Apply point lights
     if(pointLightCount > 0) {
         for(int i = 0; i < pointLightCount; i++)
-            result += calculatePointLight(pointLights[i], viewPos);
+            result += calculatePointLight(pointLights[i], viewPos, materialOverride);
     }
     
     // Apply directional lights
-    if(dirLightCount > 0)
-        for(int i = 0; i < dirLightCount; i++)
-            result += calculateDirectionalLight(dirLights[i], viewPos);
+    //if(dirLightCount > 0)
+    //    for(int i = 0; i < dirLightCount; i++)
+    //        result += calculateDirectionalLight(dirLights[i], viewPos);
     
     // Apply spot lights
-    if(spotLightCount > 0)
-        for(int i = 0; i < spotLightCount; i++)
-            result += calculateSpotLight(spotLights[i], viewPos);
+    //if(spotLightCount > 0)
+    //    for(int i = 0; i < spotLightCount; i++)
+    //        result += calculateSpotLight(spotLights[i], viewPos);
 
     // If currently selected, set selected color, else set lights and material colors
     if(selected) {
