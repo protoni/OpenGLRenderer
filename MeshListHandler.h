@@ -59,59 +59,62 @@ public:
     MeshListHandler(std::vector<MeshObject*>* meshlist);
     ~MeshListHandler();
 
-    /* Move selected pointer around to highlight an mesh */
+    // Move selected pointer around to highlight an mesh
     void updateMeshPointer(int direction, bool multiselect);
 
-    /* Get currently selected mesh pointer*/
+    // Get currently selected mesh pointer
     int getSelectedMeshIndex();
 
-    /* Control multi-pick mode ( individual mesh picker )*/
+    // Control multi-pick mode ( individual mesh picker )
     void toggleMultiPickMode() { m_multiPickMode = !m_multiPickMode; }
     void setMultiPickMode(bool mode) { m_multiPickMode = mode; }
 
-    /* Add currently selected mesh to multi select vector */
+    // Add currently selected mesh to multi select vector
     void multiPick();
 
-    /* Highlight selected meshes if the mesh pointer has moved */
+    // Highlight selected meshes if the mesh pointer has moved
     void highlightChanged();
 
-    /* Highlight selected meshes by updating the SSBO on the GPU */
+    // Highlight selected meshes by updating the SSBO on the GPU
     void highlightSelectedMeshes();
 
-    /* Delete a single mesh inside an repeater instance*/
+    // Delete a single mesh inside an repeater instance
     void deleteInstancedMesh(int selected);
 
-    /* Reset currently selected mesh pointer */
+    // Reset currently selected mesh pointer
     void resetMeshPointer() { m_meshPointer = -1; }
 
-    /* Apply mesh transformations to the selected mesh */
+    // Apply mesh transformations to the selected mesh
     bool updateObjectMesh(int idx);
 
-    /* Count all objects in the scene and return the count */
+    // Count all objects in the scene and return the count
     int getObjectCount();
 
-    /* Count the total amount of triangles of the meshes on the Scene currently and return the count */
+    // Count the total amount of triangles of the meshes on the Scene currently and return the count
     int getTriangleCount();
+
+    // Get the current mesh pointer index
+    int getMeshPointer() { return m_meshPointer; }
 
 private:
 
-    /* All of the objects that the Scene has currently */
+    // All of the objects that the Scene has currently
     std::vector<MeshObject*>* m_meshList;
 
-    /* Is multi-pick mode on */
+    // Is multi-pick mode on
     bool m_multiPickMode = false;
 
-    /* Currently selected mesh pointer list */
+    // Currently selected mesh pointer list
     std::vector<int> m_multiSelectVec;
 
-    /* Store old size of the currently selected meshes vector to detect changes */
+    // Store old size of the currently selected meshes vector to detect changes
     int m_oldMultiSelectVecSize = 0;
 
-    /* Store old mesh pointer to detect changes */
+    // Store old mesh pointer to detect changes
     unsigned int m_oldMeshPointer = 0;
 
-    /* Currently selected mesh */
-    unsigned int m_meshPointer;
+    // Currently selected mesh
+    unsigned int m_meshPointer = 0;
 };
 
 #endif // MESH_LIST_HANDLER_H

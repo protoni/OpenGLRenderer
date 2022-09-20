@@ -181,21 +181,18 @@ void LightHandler::renderAllLightTypes(Shader* shader, bool invertPos)
     // Directional lights
     shader->setInt("dirLightCount", m_directionalLights.size());
     for (int i = 0; i < m_directionalLights.size(); i++) {
-        //renderDirectionalLight(i, m_lightMeshShader);
         renderDirectionalLight(i, shader, invertPos);
     }
 
     // Point lights
     shader->setInt("pointLightCount", m_pointLights.size());
     for (int i = 0; i < m_pointLights.size(); i++) {
-        //renderPointLight(i, m_lightMeshShader, true);
         renderPointLight(i, shader, invertPos);
     }
 
     // Spotlights
     shader->setInt("spotLightCount", m_spotLights.size());
     for (int i = 0; i < m_spotLights.size(); i++) {
-        //renderSpotLight(i, m_lightMeshShader);
         renderSpotLight(i, shader, invertPos);
     }
 }

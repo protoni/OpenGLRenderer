@@ -112,10 +112,6 @@ void DebugUi::lightSettings(int selected)
     ImGui::BeginChild("Light settings", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing() + 80)));
     ImGui::Text("Light settings");
 
-    if (ImGui::Button("Remove Light", ImVec2(100, 0))) {
-        m_scene->deleteDirectionalLight(selected);
-    }
-
     static float ambient[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
     static float diffuse[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
     static float specular[4] = { 0.10f, 0.20f, 0.30f, 0.44f };

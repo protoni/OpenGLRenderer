@@ -4,7 +4,7 @@
 
 
 Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
-    m_camera(camera), m_screenSettings(screenSettings), m_meshPointer(0)
+    m_camera(camera), m_screenSettings(screenSettings)
 {
     // Create and build shaders
     //m_ourShaderInstanced = new Shader("./shaderInstanced.vs", "./shader.fs");
@@ -141,12 +141,10 @@ void Scene::addMeshObject(Repeater* mesh, MeshType type)
         break;
     case PointLightType:
         object->name = std::string("PointLight_") + std::to_string(m_meshList->size());
-        //m_pointLights.push_back(object);
         m_lightHandler->addPointLight(object);
         break;
     case DirectionalLightType:
         object->name = std::string("DirectionalLight_") + std::to_string(m_meshList->size());
-        //m_directionalLights.push_back(object);
         m_lightHandler->addDirectionalLight(object);
         break;
     case ReflectCubeType:
@@ -155,7 +153,6 @@ void Scene::addMeshObject(Repeater* mesh, MeshType type)
         break;
     case SpotLightType:
         object->name = std::string("Spotlight_") + std::to_string(m_meshList->size());
-        //m_spotLights.push_back(object);
         m_lightHandler->addSpotLight(object);
         break;
     case ModelType:
@@ -288,17 +285,6 @@ int Scene::getTriangleCount()
     return m_meshListHandler->getTriangleCount();
 }
 
-void Scene::deleteDirectionalLight(int selected)
-{
-    if (m_meshList->at(selected)->type == MeshType::DirectionalLightType) {
-        m_directionalLights.clear(); // TODO: when multiple lights implemented, don't delete all
-        std::cout << "delete directional light!" << std::endl;
-    }
-    else if (m_meshList->at(selected)->type == MeshType::PointLightType) {
-        m_lightPos = glm::vec3(-0.0f, -0.0f, -0.0f);
-    }
-}
-
 std::vector<MeshObject*>* Scene::getMeshList()
 {
     return m_meshList;
@@ -332,6 +318,11 @@ void Scene::updateMeshMaterial(int selected, const std::string& newMaterial)
         material = new MaterialDefault();
     
     m_meshList->at(selected)->material = material;
+}
+
+int Scene::getMeshPointer()
+{
+    return m_meshListHandler->getMeshPointer();
 }
 
 void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)
@@ -373,7 +364,7 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         m_ourShaderInstanced->use();
         m_ourShaderInstanced->setMat4("projection", projection);
         m_ourShaderInstanced->setMat4("view", view);
-        m_ourShaderInstanced->setInt("selectedMesh", m_meshPointer);
+        m_ourShaderInstanced->setInt("selectedMesh", m_meshListHandler->getMeshPointer());
         m_ourShaderInstanced->setInt("selectedInstance", m_meshList->at(idx)->selected);
 
         m_meshListHandler->highlightChanged();
