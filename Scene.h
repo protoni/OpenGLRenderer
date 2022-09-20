@@ -85,9 +85,9 @@ private:
     void drawModel(int idx, glm::mat4& projection, glm::mat4& view);
     int getSelectedMeshIndex();
     void highlightSelectedMeshes();
-    void renderPointLight(int idx, Shader* shader);
-    void renderDirectionalLight(int idx, Shader* shader);
-    void renderSpotLight(int idx, Shader* shader);
+    void renderPointLight(int idx, Shader* shader, bool invertPos = false);
+    void renderDirectionalLight(int idx, Shader* shader, bool invertPos = false);
+    void renderSpotLight(int idx, Shader* shader, bool invertPos = false);
 
     Camera* m_camera;
     Shader* m_ourShader;

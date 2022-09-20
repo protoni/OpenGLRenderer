@@ -95,7 +95,7 @@ uniform int pointLightCount;
 uniform int dirLightCount;
 uniform int spotLightCount;
 
-vec3 calculatePointLight(PointLight light, vec3 viewPos, bool onlyMaterial)
+vec3 calculatePointLight(PointLight light, vec3 viewPos, bool materialOverride)
 {
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(light.position - FragPos);
@@ -103,14 +103,14 @@ vec3 calculatePointLight(PointLight light, vec3 viewPos, bool onlyMaterial)
     // Calculate diffuse lighting
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse;
-    if(onlyMaterial)
+    if(materialOverride)
         diffuse = light.diffuse * diff * materialBase.diffuse;
     else
         diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoord));
     
     // Calculate ambient lighting
     vec3 ambient;
-    if(onlyMaterial)
+    if(materialOverride)
         ambient = light.ambient * materialBase.ambient;
     else
         ambient = light.ambient * vec3(texture(material.diffuse, TexCoord));
@@ -121,7 +121,7 @@ vec3 calculatePointLight(PointLight light, vec3 viewPos, bool onlyMaterial)
     
     vec3 specular;
     float spec;
-    if(onlyMaterial) {
+    if(materialOverride) {
         spec = pow(max(dot(viewDir, reflectDir), 0.0), materialBase.shininess);
         specular = light.specular * spec * materialBase.specular;
     }
@@ -144,45 +144,79 @@ vec3 calculatePointLight(PointLight light, vec3 viewPos, bool onlyMaterial)
     return (ambient + diffuse + specular);
 }
 
-vec3 calculateDirectionalLight(DirLight light, vec3 viewPos)
+vec3 calculateDirectionalLight(DirLight light, vec3 viewPos, bool materialOverride)
 {
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(light.direction);
     
     // Calculate ambient lighting
-    vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoord));
+    vec3 ambient;
+    if(materialOverride)
+        ambient = light.ambient * materialBase.diffuse;
+    else
+        ambient = light.ambient * vec3(texture(material.diffuse, TexCoord));
     
     // Calculate diffuse value
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoord));
+    vec3 diffuse;
+    if(materialOverride)
+        diffuse = light.diffuse * diff * materialBase.diffuse;
+    else
+        diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoord));
     
     // Calculate specular lighting
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoord));
+    
+    float spec;
+    vec3 specular;
+    if(materialOverride) {
+        spec = pow(max(dot(viewDir, reflectDir), 0.0), materialBase.shininess);
+        specular = light.specular * spec * materialBase.specular;
+    }
+    else {
+        spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+        specular = light.specular * spec * vec3(texture(material.specular, TexCoord));
+    }
     
     // Return combined light vector
     return (ambient + diffuse + specular);
 }
 
-vec3 calculateSpotLight(SpotLight light, vec3 viewPos)
+vec3 calculateSpotLight(SpotLight light, vec3 viewPos, bool materialOverride)
 {
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(light.position - FragPos);
     
     // Calculate ambient lighting
-    vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoord));
+    vec3 ambient;
+    if(materialOverride)
+        ambient = light.ambient * materialBase.diffuse;
+    else
+        ambient = light.ambient * vec3(texture(material.diffuse, TexCoord));
     
     // Calculate diffuse value
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoord));
+    vec3 diffuse;
+    if(materialOverride)
+        diffuse = light.diffuse * diff * materialBase.diffuse;
+    else
+        diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoord));
     
     // Calculate specular lighting
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoord));
+    
+    float spec;
+    vec3 specular;
+    if(materialOverride) {
+        spec = pow(max(dot(viewDir, reflectDir), 0.0), materialBase.shininess);
+        specular = light.specular * spec * materialBase.specular;
+    }
+    else {
+        spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+        specular = light.specular * spec * vec3(texture(material.specular, TexCoord));
+    }
     
     // Calculate spotlight fade-out values
     float distance = length(light.position - FragPos);
@@ -227,14 +261,14 @@ void main()
     }
     
     // Apply directional lights
-    //if(dirLightCount > 0)
-    //    for(int i = 0; i < dirLightCount; i++)
-    //        result += calculateDirectionalLight(dirLights[i], viewPos);
+    if(dirLightCount > 0)
+        for(int i = 0; i < dirLightCount; i++)
+            result += calculateDirectionalLight(dirLights[i], viewPos, materialOverride);
     
     // Apply spot lights
-    //if(spotLightCount > 0)
-    //    for(int i = 0; i < spotLightCount; i++)
-    //        result += calculateSpotLight(spotLights[i], viewPos);
+    if(spotLightCount > 0)
+        for(int i = 0; i < spotLightCount; i++)
+            result += calculateSpotLight(spotLights[i], viewPos, materialOverride);
 
     // If currently selected, set selected color, else set lights and material colors
     if(selected) {

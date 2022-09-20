@@ -319,7 +319,7 @@ void Scene::updateMeshMaterial(int selected, const std::string& newMaterial)
     m_meshList->at(selected)->material = material;
 }
 
-void Scene::renderDirectionalLight(int idx, Shader* shader)
+void Scene::renderDirectionalLight(int idx, Shader* shader, bool invertPos)
 {
     // Return if max point light count
     if (idx >= 40)
@@ -365,7 +365,7 @@ void Scene::renderDirectionalLight(int idx, Shader* shader)
 
 }
 
-void Scene::renderSpotLight(int idx, Shader* shader)
+void Scene::renderSpotLight(int idx, Shader* shader, bool invertPos)
 {
     // Return if max point light count
     if (idx >= 40)
@@ -393,7 +393,10 @@ void Scene::renderSpotLight(int idx, Shader* shader)
 
     // Set light position
     std::string name = prefix + idxStr + "].position";
-    shader->setVec3(name, pos);
+    if (invertPos) // Invert light position when rendering a model
+        shader->setVec3(name, -pos);
+    else
+        shader->setVec3(name, pos);
 
     // Set light direction
     name = prefix + idxStr + "].direction";
@@ -430,21 +433,14 @@ void Scene::renderSpotLight(int idx, Shader* shader)
     shader->setFloat(name, glm::cos(glm::radians(15.0f)));
 }
 
-void Scene::renderPointLight(int idx, Shader* shader)
+void Scene::renderPointLight(int idx, Shader* shader, bool invertPos)
 {
     // Return if max point light count
     if (idx >= 40) 
         return;
 
     // Get light's mesh state
-    bool isModel = false;
-    RepeaterState* state;
-    if (m_pointLights.at(idx)->type == MeshType::ModelType) {
-        state = m_pointLights.at(idx)->model->getMeshList()->at(0)->getState();
-        isModel = true;
-    }
-    else
-        state = m_pointLights.at(idx)->mesh->getState();
+    RepeaterState* state = m_pointLights.at(idx)->mesh->getState();
 
     // Get light position
     glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -460,7 +456,7 @@ void Scene::renderPointLight(int idx, Shader* shader)
     std::string name = prefix + idxStr + "].position";
 
     // Set light position
-    if(isModel) // Invert light position when rendering a model
+    if(invertPos) // Invert light position when rendering a model
         shader->setVec3(name, -pos);
     else
         shader->setVec3(name, pos);
@@ -506,7 +502,7 @@ void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)
     // Point lights
     m_lightMeshShader->setInt("pointLightCount", m_pointLights.size());
     for (int i = 0; i < m_pointLights.size(); i++) {
-        renderPointLight(i, m_lightMeshShader);
+        renderPointLight(i, m_lightMeshShader, true);
     }
 
     // Spotlights
@@ -621,7 +617,7 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             for (int i = 0; i < m_spotLights.size(); i++) {
                 renderSpotLight(i, m_lightMeshShader);
             }
-            m_lightMeshShader->setBool("materialOverride", false);
+            m_lightMeshShader->setBool("materialOverride", true);
             // Set material
             if (m_meshList->at(idx)->material) {
                 
