@@ -1,7 +1,7 @@
 #ifndef MATERIAL_BASE_H
 #define MATERIAL_BASE_H
 
-#include <glad_opengl4_3/glad.h>
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <vector>
 #include <string>
@@ -104,7 +104,7 @@ struct MaterialCollection
           }) {}
 };
 
-class Material
+class MaterialHandler
 {
 public:
     static const char** getMaterialNames()
@@ -128,6 +128,36 @@ public:
         };
 
         return MaterialTypeNames;
+    }
+
+    void changeMaterial(MaterialBase* oldMaterial, const std::string& newMaterialName)
+    {
+        // Clear old material
+        delete oldMaterial;
+
+        MaterialBase* material;
+        MaterialCollection materialCollection;
+
+        // Set new material
+        if (newMaterialName.compare(materialCollection.materialDefault.name) == 0) {
+            material = new MaterialDefault();
+        }
+        else if (newMaterialName.compare(materialCollection.materialEmerald.name) == 0) {
+            material = new MaterialEmerald();
+        }
+        else if (newMaterialName.compare(materialCollection.materialSilver.name) == 0) {
+            material = new MaterialSilver();
+        }
+        else if (newMaterialName.compare(materialCollection.materialGreenRubber.name) == 0) {
+            material = new MaterialGreenRubber();
+        }
+        else if (newMaterialName.compare(materialCollection.materialYellowRubber.name) == 0) {
+            material = new MaterialYellowRubber();
+        }
+        else
+            material = new MaterialDefault();
+
+        oldMaterial = material;
     }
 };
 

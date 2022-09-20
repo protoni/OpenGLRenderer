@@ -8,6 +8,7 @@
 #include <string>
 
 #include "DebugMacros.h"
+#include "MeshListHandler.h"
 
 DebugUi::DebugUi(Window* window, Scene* scene) : m_window(window), m_scene(scene),
     m_debugModeOn(false), m_wireframeModeOn(false), m_debounceCounter(0.0),
@@ -68,7 +69,8 @@ void DebugUi::materialSettings(int selected)
     float shininess;
 
     std::vector<MeshObject*>* meshList = m_scene->getMeshList();
-    const std::string currentMaterial = meshList->at(selected)->material->name.c_str();
+    std::string currentMaterial = meshList->at(selected)->material->name.c_str();
+
 
     static int item_current = 0;
     const char* items[] = { "Custom", "Default", "Emerald", "Silver", "GreenRubber", "YellowRubber" };
@@ -110,10 +112,6 @@ void DebugUi::lightSettings(int selected)
     ImGui::BeginChild("Light settings", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing() + 80)));
     ImGui::Text("Light settings");
 
-    if (ImGui::Button("Remove Light", ImVec2(100, 0))) {
-        m_scene->deleteDirectionalLight(selected);
-    }
-
     static float ambient[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
     static float diffuse[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
     static float specular[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
@@ -143,7 +141,11 @@ void DebugUi::meshSettings(int selected)
         return;
     }
 
-    RepeaterState* state = meshList->at(selected)->mesh->getState();
+    RepeaterState* state;
+    if (meshList->at(selected)->type == MeshType::ModelType)
+        state = meshList->at(selected)->model->getMeshList()->at(0)->getState();
+    else
+        state = meshList->at(selected)->mesh->getState();
 
     // Load current values
     if (m_scene->getMeshPointer() >= 0 && m_scene->getMeshPointer() < state->modified->size()) {
@@ -233,7 +235,11 @@ void DebugUi::meshSettings(int selected)
                 state->modified->at(m_scene->getMeshPointer())->transformations->zRotation = m_meshState.zRotation;
 
                 std::cout << "Changed!" << std::endl;
-                m_scene->updateObjectMesh(selected);
+
+                MeshObjectChange change;
+                change.selectedMesh = selected;
+                change.action = MeshObjectChangeAction::UpdateObject;
+                m_scene->updateMeshObjects(change);
 
                 m_debounceCounter = 0;
             }
@@ -252,8 +258,11 @@ bool DebugUi::objectSettings(int selected)
 
     // Reset mesh pointer
     if (selected < meshList->size()) {
-        if (!meshList->at(selected)->selected)
-            m_scene->resetMeshPointer();
+        if (!meshList->at(selected)->selected) {
+            MeshObjectChange change;
+            change.action = MeshObjectChangeAction::ResetMeshPointer;
+            m_scene->updateMeshObjects(change);
+        }
     }
 
     ImGui::BeginChild("item view", ImVec2(0, -(ImGui::GetFrameHeightWithSpacing() + 80))); // Leave room for 1 line below us and mesh edit view
@@ -262,7 +271,10 @@ bool DebugUi::objectSettings(int selected)
         ImGui::Text(meshList->at(selected)->name.c_str(), selected);
 
         if (ImGui::Button("Remove Object", ImVec2(100, 0))) {
-            m_scene->deleteObject(selected);
+            if (meshList->at(selected)->type == MeshType::ModelType)
+                m_scene->deleteModel(selected);
+            else
+                m_scene->deleteObject(selected);
 
             ImGui::EndChild();
             return false;
@@ -274,7 +286,11 @@ bool DebugUi::objectSettings(int selected)
         meshList->at(selected)->selected = true;
 
         // Load current values
-        RepeaterState* state = meshList->at(selected)->mesh->getState();
+        RepeaterState* state;
+        if (meshList->at(selected)->type == MeshType::ModelType)
+            state = meshList->at(selected)->model->getMeshList()->at(0)->getState();
+        else
+            state = meshList->at(selected)->mesh->getState();
         m_planeState->instanced = state->instanced;
         m_planeState->columnCount = state->columnCount;
         m_planeState->rowCount = state->rowCount;
@@ -374,7 +390,11 @@ bool DebugUi::objectSettings(int selected)
                 state->transformations->zRotation = m_planeState->transformations->zRotation;
 
                 std::cout << "Changed!" << std::endl;
-                m_scene->updateObjectMesh(selected);
+
+                MeshObjectChange change;
+                change.selectedMesh = selected;
+                change.action = MeshObjectChangeAction::UpdateObject;
+                m_scene->updateMeshObjects(change);
 
                 m_debounceCounter = 0;
             }
@@ -413,14 +433,17 @@ void DebugUi::objectLayout(bool* p_open)
         if (ImGui::Button("Add Custom", ImVec2(100, 0)))
             m_scene->addCustom();
 
-        if (ImGui::Button("Add Light", ImVec2(100, 0)))
-            m_scene->addLight();
+        if (ImGui::Button("Add PointLight", ImVec2(100, 0)))
+            m_scene->addPointLight();
 
         if (ImGui::Button("Add Directional Light", ImVec2(100, 0)))
             m_scene->addDirectionalLight();
 
         if (ImGui::Button("Add Spot Light", ImVec2(100, 0)))
             m_scene->addSpotLight();
+
+        if (ImGui::Button("Add Model", ImVec2(100, 0)))
+            m_scene->addModel();
 
         //if (ImGui::Button("Add Reflect Cube", ImVec2(100, 0)))
         //    m_scene->addReflectingCube();
@@ -456,14 +479,15 @@ void DebugUi::objectLayout(bool* p_open)
 
             // If reflecting light type, show light and material settings
             if (meshList.size() != 0 && selected < meshList.size()) {
-                if (meshList.at(selected)->type == MeshType::ReflectCubeType) {
+                //if (meshList.at(selected)->type == MeshType::ReflectCubeType) {
                     if (ImGui::BeginTabItem("Material")) {
                         materialSettings(selected);
                         ImGui::EndTabItem();
                     }
-                }
-                else if (meshList.at(selected)->type == MeshType::DirectionalLightType ||
-                    meshList.at(selected)->type == MeshType::LightType) {
+                //}
+                if (meshList.at(selected)->type == MeshType::DirectionalLightType ||
+                    meshList.at(selected)->type == MeshType::PointLightType ||
+                    meshList.at(selected)->type == MeshType::SpotLightType) {
                     if (ImGui::BeginTabItem("Light")) {
                         lightSettings(selected);
                         ImGui::EndTabItem();
@@ -496,11 +520,18 @@ void DebugUi::objectLayout(bool* p_open)
                     ImGui::BeginChild("Rightmost pane", ImVec2(0, 0), true);
 
                     if (ImGui::Button("Remove Mesh", ImVec2(100, 0))) {
-                        m_scene->deleteInstancedMesh(selected);
+                        MeshObjectChange change;
+                        change.selectedMesh = selected;
+                        change.action = MeshObjectChangeAction::DeleteInstancedMesh;
+                        m_scene->updateMeshObjects(change);
                     }
                     ImGui::SameLine();
 
-                    RepeaterState* state = meshList->at(selected)->mesh->getState();
+                    RepeaterState* state;
+                    if (meshList->at(selected)->type == MeshType::ModelType)
+                        state = meshList->at(selected)->model->getMeshList()->at(0)->getState();
+                    else
+                        state = meshList->at(selected)->mesh->getState();
                     ImGui::Text("Mesh pointer: %d", state->position->meshPointer);
                     ImGui::Text("Stack position:  %d", state->position->stackPosition);
                     ImGui::Text("Row position:    %d", state->position->rowPosition);

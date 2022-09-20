@@ -2,7 +2,7 @@
 #define SCENE_H
 
 //#include <glad/glad.h>
-#include <glad_opengl4_3/glad.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include "Shader.h"
@@ -18,6 +18,10 @@
 #include "Sphere.h"
 #include "Custom.h"
 #include "MaterialBase.h"
+#include "Model.h"
+#include "MeshListHandler.h"
+#include "MeshObject.h"
+#include "LightHandler.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -29,170 +33,86 @@
 #include <crtdbg.h>
 #include <thread>
 
-
-enum MeshInstanceDirections
-{
-    Left,
-    Right,
-    Up,
-    Down,
-    Forward,
-    Backward
-};
-
-enum MeshType
-{
-    CubeType,
-    CustomType,
-    PlaneType,
-    SphereType,
-    TriangleType,
-    LightType,
-    DirectionalLightType,
-    ReflectCubeType,
-    SpotLightType,
-    UnknownType
-};
-
-struct MeshLights
-{
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-    float shininess;
-
-    float constant;
-    float linear;
-    float quadratic;
-
-    MeshLights()
-    : ambient(0.2f, 0.2f, 0.2f)
-    , diffuse(0.5f, 0.5f, 0.5f)
-    , specular(1.0f, 1.0f, 1.0f)
-    , shininess(32.0f)
-    , constant(1.0f)
-    , linear(0.09f)
-    , quadratic(32.0f) {}
-};
-
-struct MeshObject
-{
-    Repeater* mesh;
-    std::string name;
-    bool selected;
-
-    // Mesh lighting settings
-    MeshLights* light;
-
-    // Mesh material settings
-    MaterialBase* material;
-
-    // What type of mesh is this
-    int type;
-
-    MeshObject()
-        : mesh(nullptr)
-        , light(nullptr)
-        , material(nullptr)
-        , name("")
-        , selected(false)
-        , type(-1) {}
-};
-
 class Scene
 {
 public:
     Scene(Camera *camera, ScreenSettings* screenSettings);
     ~Scene();
 
+    // Render all objects on the screen currently
     void renderScene();
-    void update();
-    bool updateObjectMesh(int idx);
 
+    // Update the the object's shader based on if it is instanced or not
     void updateMeshShader(bool instanced, int idx);
 
+    // Add different type of objects to the screen
     void addCube();
     void addPlane();
     void addTriangle();
     void addSphere();
     void addCustom();
-    void addLight();
+    void addPointLight();
     void addDirectionalLight();
     void addSpotLight();
     void addReflectingCube();
-    void updateMeshPointer(int direction, bool multiselect = false);
-    void resetMeshPointer();
-    void deleteInstancedMesh(int selected);
-    void deleteDirectionalLight(int selected);
+    void addModel();
 
-    std::vector<MeshObject*>* getMeshList();
+    // Add new objects to mesh list
+    void addMeshObject(Repeater* mesh, MeshType type);
+    
+    // Update mesh object state
+    bool updateMeshObjects(MeshObjectChange& change);
 
-    void deleteObject(int idx);
-    void clean();
-    int getTriangleCount();
+    // Count all objects in the scene and return the count
     int getObjectCount();
 
-    int getMeshPointer() { return m_meshPointer; }
+    // Count the total amount of triangles of the meshes on the Scene currently and return the count
+    int getTriangleCount();
 
-    /* Control multi-pick mode ( individual mesh picker )*/
-    void toggleMultiPickMode() { m_multiPickMode = !m_multiPickMode; }
-    void setMultiPickMode(bool mode) { m_multiPickMode = mode; }
+    // Return all objects on the screen
+    std::vector<MeshObject*>* getMeshList();
 
-    /* Add currently selected mesh to multi select vector */
-    void multiPick();
+    // Delete mesh object
+    void deleteObject(int idx);
 
+    // Delete model object
+    void deleteModel(int idx);
+
+    // Clean up scene by deleting all objects
+    void clean();
+
+    // Update mesh's material to predefined one
     void updateMeshMaterial(int selected, const std::string& newMaterial);
 
-private:
-    void createPlane(bool instanced, Plane*& plane);
-    void createCube(bool instanced, Cube*& cube);
-    void renderPlane();
-    void dumpMemory();
-    void draw(int idx, glm::mat4& projection, glm::mat4& view);
-    int getSelectedMeshIndex();
-    void highlightSelectedMeshes();
-    void renderPointLight(int idx);
-    void renderDirectionalLight(int idx);
-    void renderSpotLight(int idx);
+    // Get the current mesh pointer index from MeshListHandler
+    int getMeshPointer();
 
+private:
+
+    // Render a single mesh object
+    void draw(int idx, glm::mat4& projection, glm::mat4& view);
+
+    // Render a single model object
+    void drawModel(int idx, glm::mat4& projection, glm::mat4& view);
+
+    // Class objects
     Camera* m_camera;
     Shader* m_ourShader;
     Shader* m_lightShader;
     Shader* m_lightMeshShader;
     Shader* m_ourShaderInstanced;
+    Shader* m_modelLoadingShader;
     Texture* m_container_texture;
     Texture* m_container_texture_specular;
     ScreenSettings* m_screenSettings;
+    MeshListHandler* m_meshListHandler;
+    MaterialHandler* m_materialHandler;
+    LightHandler* m_lightHandler;
 
-    unsigned int m_VAO;
-    unsigned int m_EBO;
-
-    int m_faceCounter;
-
-    unsigned int m_texture1;
-    unsigned int m_texture2;
-
-    int m_columns;
-    int m_rows;
-    float m_scale;
-    unsigned int m_meshPointer;
-
-    bool m_instanced;
-    bool m_instanced_cube;
-
+    // All of the meshes currently in the scene
     std::vector<MeshObject*>* m_meshList;
-    std::vector<int> m_multiSelectVec;
 
-    int m_oldMultiSelectVecSize = 0;
-    unsigned int m_oldMeshPointer = 0;
-
-    GLuint m_ssbo;
-
-    bool m_multiPickMode = false;
-
-    glm::vec3 m_lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
-
-    // Lights
+    // All of the lights present in the scene
     std::vector<MeshObject*> m_pointLights;
     std::vector<MeshObject*> m_directionalLights;
     std::vector<MeshObject*> m_spotLights;

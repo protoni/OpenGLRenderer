@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "DebugMacros.h"
+#include "MeshListHandler.h"
 
 Input::Input(Window* window, Camera* camera, DebugUi* debugUi, Scene* scene) :
     m_window(window), m_camera(camera), m_debugUi(debugUi),
@@ -87,26 +88,40 @@ void Input::processInput(double deltaTime)
 
             // Start multi pick mode
         if (glfwGetKey(m_window->get(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            m_scene->setMultiPickMode(true);
-            m_scene->multiPick();
+            MeshObjectChange change;
+            change.action = MeshObjectChangeAction::SetMultiPickMode;
+            change.multiPick = true;
+            m_scene->updateMeshObjects(change);
+            
+            change.action = MeshObjectChangeAction::MultiPick;
+            m_scene->updateMeshObjects(change);
         }
 
         // End multi-pick mode
         if (glfwGetKey(m_window->get(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            m_scene->setMultiPickMode(false);
+            MeshObjectChange change;
+            change.action = MeshObjectChangeAction::SetMultiPickMode;
+            change.multiPick = false;
+            m_scene->updateMeshObjects(change);
         }
 
         // Delete selected mesh
         if (glfwGetKey(m_window->get(), GLFW_KEY_DELETE) == GLFW_PRESS) {
-            m_scene->deleteInstancedMesh(m_debugUi->getSelectedInstance());
+            MeshObjectChange change;
+            change.selectedMesh = m_debugUi->getSelectedInstance();
+            change.action = MeshObjectChangeAction::DeleteInstancedMesh;
+            m_scene->updateMeshObjects(change);
             changed = true;
         }
 
         if (direction >= 0) {
-            if(multiselect)
-                m_scene->updateMeshPointer(direction, true);
-            else
-                m_scene->updateMeshPointer(direction);
+            MeshObjectChange change;
+            change.action = MeshObjectChangeAction::UpdateMeshPointer;
+            change.direction = direction;
+            if (multiselect)
+                change.multiselect = true;
+
+            m_scene->updateMeshObjects(change);
         }
     }
 

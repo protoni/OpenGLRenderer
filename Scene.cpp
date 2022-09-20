@@ -1,35 +1,10 @@
 ﻿#include "Scene.h"
-
 #include "stb_image.h"
-
-float multiply = 1.0f;
-
 #include "DebugMacros.h"
 
-float hexagon_vertices[] = {
-    -0.5f,  1.0f, 0.0f,  0.0f, 0.0f,  // top left
-     0.5f,  1.0f, 0.0f,  1.0f, 0.0f,  // top right
-     1.0f,  0.0f, 0.0f,  1.0f, 1.0f,  // center right
-     0.5f, -1.0f, 0.0f,  1.0f, 1.0f,  // bottom right
-    -0.5f, -1.0f, 0.0f,  0.0f, 1.0f,  // bottom left
-    -1.0f,  0.0f, 0.0f,  0.0f, 0.0f,  // center left
-     0.0f,  0.0f, 0.0f,  1.0f, 0.0f   // center
-};
-
-unsigned int hexagon_indices[] = {
-    6, 0, 1, // top
-    6, 1, 2, // top right
-    6, 2, 3, // bottom right
-    6, 3, 4, // bottom
-    6, 4, 5, // bottom left
-    6, 5, 0  // top left
-};
 
 Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
-    m_camera(camera), m_screenSettings(screenSettings), m_faceCounter(3),
-    m_ourShader(NULL), m_texture1(0), m_texture2(0), m_VAO(0), m_EBO(0),
-    m_columns(1), m_meshList(), m_scale(1.0), m_rows(1), m_instanced(false),
-    m_ourShaderInstanced(NULL), m_instanced_cube(false), m_meshPointer(0)
+    m_camera(camera), m_screenSettings(screenSettings)
 {
     // Create and build shaders
     //m_ourShaderInstanced = new Shader("./shaderInstanced.vs", "./shader.fs");
@@ -37,14 +12,27 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_ourShader = new Shader("./shader.vs", "./shader.fs");
     m_lightShader = new Shader("./shader.vs", "./lightShader.fs");
     m_lightMeshShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
+    m_modelLoadingShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
     
     // Load texture
-    m_container_texture = new Texture("container2.png");
-    m_container_texture_specular = new Texture("container2_specular.png");
+    m_container_texture = new Texture("container2.png", true);
+    m_container_texture_specular = new Texture("container2_specular.png", true);
 
     // Create mesh vector
     m_meshList = new std::vector<MeshObject*>;
 
+    // Create a mesh list handler
+    m_meshListHandler = new MeshListHandler(m_meshList);
+
+    // Create a material handler
+    m_materialHandler = new MaterialHandler();
+
+    // Create a light handler to render all of the light types
+    m_lightHandler = new LightHandler(
+        m_pointLights,
+        m_directionalLights,
+        m_spotLights
+    );
 }
 
 Scene::~Scene()
@@ -83,318 +71,218 @@ Scene::~Scene()
         delete m_lightMeshShader;
         m_lightMeshShader = NULL;
     }
+
+    if (m_modelLoadingShader) {
+        delete m_modelLoadingShader;
+        m_modelLoadingShader = NULL;
+    }
+
+    if (m_meshListHandler) {
+        delete m_meshListHandler;
+        m_meshListHandler = NULL;
+    }
+
+    if (m_materialHandler) {
+        delete m_materialHandler;
+        m_materialHandler = NULL;
+    }
+
+    if (m_lightHandler) {
+        delete m_lightHandler;
+        m_lightHandler = NULL;
+    }
 }
 
 void Scene::updateMeshShader(bool instanced, int idx)
 {
-    if (instanced) {
-        //if (m_meshList->at(idx)->type == MeshType::ReflectCubeType)
-        //    m_meshList->at(idx)->mesh->setShader(m_ourShaderInstanced);
-        //else
-            m_meshList->at(idx)->mesh->setShader(m_ourShaderInstanced);
+    if (m_meshList->at(idx)->type == MeshType::ModelType) {
+        m_meshList->at(idx)->model->setInstanced(instanced);
     }
     else {
-        m_meshList->at(idx)->mesh->setShader(m_ourShader);
+        if (instanced) {
+            m_meshList->at(idx)->mesh->setShader(m_ourShaderInstanced);
+        }
+        else {
+            m_meshList->at(idx)->mesh->setShader(m_ourShader);
+        }
+
+        m_meshList->at(idx)->mesh->setInstanced(instanced);
+    }
+}
+
+void Scene::addMeshObject(Repeater* mesh, MeshType type)
+{
+    MeshObject* object = new MeshObject();
+    MeshLights* light = new MeshLights();
+    MaterialBase* material = new MaterialDefault();
+    object->mesh = mesh;
+    object->light = light;
+    object->material = material;
+    object->type = type;
+
+    switch (type)
+    {
+    case CubeType:
+        object->name = std::string("Cube_") + std::to_string(m_meshList->size());
+        object->lightsEnabled = true;
+        break;
+    case CustomType:
+        object->name = std::string("Custom_") + std::to_string(m_meshList->size());
+        break;
+    case PlaneType:
+        object->name = std::string("Plane_") + std::to_string(m_meshList->size());
+        object->lightsEnabled = true;
+        break;
+    case SphereType:
+        object->name = std::string("Sphere_") + std::to_string(m_meshList->size());
+        break;
+    case TriangleType:
+        object->name = std::string("Triangle_") + std::to_string(m_meshList->size());
+        break;
+    case PointLightType:
+        object->name = std::string("PointLight_") + std::to_string(m_meshList->size());
+        m_lightHandler->addPointLight(object);
+        break;
+    case DirectionalLightType:
+        object->name = std::string("DirectionalLight_") + std::to_string(m_meshList->size());
+        m_lightHandler->addDirectionalLight(object);
+        break;
+    case ReflectCubeType:
+        object->name = std::string("ReflectingCube_") + std::to_string(m_meshList->size());
+        object->lightsEnabled = true;
+        break;
+    case SpotLightType:
+        object->name = std::string("Spotlight_") + std::to_string(m_meshList->size());
+        m_lightHandler->addSpotLight(object);
+        break;
+    case ModelType:
+        break;
+    case UnknownType:
+        break;
+    default:
+        std::cout << "Can't add unknown object type to the scene!" << std::endl;
+        return;
     }
 
-    m_meshList->at(idx)->mesh->setInstanced(instanced);
+    m_meshList->push_back(object);
 }
 
 void Scene::addCube()
 {
-    //Cube* cube = new Cube(m_ourShader, false, false, true);
-    //MeshObject* object = new MeshObject();
-    //object->mesh = cube;
-    //object->name = std::string("Cube_") + std::to_string(m_meshList->size());
-    //m_meshList->push_back(object);
-
     Cube* cube = new Cube(m_lightMeshShader, false, false, true);
-    MeshObject* object = new MeshObject();
-    MeshLights* light = new MeshLights();
-    MaterialBase* material = new MaterialDefault();
-    //MaterialBase* material = &MaterialDefault;
-    object->mesh = cube;
-    object->name = std::string("Cube_") + std::to_string(m_meshList->size());
-    object->type = MeshType::ReflectCubeType;
-    object->light = light;
-    object->material = material;
-    m_meshList->push_back(object);
+    addMeshObject(cube, MeshType::CubeType);
 }
 
 void Scene::addPlane()
 {
     Plane* plane = new Plane(m_lightMeshShader, false, false, true);
-    MeshObject* object = new MeshObject();
-    MeshLights* light = new MeshLights();
-    MaterialBase* material = new MaterialDefault();
-    object->mesh = plane;
-    object->name = std::string("Plane_") + std::to_string(m_meshList->size());
-    object->type = MeshType::ReflectCubeType;
-    object->light = light;
-    object->material = material;
-    m_meshList->push_back(object);
+    addMeshObject(plane, MeshType::PlaneType);
 }
 
 void Scene::addTriangle()
 {
     Triangle* triangle = new Triangle(m_ourShader, false);
-    MeshObject* object = new MeshObject();
-    object->mesh = triangle;
-    object->name = std::string("Triangle_") + std::to_string(m_meshList->size());
-    m_meshList->push_back(object);
+    addMeshObject(triangle, MeshType::TriangleType);
 }
 
 void Scene::addSphere()
 {
     Sphere* sphere = new Sphere(m_ourShader, false);
-    MeshObject* object = new MeshObject();
-    object->mesh = sphere;
-    object->name = std::string("Sphere_") + std::to_string(m_meshList->size());
-    m_meshList->push_back(object);
+    addMeshObject(sphere, MeshType::SphereType);
 }
 
 void Scene::addCustom()
 {
     Custom* custom = new Custom(m_ourShader, false);
-    MeshObject* object = new MeshObject();
-    object->mesh = custom;
-    object->name = std::string("Custom_") + std::to_string(m_meshList->size());
-    m_meshList->push_back(object);
+    addMeshObject(custom, MeshType::CustomType);
 }
 
 void Scene::addReflectingCube()
 {
     Cube* cube = new Cube(m_lightMeshShader, false, false, true);
-    MeshObject* object = new MeshObject();
-    MeshLights* light = new MeshLights();
-    MaterialBase* material = new MaterialDefault();
-    //MaterialBase* material = &MaterialDefault;
-    object->mesh = cube;
-    object->name = std::string("ReflectingCube_") + std::to_string(m_meshList->size());
-    object->type = MeshType::ReflectCubeType;
-    object->light = light;
-    object->material = material;
-    m_meshList->push_back(object);
+    addMeshObject(cube, MeshType::ReflectCubeType);
 }
 
-void Scene::addLight()
+void Scene::addPointLight()
 {
     Cube* cube = new Cube(m_lightShader, false, true, true);
-    MeshObject* object = new MeshObject();
-    object->mesh = cube;
-    object->name = std::string("Light_") + std::to_string(m_meshList->size());
-    object->type = MeshType::LightType;
-    
-    m_meshList->push_back(object);
-    m_pointLights.push_back(object);
+    addMeshObject(cube, MeshType::PointLightType);
 }
 
 void Scene::addDirectionalLight()
 {
     Cube* cube = new Cube(m_lightShader, false, true, true);
-    MeshObject* object = new MeshObject();
-    object->mesh = cube;
-    object->name = std::string("DirectionalLight_") + std::to_string(m_meshList->size());
-    object->type = MeshType::DirectionalLightType;
-    
-    m_meshList->push_back(object);
-    m_directionalLights.push_back(object);
+    addMeshObject(cube, MeshType::DirectionalLightType);
 }
 
 void Scene::addSpotLight()
 {
     Cube* cube = new Cube(m_lightShader, false, true, true);
+    addMeshObject(cube, MeshType::SpotLightType);
+}
+
+void Scene::addModel()
+{
+    Model* model = new Model(m_lightMeshShader);
+    model->LoadModel("Models/backpack/backpack.obj");
     MeshObject* object = new MeshObject();
-    object->mesh = cube;
-    object->name = std::string("Spotlight_") + std::to_string(m_meshList->size());
-    object->type = MeshType::SpotLightType;
+    MaterialBase* material = new MaterialDefault();
+    object->model = model;
+    object->name = std::string("Model_") + std::to_string(m_meshList->size());
+    object->type = MeshType::ModelType;
+    object->material = material;
 
     m_meshList->push_back(object);
-    m_spotLights.push_back(object);
 }
 
-void Scene::updateMeshPointer(int direction, bool multiselect)
+bool Scene::updateMeshObjects(MeshObjectChange& change)
 {
-    if (getSelectedMeshIndex() < 0)
-        return;
+    bool ret = true;
 
-    RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
+    switch (change.action)
+    {
 
-    // Figure out which stack are we on
-    int stackPosition = 0;
-    if (m_meshPointer > 0) {
-        stackPosition = (m_meshPointer / (state->columnCount * state->rowCount));
-    }
-
-    // Figure out which row are we on
-    int rowPosition = 0;
-    if (m_meshPointer > 0) {
-        if(stackPosition > 0)
-            rowPosition = ((m_meshPointer - (stackPosition * (state->columnCount * state->rowCount))) / state->columnCount);
-        else
-            rowPosition = (m_meshPointer / state->columnCount);
-    }
-
-    // Figure out which column are we on
-
-    state->position->meshPointer = m_meshPointer;
-    state->position->stackPosition = stackPosition;
-    state->position->rowPosition = rowPosition;
-    state->position->columnPosition = 0;
-
-    std::cout << "rowPosition: " << rowPosition << std::endl;
-    std::cout << "stackPosition: " << stackPosition << std::endl;
-
-    // Update Left / Right direction
-    if (direction == MeshInstanceDirections::Left) {
-        if(m_meshPointer - (rowPosition * state->columnCount) > 0)
-            m_meshPointer -= 1;
-    }
-    else if (direction == MeshInstanceDirections::Right) {
-        if (rowPosition > 0) {
-            if (m_meshPointer - (rowPosition * state->columnCount) < state->rowCount - 1)
-                m_meshPointer += 1;
-        }
-        else {
-            if(m_meshPointer < state->columnCount - 1)
-                m_meshPointer += 1;
-        }
-    }
-
-    // Update Forward / Backward direction
-    else if (direction == MeshInstanceDirections::Backward) {
-        if(rowPosition < state->rowCount - 1)
-            m_meshPointer += state->columnCount;
-    }
-    else if (direction == MeshInstanceDirections::Forward) {
-        if (rowPosition > 0)
-            m_meshPointer -= state->columnCount;
-    }
-
-    // Update Up / Down direction
-    else if (direction == MeshInstanceDirections::Up) {
-        //if (rowPosition < state->rowCount - 1)
-        //if (m_meshPointer - (rowPosition * state->columnCount) < state->rowCount - 1)
-        //std::cout << "move up"
-        if (stackPosition > 0) {
-            if ((m_meshPointer - (state->columnCount * state->rowCount) * stackPosition) < state->stackCount - 1) {
-                m_meshPointer += state->columnCount * state->rowCount;//state->stackCount;
-            }
-            else {
-                std::cout << "dbg: " << (state->columnCount * state->rowCount) * stackPosition << std::endl;
-            }
-        }
-        else {
-            m_meshPointer += state->columnCount * state->rowCount;
-        }
-    }
-
-    else if (direction == MeshInstanceDirections::Down) {
-        m_meshPointer -= state->columnCount * state->rowCount;
-    }
-
-    if (m_meshPointer >= state->columnCount * state->rowCount * state->stackCount)
-        m_meshPointer = (state->columnCount * state->rowCount * state->stackCount) - 1;
-
-    if (multiselect) {
-        if (std::find(m_multiSelectVec.begin(), m_multiSelectVec.end(), m_meshPointer) == m_multiSelectVec.end()) {
-            m_multiSelectVec.push_back(m_meshPointer);
-            std::cout << "add to multi select vec!" << std::endl;
-        }
-    }
-    else {
-
-        // Save multipick array before clearing
-        std::vector<int> temp;
-        if (m_multiPickMode) {
-            for (int i = 0; i < m_multiSelectVec.size(); i++) {
-                if(m_multiSelectVec.size() > i)
-                    temp.push_back(m_multiSelectVec.at(i));
-            }
-        }
+    case MeshObjectChangeAction::UpdateObject:
+        m_meshListHandler->updateObjectMesh(change.selectedMesh);
+        break;
+    
+    case MeshObjectChangeAction::ResetMeshPointer:
+        m_meshListHandler->resetMeshPointer();
+        break;
         
-        // Clear all the object's fragment shader colors before clearing up the mesh pointer vector, because
-        // otherwise fragment shader will keep the old mesh pointer values in it's SSBO for some reason.
-        m_multiSelectVec.clear();
-        for (int i = 0; i < getObjectCount(); i++) {
-            m_multiSelectVec.push_back(m_meshPointer);
-        }
-        
-        // Send the actual cleared mesh pointer values to the fragment shader as a SSBO
-        if (m_multiSelectVec.size() > 0)
-            highlightSelectedMeshes();
-        
-        // Clear mesh pointer vector and add only the current position to it
-        m_multiSelectVec.clear();
-        
+    case MeshObjectChangeAction::UpdateMeshPointer:
+        m_meshListHandler->updateMeshPointer(change.direction, change.multiselect);
+        break;
 
-        if (m_multiPickMode) {
-            for (int i = 0; i < temp.size(); i++) {
-                if(temp.size() > i)
-                    m_multiSelectVec.push_back(temp.at(i));
-            }
-        }
-        else {
-            m_multiSelectVec.push_back(m_meshPointer);
-        }
-        
+    case MeshObjectChangeAction::DeleteInstancedMesh:
+        m_meshListHandler->deleteInstancedMesh(change.selectedMesh);
+        break; 
+
+    case MeshObjectChangeAction::SetMultiPickMode:
+        m_meshListHandler->setMultiPickMode(change.multiPick);
+        break; 
+
+    case MeshObjectChangeAction::MultiPick:
+        m_meshListHandler->multiPick();
+        break;
+
+    default:
+        std::cout << "Unknown mesh object move action!" << std::endl;
+        ret = false;
+        break;
     }
 
-
-    if (m_multiSelectVec.size() > 0) {
-        std::cout << "mesh pointers: ";
-        for (int i = 0; i < m_multiSelectVec.size(); i++)
-            std::cout << m_multiSelectVec.at(i) << ", ";
-
-        std::cout << std::endl;
-    }
-    else {
-        std::cout << "mesh pointer: " << m_meshPointer << std::endl;
-    }
+    return ret;
 }
 
-void Scene::resetMeshPointer()
+int Scene::getObjectCount()
 {
-    m_meshPointer = 0;
+    return m_meshListHandler->getObjectCount();
 }
 
-void Scene::deleteDirectionalLight(int selected)
+int Scene::getTriangleCount()
 {
-    if (m_meshList->at(selected)->type == MeshType::DirectionalLightType) {
-        m_directionalLights.clear(); // TODO: when multiple lights implemented, don't delete all
-        std::cout << "delete directional light!" << std::endl;
-    }
-    else if (m_meshList->at(selected)->type == MeshType::LightType) {
-        m_lightPos = glm::vec3(-0.0f, -0.0f, -0.0f);
-    }
-}
-
-void Scene::deleteInstancedMesh(int selected)
-{
-    bool deleted = false;
-    std::cout << "selected idx: " << getSelectedMeshIndex() << std::endl;
-    if (getSelectedMeshIndex() < m_meshList->size()) {
-        RepeaterState* state = m_meshList->at(getSelectedMeshIndex())->mesh->getState();
-
-        // Delete single mesh
-        if (m_meshPointer >= 0 && m_meshPointer < state->modified->size()) {
-            state->modified->at(m_meshPointer)->deleted = true;
-            deleted = true;
-            std::cout << "deleted mesh pointer: " << m_meshPointer << std::endl;
-        }
-
-        // Delete multi-selected meshes
-        for (int i = 0; i < m_multiSelectVec.size(); i++) {
-            if (m_multiSelectVec.at(i) >= 0 && m_multiSelectVec.at(i) < state->modified->size()) {
-                state->modified->at(m_multiSelectVec.at(i))->deleted = true;
-                deleted = true;
-                std::cout << "deleted mesh pointer: " << m_multiSelectVec.at(i) << std::endl;
-            }
-        }
-
-        if(deleted)
-            m_meshList->at(selected)->mesh->update();
-    }
+    return m_meshListHandler->getTriangleCount();
 }
 
 std::vector<MeshObject*>* Scene::getMeshList()
@@ -402,57 +290,14 @@ std::vector<MeshObject*>* Scene::getMeshList()
     return m_meshList;
 }
 
-int Scene::getSelectedMeshIndex()
-{
-    for (int i = 0; i < m_meshList->size(); i++) {
-        if (m_meshList->at(i)->selected)
-            return i;
-    }
-
-    return -1;
-}
-
-bool Scene::updateObjectMesh(int idx)
-{
-    if (!m_meshList->size() > idx) {
-        return false;
-    }
-    
-    // If multiple meshes were selected, apply the same changes to all of those
-    if (m_multiSelectVec.size() > 0) {
-        RepeaterState* state = m_meshList->at(idx)->mesh->getState();
-        for (int i = 0; i < m_multiSelectVec.size(); i++) {
-
-            // Get the transformations from the last item of the multi select vector, which is being modified currently
-            MeshTransformations* src = state->modified->at(m_multiSelectVec.back())->transformations;
-            
-            // Create a new destination transformations struct and copy the modified transformations to this
-            MeshTransformations* dst = new MeshTransformations();//state->modified->at(m_multiSelectVec.at(i))->transformations;
-            memcpy(dst, src, sizeof(*src));
-
-            // Free old transformations after copying
-            delete state->modified->at(m_multiSelectVec.at(i))->transformations;
-                
-            // Assign copied transformations to the newly created struct
-            state->modified->at(m_multiSelectVec.at(i))->transformations = dst;
-        }
-    }
-
-    m_meshList->at(idx)->mesh->update();
-
-    std::cout << "Triangle count: " << getTriangleCount() << std::endl;
-
-    return true;
-}
-
 void Scene::updateMeshMaterial(int selected, const std::string& newMaterial)
 {
     // Clear old material
     delete m_meshList->at(selected)->material;
-
+    
     MaterialBase* material;
     MaterialCollection materialCollection;
-
+    
     // Set new material
     if (newMaterial.compare(materialCollection.materialDefault.name) == 0) {
         material = new MaterialDefault();
@@ -471,379 +316,128 @@ void Scene::updateMeshMaterial(int selected, const std::string& newMaterial)
     }
     else
         material = new MaterialDefault();
-
+    
     m_meshList->at(selected)->material = material;
 }
 
-int Scene::getTriangleCount()
+int Scene::getMeshPointer()
 {
-    int count = 0;
+    return m_meshListHandler->getMeshPointer();
+}
+
+void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)
+{
+    Model* model = m_meshList->at(idx)->model;
+
+    m_lightMeshShader->use();
+    m_lightMeshShader->setMat4("projection", projection);
+    m_lightMeshShader->setMat4("view", view);
+
+    // Set viewer position
+    m_lightMeshShader->setVec3("viewPos", m_camera->Position);
+
+    m_lightHandler->renderAllLightTypes(m_lightMeshShader, true);
+
+    // Set material
+    m_lightMeshShader->setBool("materialOverride", false);
+    if (m_meshList->at(idx)->material) {
+        m_lightMeshShader->setVec3("material.ambient", m_meshList->at(idx)->material->ambient);
+        m_lightMeshShader->setVec3("material.diffuse", m_meshList->at(idx)->material->diffuse);
+        m_lightMeshShader->setVec3("material.specular", m_meshList->at(idx)->material->specular);
+        m_lightMeshShader->setFloat("material.shininess", m_meshList->at(idx)->material->shininess);
+    }
+    else {
+        m_lightMeshShader->setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+        m_lightMeshShader->setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+        m_lightMeshShader->setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+        m_lightMeshShader->setFloat("material.shininess", 64);
     
-    for (int i = 0; i < m_meshList->size(); i++) {
-        count += m_meshList->at(i)->mesh->getObjCount() * m_meshList->at(i)->mesh->getIndexCount();
     }
 
-    return count;
-}
-
-int Scene::getObjectCount()
-{
-    int count = 0;
-    RepeaterState* state;
-    for (int i = 0; i < m_meshList->size(); i++) {
-        state = m_meshList->at(i)->mesh->getState();
-        if (state->deleted)
-            count += m_meshList->at(i)->mesh->getObjCount() - state->deleted->size();
-        else
-            count += m_meshList->at(i)->mesh->getObjCount();
-    }
-
-    return count;
-}
-
-void Scene::multiPick()
-{
-    if (m_meshPointer > 0) {
-        if (std::find(m_multiSelectVec.begin(), m_multiSelectVec.end(), m_meshPointer) == m_multiSelectVec.end()) {
-            m_multiSelectVec.push_back(m_meshPointer);
-            std::cout << "add to multi pick vec!" << std::endl;
-        }
-    }
-}
-
-void Scene::highlightSelectedMeshes()
-{
-    glGenBuffers(1, &m_ssbo);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_ssbo);
-    std::cout << "sending " << (sizeof(m_multiSelectVec) * m_multiSelectVec.size()) / 1024 << " kb to SSBO!" << std::endl;
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(m_multiSelectVec) * m_multiSelectVec.size(), &m_multiSelectVec[0], GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, m_ssbo);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // unbind
-    m_oldMultiSelectVecSize = m_multiSelectVec.size();
-    m_oldMeshPointer = m_meshPointer;
-}
-
-void Scene::renderDirectionalLight(int idx)
-{
-    // Return if max point light count
-    if (idx >= 40)
-        return;
-
-    // Get light's mesh state
-    RepeaterState* state = m_directionalLights.at(idx)->mesh->getState();
-
-    // Get light position
-    glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
-    if (state->modified->size() > 0) {
-        pos.x = state->modified->at(0)->transformations->xPos;
-        pos.y = state->modified->at(0)->transformations->yPos;
-        pos.z = state->modified->at(0)->transformations->zPos;
-    }
-
-    // Create uniform array location name
-    std::string prefix = "dirLights[";
-    std::string idxStr = std::to_string(idx);
-
-
-    // Set light position
-   std::string name = prefix + idxStr + "].direction";
-   // m_ourShaderInstanced->setVec3(name, pos);
-
-    // Set light direction
-    //name = prefix + idxStr + "].direction";
-    m_ourShaderInstanced->setVec3(name, pos);
-
-    // Set light values
-    name = prefix + idxStr + "].ambient";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(0.05f, 0.05f, 0.05f));
-
-    name = prefix + idxStr + "].diffuse";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(0.4f, 0.4f, 0.4f));
-
-    name = prefix + idxStr + "].specular";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(0.5f, 0.5f, 0.5f));
-
-}
-
-void Scene::renderSpotLight(int idx)
-{
-    // Return if max point light count
-    if (idx >= 40)
-        return;
-
-    // Get light's mesh state
-    RepeaterState* state = m_spotLights.at(idx)->mesh->getState();
-
-    // Get light position
-    glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
-    if (state->modified->size() > 0) {
-        pos.x = state->modified->at(0)->transformations->xPos;
-        pos.y = state->modified->at(0)->transformations->yPos;
-        pos.z = state->modified->at(0)->transformations->zPos;
-    }
-
-    // Create uniform array location name
-    std::string prefix = "spotLights[";
-    std::string idxStr = std::to_string(idx);
-    
-
-    // Set light position
-    std::string name = prefix + idxStr + "].position";
-    m_ourShaderInstanced->setVec3(name, pos);
-
-    // Set light direction
-    name = prefix + idxStr + "].direction";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(1.0f, 0.0f, 0.0f));
-
-
-    // Set light values
-    name = prefix + idxStr + "].ambient";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(0.0f, 0.0f, 0.0f));
-
-    name = prefix + idxStr + "].diffuse";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
-
-    name = prefix + idxStr + "].specular";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
-
-
-    // Set fade-out values
-    name = prefix + idxStr + "].constant";
-    m_ourShaderInstanced->setFloat(name, 1.0f);
-
-    name = prefix + idxStr + "].linear";
-    m_ourShaderInstanced->setFloat(name, 0.09f);
-
-    name = prefix + idxStr + "].quadratic";
-    m_ourShaderInstanced->setFloat(name, 0.032f);
-
-
-    // Set spot area values
-    name = prefix + idxStr + "].cutOff";
-    m_ourShaderInstanced->setFloat(name, glm::cos(glm::radians(12.5f)));
-
-    name = prefix + idxStr + "].outerCutOff";
-    m_ourShaderInstanced->setFloat(name, glm::cos(glm::radians(15.0f)));
-}
-
-void Scene::renderPointLight(int idx)
-{
-    // Return if max point light count
-    if (idx >= 40) 
-        return;
-
-    // Get light's mesh state
-    RepeaterState* state = m_pointLights.at(idx)->mesh->getState();
-
-    // Get light position
-    glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
-    if (state->modified->size() > 0) {
-        pos.x = state->modified->at(0)->transformations->xPos;
-        pos.y = state->modified->at(0)->transformations->yPos;
-        pos.z = state->modified->at(0)->transformations->zPos;
-    }
-
-    // Create uniform array location name
-    std::string prefix = "pointLights[";
-    std::string idxStr = std::to_string(idx);
-    std::string name = prefix + idxStr + "].position";
-
-    // Set light position
-    m_ourShaderInstanced->setVec3(name, pos);
-
-    name = prefix + idxStr + "].ambient";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(0.05f, 0.05f, 0.05f));
-
-    name = prefix + idxStr + "].diffuse";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(0.8f, 0.8f, 0.8f));
-
-    name = prefix + idxStr + "].specular";
-    m_ourShaderInstanced->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
-
-
-    // Set light fade-out values
-    name = prefix + idxStr + "].constant";
-    m_ourShaderInstanced->setFloat(name, 1.0f);
-
-    name = prefix + idxStr + "].linear";
-    m_ourShaderInstanced->setFloat(name, 0.09f);
-
-    name = prefix + idxStr + "].quadratic";
-    m_ourShaderInstanced->setFloat(name, 0.032f);
+    model->RenderModel();
 }
 
 void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 {
-    
     RepeaterState* state = m_meshList->at(idx)->mesh->getState();
     if (state->instanced) {
         m_ourShaderInstanced->use();
         m_ourShaderInstanced->setMat4("projection", projection);
         m_ourShaderInstanced->setMat4("view", view);
-        m_ourShaderInstanced->setInt("selectedMesh", m_meshPointer);
+        m_ourShaderInstanced->setInt("selectedMesh", m_meshListHandler->getMeshPointer());
         m_ourShaderInstanced->setInt("selectedInstance", m_meshList->at(idx)->selected);
 
-        if (m_multiSelectVec.size() > 0) {
-            if (m_multiSelectVec.size() != m_oldMultiSelectVecSize || m_oldMeshPointer != m_meshPointer) {
-                highlightSelectedMeshes();
-            }
-        
-        }
+        m_meshListHandler->highlightChanged();
+
         m_ourShaderInstanced->setVec3("viewPos", m_camera->Position);
 
-        // Directional lights
-        m_ourShaderInstanced->setInt("dirLightCount", m_directionalLights.size());
-        for (int i = 0; i < m_directionalLights.size(); i++) {
-            renderDirectionalLight(i);
-        }
-        //if (m_directionalLights.size() > 0) {
-        //    m_ourShaderInstanced->setInt("dirLightCount", 1);
-        //    m_ourShaderInstanced->setVec3("dirLight.direction", glm::vec3(m_directionalLights.at(0)));
-        //    m_ourShaderInstanced->setVec3("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
-        //    m_ourShaderInstanced->setVec3("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
-        //    m_ourShaderInstanced->setVec3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-        //}
+        // Set textures
+        m_ourShaderInstanced->setBool("materialOverride", true);
+        //m_ourShaderInstanced->setInt("material.diffuse", 0);
+        //m_container_texture->use(0);
+        //
+        //m_ourShaderInstanced->setInt("material.specular", 1);
+        //m_container_texture_specular->use(1);
 
-        // Point lights
-        m_ourShaderInstanced->setInt("pointLightCount", m_pointLights.size());
-        for (int i = 0; i < m_pointLights.size(); i++) {
-            renderPointLight(i);
-        }
-
-        // Spotlights
-        m_ourShaderInstanced->setInt("spotLightCount", m_spotLights.size());
-        for (int i = 0; i < m_spotLights.size(); i++) {
-            renderSpotLight(i);
-        }
+        m_lightHandler->renderAllLightTypes(m_ourShaderInstanced, false);
 
         // Set material
         if (m_meshList->at(idx)->material) {
-            m_ourShaderInstanced->setVec3("material.ambient", m_meshList->at(idx)->material->ambient);
-            m_ourShaderInstanced->setVec3("material.diffuse", m_meshList->at(idx)->material->diffuse);
-            m_ourShaderInstanced->setVec3("material.specular", m_meshList->at(idx)->material->specular);
-            m_ourShaderInstanced->setFloat("material.shininess", m_meshList->at(idx)->material->shininess);
+            m_ourShaderInstanced->setVec3("materialBase.ambient", m_meshList->at(idx)->material->ambient);
+            m_ourShaderInstanced->setVec3("materialBase.diffuse", m_meshList->at(idx)->material->diffuse);
+            m_ourShaderInstanced->setVec3("materialBase.specular", m_meshList->at(idx)->material->specular);
+            m_ourShaderInstanced->setFloat("materialBase.shininess", m_meshList->at(idx)->material->shininess);
         }
         else {
             std::cout << "Error! Mesh doesn't have material. Using defaults" << std::endl;
-            m_ourShaderInstanced->setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
-            m_ourShaderInstanced->setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
-            m_ourShaderInstanced->setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-            m_ourShaderInstanced->setFloat("material.shininess", 32);
+            m_ourShaderInstanced->setVec3("materialBase.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+            m_ourShaderInstanced->setVec3("materialBase.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+            m_ourShaderInstanced->setVec3("materialBase.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+            m_ourShaderInstanced->setFloat("materialBase.shininess", 32);
             
         }
-        //std::cout << "light pos: X=" << m_lightPos.x << ", Y=" << m_lightPos.y << ", Z=" << m_lightPos.z << std::endl;
     }
     else {
-        if (m_meshList->at(idx)->type == MeshType::ReflectCubeType) {
+        if (m_meshList->at(idx)->lightsEnabled) {
             m_lightMeshShader->use();
             m_lightMeshShader->setMat4("projection", projection);
             m_lightMeshShader->setMat4("view", view);
-            //m_lightMeshShader->setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
-            //m_lightMeshShader->setVec3("objectColor", glm::vec3(0.1f, 0.9f, 0.31f));
-            //m_lightMeshShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-
-            //std::cout << "light pos: X=" << m_lightPos.x << ", Y=" << m_lightPos.y << ", Z=" << m_lightPos.z << std::endl;
-
-            //m_lightMeshShader->setVec3("light.position", m_lightPos);
-            //m_lightMeshShader->setVec3("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
-            //if (m_directionalLights.size() > 0)
-            //    m_lightMeshShader->setVec4("light.vector", glm::vec4(m_directionalLights.at(0), 0.0f));
-            //else {
-            //    //m_ourShaderInstanced->setVec4("light.vector", glm::vec4(m_lightPos, 1.0f));
-            //    // Set light fade-out values
-            //    //m_lightMeshShader->setFloat("light.constant", 1.0f);
-            //    //m_lightMeshShader->setFloat("light.linear", 0.09f);
-            //    //m_lightMeshShader->setFloat("light.quadratic", 0.032f);
-            //
-            //    //m_lightMeshShader->setVec4("light.vector", glm::vec4(m_camera->Position, 0.5f));
-            //    //m_lightMeshShader->setVec3("light.direction", m_camera->Front);
-            //    //m_lightMeshShader->setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
-            //    //m_lightMeshShader->setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
-            //}
-            
-            
-
             m_lightMeshShader->setVec3("viewPos", m_camera->Position);
 
-            // Set lights
-            if (m_meshList->at(idx)->light) {
-                m_lightMeshShader->setVec3("light.ambient", m_meshList->at(idx)->light->ambient);
-                m_lightMeshShader->setVec3("light.diffuse", m_meshList->at(idx)->light->diffuse);
-                m_lightMeshShader->setVec3("light.specular", m_meshList->at(idx)->light->specular);
-            }
-            else {
-                std::cout << "Error! Mesh doesn't have lights. Using defaults" << std::endl;
-                m_lightMeshShader->setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-                m_lightMeshShader->setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-                m_lightMeshShader->setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-            }
+            // Set textures
+            //m_lightMeshShader->setInt("material.diffuse", 0);
+            //m_container_texture->use(0);
+            //
+            //m_lightMeshShader->setInt("material.specular", 1);
+            //m_container_texture_specular->use(1);
 
+            m_lightHandler->renderAllLightTypes(m_lightMeshShader, false);
+
+            m_lightMeshShader->setBool("materialOverride", true);
             // Set material
             if (m_meshList->at(idx)->material) {
-                m_lightMeshShader->setVec3("material.ambient", m_meshList->at(idx)->material->ambient);
-                m_lightMeshShader->setVec3("material.diffuse", m_meshList->at(idx)->material->diffuse);
-                m_lightMeshShader->setVec3("material.specular", m_meshList->at(idx)->material->specular);
-                m_lightMeshShader->setFloat("material.shininess", m_meshList->at(idx)->material->shininess);
+                
+                m_lightMeshShader->setVec3("materialBase.ambient", m_meshList->at(idx)->material->ambient);
+                m_lightMeshShader->setVec3("materialBase.diffuse", m_meshList->at(idx)->material->diffuse);
+                m_lightMeshShader->setVec3("materialBase.specular", m_meshList->at(idx)->material->specular);
+                m_lightMeshShader->setFloat("materialBase.shininess", m_meshList->at(idx)->material->shininess);
             }
             else {
                 std::cout << "Error! Mesh doesn't have material. Using defaults" << std::endl;
-                m_lightMeshShader->setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
-                m_lightMeshShader->setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
-                m_lightMeshShader->setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-                m_lightMeshShader->setFloat("material.shininess", 32);
+                m_lightMeshShader->setVec3("materialBase.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+                m_lightMeshShader->setVec3("materialBase.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+                m_lightMeshShader->setVec3("materialBase.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+                m_lightMeshShader->setFloat("materialBase.shininess", 32);
             }
         }
-        else {
-            m_ourShader->use();
-            m_ourShader->setMat4("projection", projection);
-            m_ourShader->setMat4("view", view);
 
-            if (m_meshList->at(idx)->selected)
-                m_ourShader->setVec4("selectColor", glm::vec4(0.2, 0.0, 0.0, 0.5));
-            else
-                m_ourShader->setVec4("selectColor", glm::vec4(0.0, 0.0, 0.0, 0.0));
-        }
-
-        if (m_meshList->at(idx)->type == MeshType::LightType) {
+        // Set light shader
+        if (m_meshList->at(idx)->type == MeshType::PointLightType ||
+            m_meshList->at(idx)->type == MeshType::DirectionalLightType ||
+            m_meshList->at(idx)->type == MeshType::SpotLightType) {
             m_lightShader->use();
             m_lightShader->setMat4("projection", projection);
             m_lightShader->setMat4("view", view);
-
-            // Update light position
-            if (state->modified->size() > 0) {
-                m_lightPos.x = state->modified->at(0)->transformations->xPos;
-                m_lightPos.y = state->modified->at(0)->transformations->yPos;
-                m_lightPos.z = state->modified->at(0)->transformations->zPos;
-            }
-
-            
-
-        }
-
-        // Update directional lights
-        if (m_meshList->at(idx)->type == MeshType::DirectionalLightType) {
-            m_lightShader->use();
-            m_lightShader->setMat4("projection", projection);
-            m_lightShader->setMat4("view", view);
-
-            //if (state->modified->size() > 0 && m_directionalLights.size() > 0) {
-            //    m_directionalLights.at(0).x = state->modified->at(0)->transformations->xPos;
-            //    m_directionalLights.at(0).y = state->modified->at(0)->transformations->yPos;
-            //    m_directionalLights.at(0).z = state->modified->at(0)->transformations->zPos;
-            //}
-        }
-
-        // Update spot lights
-        if (m_meshList->at(idx)->type == MeshType::SpotLightType) {
-            m_lightShader->use();
-            m_lightShader->setMat4("projection", projection);
-            m_lightShader->setMat4("view", view);
-
-            //if (state->modified->size() > 0 && m_directionalLights.size() > 0) {
-            //    m_directionalLights.at(0).x = state->modified->at(0)->transformations->xPos;
-            //    m_directionalLights.at(0).y = state->modified->at(0)->transformations->yPos;
-            //    m_directionalLights.at(0).z = state->modified->at(0)->transformations->zPos;
-            //}
         }
     }
 
@@ -852,69 +446,37 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 
 void Scene::renderScene()
 {
-    if (!m_ourShader || !m_ourShaderInstanced) {
-        std::cout << "Scene::renderScene::shader error!" << std::endl;
-        return;
-    }
-
-    
-    m_lightMeshShader->setInt("material.diffuse", 0);
-    m_container_texture->use(0);
-    
-    m_lightMeshShader->setInt("material.specular", 1);
-    m_container_texture_specular->use(1);
-    
-
-    //glActiveTexture(GL_TEXTURE0);
-    //glBindTexture(GL_TEXTURE_2D, m_con);
-
-    glm::mat4 projection = glm::perspective(glm::radians(m_camera->Zoom), (float)m_screenSettings->width / (float)m_screenSettings->height, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(
+        glm::radians(m_camera->Zoom),
+        (float)m_screenSettings->width / (float)m_screenSettings->height, 0.1f, 100.0f
+    );
     glm::mat4 view = m_camera->GetViewMatrix();
 
     int lastDrawn = 0;
     for (int i = 0; i < m_meshList->size(); i++) {
-        //if (m_meshList->at(i)->selected)
-        //    lastDrawn = i;
-        //else
+        RepeaterState* state;
+        if (m_meshList->at(i)->type == MeshType::ModelType)
+            drawModel(i, projection, view);
+        else
             draw(i, projection, view);
-    }
-
-    //if(lastDrawn < m_meshList->size())
-    //    draw(lastDrawn, projection, view);
-}
-
-void Scene::update()
-{
-    m_faceCounter += 3;
-    if (m_faceCounter >= 21) {
-        m_faceCounter = 3;
     }
 }
 
 void Scene::deleteObject(int idx)
 {
     // Delete pointlights
-    if (m_meshList->at(idx)->type == MeshType::LightType) {
-        for (int i = 0; i < m_pointLights.size(); i++) {
-            if (!m_pointLights.at(i)->name.compare(m_meshList->at(idx)->name))
-            m_pointLights.erase(m_pointLights.begin() + i);
-        }
+    if (m_meshList->at(idx)->type == MeshType::PointLightType) {
+        m_lightHandler->deletePointLight(m_meshList->at(idx)->name);
     }
 
     // Delete directional lights
     if (m_meshList->at(idx)->type == MeshType::DirectionalLightType) {
-        for (int i = 0; i < m_directionalLights.size(); i++) {
-            if (!m_directionalLights.at(i)->name.compare(m_meshList->at(idx)->name))
-                m_directionalLights.erase(m_directionalLights.begin() + i);
-        }
+        m_lightHandler->deleteDirectionalLight(m_meshList->at(idx)->name);
     }
 
     // Delete spot lights
     if (m_meshList->at(idx)->type == MeshType::SpotLightType) {
-        for (int i = 0; i < m_spotLights.size(); i++) {
-            if (!m_spotLights.at(i)->name.compare(m_meshList->at(idx)->name))
-                m_spotLights.erase(m_spotLights.begin() + i);
-        }
+        m_lightHandler->deleteSpotLight(m_meshList->at(idx)->name);
     }
     
     // Clear individual deleted meshes inside an instance
@@ -976,12 +538,76 @@ void Scene::deleteObject(int idx)
     m_meshList->erase(m_meshList->begin() + idx);
 }
 
+void Scene::deleteModel(int idx)
+{
+    std::vector<ModelMesh*> meshes = *m_meshList->at(idx)->model->getMeshList();
+
+    for (int i = 0; i < meshes.size(); i++) {
+        std::cout << "Deleting model mesh: " << i << std::endl;
+        RepeaterState* state = meshes.at(i)->getState();
+
+        if (state->deleted) {
+            delete state->deleted;
+        }
+
+        // Clear mesh pointer position
+        if (state->position)
+            delete state->position;
+
+        // Clear mesh transformations
+        if (state->transformations)
+            delete state->transformations;
+
+        // Cler modified mesh list
+        if (state->modified) {
+            //for (int i = 0; i < state->modified->size(); i++) {
+            //    delete state->modified->at(i);
+            //}
+
+            // Clear old mesh transformations
+            for (int i = 0; i < state->modified->size(); i++) {
+                if (state->modified->at(i)) {
+                    if (state->modified->at(i)->position) {
+                        delete state->modified->at(i)->position;
+                        state->modified->at(i)->position = NULL;
+                    }
+                    if (state->modified->at(i)->transformations) {
+                        delete state->modified->at(i)->transformations;
+                        state->modified->at(i)->transformations = NULL;
+                    }
+                    if (state->modified->at(i)) {
+                        delete state->modified->at(i);
+                        state->modified->at(i) = NULL;
+                    }
+                }
+            }
+
+            delete state->modified;
+        }
+    }
+
+    // Clear material
+    delete m_meshList->at(idx)->material;
+
+    // Clear model
+    delete m_meshList->at(idx)->model;
+
+    // Clear model object
+    delete m_meshList->at(idx);
+    
+    // Clear the object list
+    m_meshList->erase(m_meshList->begin() + idx);
+}
+
 void Scene::clean()
 {
     std::cout << "Cleaning: " << m_meshList->size() << " objects!" << std::endl;
 
     for (int i = m_meshList->size() -1; i >= 0; i--) {
-        deleteObject(i);
+        if (m_meshList->at(i)->type == MeshType::ModelType)
+            deleteModel(i);
+        else
+            deleteObject(i);
     }
 
     m_meshList->clear();

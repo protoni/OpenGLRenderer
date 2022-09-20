@@ -2,6 +2,21 @@
 
 
 Todo:
+
+- Create a launcher that loads models in the background
+- Create a model loader class and run it in it's own thread
+- Create separate render thread
+- Cleanup Scene.cpp
+- Fix model lighting shader
+- Figure out if both Mesh/Model types are supported or have just Models. For example a plane
+would actually be a model that holds just one mesh; the plane mesh itself
+- Remove 2 separete model loading classes ( Model and Model2, MeshModel and MeshModel2 )
+- Separate engine code, gameplay code and editor code
+- Clean and re-structure Models/Textures folders
+- Add Models/Textures to Git LFS
+- Add Model asset view to Debug Ui / Editor
+- Prevent Model class from loading the same asset every time
+
 - Design coordinate system
   - World coordinates and object instance coordinates
 - Translate screen coordinates to world coordinates
