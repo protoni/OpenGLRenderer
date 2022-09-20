@@ -26,6 +26,13 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
 
     // Create a material handler
     m_materialHandler = new MaterialHandler();
+
+    // Create a light handler to render all of the light types
+    m_lightHandler = new LightHandler(
+        m_pointLights,
+        m_directionalLights,
+        m_spotLights
+    );
 }
 
 Scene::~Scene()
@@ -79,6 +86,11 @@ Scene::~Scene()
         delete m_materialHandler;
         m_materialHandler = NULL;
     }
+
+    if (m_lightHandler) {
+        delete m_lightHandler;
+        m_lightHandler = NULL;
+    }
 }
 
 void Scene::updateMeshShader(bool instanced, int idx)
@@ -129,11 +141,13 @@ void Scene::addMeshObject(Repeater* mesh, MeshType type)
         break;
     case PointLightType:
         object->name = std::string("PointLight_") + std::to_string(m_meshList->size());
-        m_pointLights.push_back(object);
+        //m_pointLights.push_back(object);
+        m_lightHandler->addPointLight(object);
         break;
     case DirectionalLightType:
         object->name = std::string("DirectionalLight_") + std::to_string(m_meshList->size());
-        m_directionalLights.push_back(object);
+        //m_directionalLights.push_back(object);
+        m_lightHandler->addDirectionalLight(object);
         break;
     case ReflectCubeType:
         object->name = std::string("ReflectingCube_") + std::to_string(m_meshList->size());
@@ -141,7 +155,8 @@ void Scene::addMeshObject(Repeater* mesh, MeshType type)
         break;
     case SpotLightType:
         object->name = std::string("Spotlight_") + std::to_string(m_meshList->size());
-        m_spotLights.push_back(object);
+        //m_spotLights.push_back(object);
+        m_lightHandler->addSpotLight(object);
         break;
     case ModelType:
         break;
@@ -319,169 +334,6 @@ void Scene::updateMeshMaterial(int selected, const std::string& newMaterial)
     m_meshList->at(selected)->material = material;
 }
 
-void Scene::renderDirectionalLight(int idx, Shader* shader, bool invertPos)
-{
-    // Return if max point light count
-    if (idx >= 40)
-        return;
-
-    // Get light's mesh state
-    RepeaterState* state;
-    if (m_directionalLights.at(idx)->type == MeshType::ModelType)
-        state = m_directionalLights.at(idx)->model->getMeshList()->at(0)->getState();
-    else
-        state = m_directionalLights.at(idx)->mesh->getState();
-
-    // Get light position
-    glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
-    if (state->modified->size() > 0) {
-        pos.x = state->modified->at(0)->transformations->xPos;
-        pos.y = state->modified->at(0)->transformations->yPos;
-        pos.z = state->modified->at(0)->transformations->zPos;
-    }
-
-    // Create uniform array location name
-    std::string prefix = "dirLights[";
-    std::string idxStr = std::to_string(idx);
-
-
-    // Set light position
-   std::string name = prefix + idxStr + "].direction";
-   // m_ourShaderInstanced->setVec3(name, pos);
-
-    // Set light direction
-    //name = prefix + idxStr + "].direction";
-   shader->setVec3(name, pos);
-
-    // Set light values
-    name = prefix + idxStr + "].ambient";
-    shader->setVec3(name, glm::vec3(0.05f, 0.05f, 0.05f));
-
-    name = prefix + idxStr + "].diffuse";
-    shader->setVec3(name, glm::vec3(0.4f, 0.4f, 0.4f));
-
-    name = prefix + idxStr + "].specular";
-    shader->setVec3(name, glm::vec3(0.5f, 0.5f, 0.5f));
-
-}
-
-void Scene::renderSpotLight(int idx, Shader* shader, bool invertPos)
-{
-    // Return if max point light count
-    if (idx >= 40)
-        return;
-
-    // Get light's mesh state
-    RepeaterState* state;
-    if (m_spotLights.at(idx)->type == MeshType::ModelType)
-        state = m_spotLights.at(idx)->model->getMeshList()->at(0)->getState();
-    else
-        state = m_spotLights.at(idx)->mesh->getState();
-
-    // Get light position
-    glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
-    if (state->modified->size() > 0) {
-        pos.x = state->modified->at(0)->transformations->xPos;
-        pos.y = state->modified->at(0)->transformations->yPos;
-        pos.z = state->modified->at(0)->transformations->zPos;
-    }
-
-    // Create uniform array location name
-    std::string prefix = "spotLights[";
-    std::string idxStr = std::to_string(idx);
-    
-
-    // Set light position
-    std::string name = prefix + idxStr + "].position";
-    if (invertPos) // Invert light position when rendering a model
-        shader->setVec3(name, -pos);
-    else
-        shader->setVec3(name, pos);
-
-    // Set light direction
-    name = prefix + idxStr + "].direction";
-    shader->setVec3(name, glm::vec3(1.0f, 0.0f, 0.0f));
-
-
-    // Set light values
-    name = prefix + idxStr + "].ambient";
-    shader->setVec3(name, glm::vec3(0.0f, 0.0f, 0.0f));
-
-    name = prefix + idxStr + "].diffuse";
-    shader->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
-
-    name = prefix + idxStr + "].specular";
-    shader->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
-
-
-    // Set fade-out values
-    name = prefix + idxStr + "].constant";
-    shader->setFloat(name, 1.0f);
-
-    name = prefix + idxStr + "].linear";
-    shader->setFloat(name, 0.09f);
-
-    name = prefix + idxStr + "].quadratic";
-    shader->setFloat(name, 0.032f);
-
-
-    // Set spot area values
-    name = prefix + idxStr + "].cutOff";
-    shader->setFloat(name, glm::cos(glm::radians(12.5f)));
-
-    name = prefix + idxStr + "].outerCutOff";
-    shader->setFloat(name, glm::cos(glm::radians(15.0f)));
-}
-
-void Scene::renderPointLight(int idx, Shader* shader, bool invertPos)
-{
-    // Return if max point light count
-    if (idx >= 40) 
-        return;
-
-    // Get light's mesh state
-    RepeaterState* state = m_pointLights.at(idx)->mesh->getState();
-
-    // Get light position
-    glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
-    if (state->modified->size() > 0) {
-        pos.x = state->modified->at(0)->transformations->xPos;
-        pos.y = state->modified->at(0)->transformations->yPos;
-        pos.z = state->modified->at(0)->transformations->zPos;
-    }
-
-    // Create uniform array location name
-    std::string prefix = "pointLights[";
-    std::string idxStr = std::to_string(idx);
-    std::string name = prefix + idxStr + "].position";
-
-    // Set light position
-    if(invertPos) // Invert light position when rendering a model
-        shader->setVec3(name, -pos);
-    else
-        shader->setVec3(name, pos);
-
-    name = prefix + idxStr + "].ambient";
-    shader->setVec3(name, glm::vec3(0.05f, 0.05f, 0.05f));
-
-    name = prefix + idxStr + "].diffuse";
-    shader->setVec3(name, glm::vec3(0.8f, 0.8f, 0.8f));
-
-    name = prefix + idxStr + "].specular";
-    shader->setVec3(name, glm::vec3(1.0f, 1.0f, 1.0f));
-
-
-    // Set light fade-out values
-    name = prefix + idxStr + "].constant";
-    shader->setFloat(name, 1.0f);
-
-    name = prefix + idxStr + "].linear";
-    shader->setFloat(name, 0.09f);
-
-    name = prefix + idxStr + "].quadratic";
-    shader->setFloat(name, 0.032f);
-}
-
 void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)
 {
     Model* model = m_meshList->at(idx)->model;
@@ -493,23 +345,7 @@ void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)
     // Set viewer position
     m_lightMeshShader->setVec3("viewPos", m_camera->Position);
 
-    // Directional lights
-    m_lightMeshShader->setInt("dirLightCount", m_directionalLights.size());
-    for (int i = 0; i < m_directionalLights.size(); i++) {
-        renderDirectionalLight(i, m_lightMeshShader);
-    }
-
-    // Point lights
-    m_lightMeshShader->setInt("pointLightCount", m_pointLights.size());
-    for (int i = 0; i < m_pointLights.size(); i++) {
-        renderPointLight(i, m_lightMeshShader, true);
-    }
-
-    // Spotlights
-    m_lightMeshShader->setInt("spotLightCount", m_spotLights.size());
-    for (int i = 0; i < m_spotLights.size(); i++) {
-        renderSpotLight(i, m_lightMeshShader);
-    }
+    m_lightHandler->renderAllLightTypes(m_lightMeshShader, true);
 
     // Set material
     m_lightMeshShader->setBool("materialOverride", false);
@@ -552,23 +388,7 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         //m_ourShaderInstanced->setInt("material.specular", 1);
         //m_container_texture_specular->use(1);
 
-        // Directional lights
-        m_ourShaderInstanced->setInt("dirLightCount", m_directionalLights.size());
-        for (int i = 0; i < m_directionalLights.size(); i++) {
-            renderDirectionalLight(i, m_ourShaderInstanced);
-        }
-
-        // Point lights
-        m_ourShaderInstanced->setInt("pointLightCount", m_pointLights.size());
-        for (int i = 0; i < m_pointLights.size(); i++) {
-            renderPointLight(i, m_ourShaderInstanced);
-        }
-
-        // Spotlights
-        m_ourShaderInstanced->setInt("spotLightCount", m_spotLights.size());
-        for (int i = 0; i < m_spotLights.size(); i++) {
-            renderSpotLight(i, m_ourShaderInstanced);
-        }
+        m_lightHandler->renderAllLightTypes(m_ourShaderInstanced, false);
 
         // Set material
         if (m_meshList->at(idx)->material) {
@@ -600,23 +420,8 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             //m_lightMeshShader->setInt("material.specular", 1);
             //m_container_texture_specular->use(1);
 
-            // Directional lights
-            m_lightMeshShader->setInt("dirLightCount", m_directionalLights.size());
-            for (int i = 0; i < m_directionalLights.size(); i++) {
-                renderDirectionalLight(i, m_lightMeshShader);
-            }
+            m_lightHandler->renderAllLightTypes(m_lightMeshShader, false);
 
-            // Point lights
-            m_lightMeshShader->setInt("pointLightCount", m_pointLights.size());
-            for (int i = 0; i < m_pointLights.size(); i++) {
-                renderPointLight(i, m_lightMeshShader);
-            }
-
-            // Spotlights
-            m_lightMeshShader->setInt("spotLightCount", m_spotLights.size());
-            for (int i = 0; i < m_spotLights.size(); i++) {
-                renderSpotLight(i, m_lightMeshShader);
-            }
             m_lightMeshShader->setBool("materialOverride", true);
             // Set material
             if (m_meshList->at(idx)->material) {
@@ -670,26 +475,17 @@ void Scene::deleteObject(int idx)
 {
     // Delete pointlights
     if (m_meshList->at(idx)->type == MeshType::PointLightType) {
-        for (int i = 0; i < m_pointLights.size(); i++) {
-            if (!m_pointLights.at(i)->name.compare(m_meshList->at(idx)->name))
-            m_pointLights.erase(m_pointLights.begin() + i);
-        }
+        m_lightHandler->deletePointLight(m_meshList->at(idx)->name);
     }
 
     // Delete directional lights
     if (m_meshList->at(idx)->type == MeshType::DirectionalLightType) {
-        for (int i = 0; i < m_directionalLights.size(); i++) {
-            if (!m_directionalLights.at(i)->name.compare(m_meshList->at(idx)->name))
-                m_directionalLights.erase(m_directionalLights.begin() + i);
-        }
+        m_lightHandler->deleteDirectionalLight(m_meshList->at(idx)->name);
     }
 
     // Delete spot lights
     if (m_meshList->at(idx)->type == MeshType::SpotLightType) {
-        for (int i = 0; i < m_spotLights.size(); i++) {
-            if (!m_spotLights.at(i)->name.compare(m_meshList->at(idx)->name))
-                m_spotLights.erase(m_spotLights.begin() + i);
-        }
+        m_lightHandler->deleteSpotLight(m_meshList->at(idx)->name);
     }
     
     // Clear individual deleted meshes inside an instance

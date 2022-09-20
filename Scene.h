@@ -21,6 +21,7 @@
 #include "Model.h"
 #include "MeshListHandler.h"
 #include "MeshObject.h"
+#include "LightHandler.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -85,9 +86,9 @@ private:
     void drawModel(int idx, glm::mat4& projection, glm::mat4& view);
     int getSelectedMeshIndex();
     void highlightSelectedMeshes();
-    void renderPointLight(int idx, Shader* shader, bool invertPos = false);
-    void renderDirectionalLight(int idx, Shader* shader, bool invertPos = false);
-    void renderSpotLight(int idx, Shader* shader, bool invertPos = false);
+    //void renderPointLight(int idx, Shader* shader, bool invertPos = false);
+    //void renderDirectionalLight(int idx, Shader* shader, bool invertPos = false);
+    //void renderSpotLight(int idx, Shader* shader, bool invertPos = false);
 
     Camera* m_camera;
     Shader* m_ourShader;
@@ -100,6 +101,7 @@ private:
     ScreenSettings* m_screenSettings;
     MeshListHandler* m_meshListHandler;
     MaterialHandler* m_materialHandler;
+    LightHandler* m_lightHandler;
 
     unsigned int m_VAO;
     unsigned int m_EBO;
