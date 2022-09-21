@@ -43,6 +43,9 @@ public:
 
     void setInstanced(bool instanced);
 
+    // Print information about mesh state
+    void printState();
+
 private:
     bool meshDeleted(int meshPointer);
 

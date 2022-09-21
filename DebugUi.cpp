@@ -557,15 +557,24 @@ void DebugUi::showInfoWindow(bool* p_open)
     ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
     if (ImGui::Begin("Info window", p_open, window_flags))
     {
+        // Show mouse cursor screen position
         if (ImGui::IsMousePosValid())
-            ImGui::Text("Mouse Position: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
+            ImGui::Text("Mouse Position:        (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
         else
-            ImGui::Text("Mouse Position: <invalid>");
+            ImGui::Text("Mouse Position:        <invalid>");
 
-        ImGui::Text("FPS:             %.1f", m_fps);
-        ImGui::Text("Delta time:      %.3f ms", m_deltaTime);
-        ImGui::Text("Indices:         %d", m_scene->getTriangleCount());
-        ImGui::Text("Objects:         %d", m_scene->getObjectCount());
+        // Show mouse cursor world position
+        glm::vec3& cameraPos = m_scene->getCameraPosition();
+        ImGui::Text(
+            "Mouse World Position:  (%.1f,%.1f)",
+            (m_scene->getCursorWorldPos().x),
+            (m_scene->getCursorWorldPos().y)
+        );
+
+        ImGui::Text("FPS:                   %.1f", m_fps);
+        ImGui::Text("Delta time:            %.3f ms", m_deltaTime);
+        ImGui::Text("Indices:               %d", m_scene->getTriangleCount());
+        ImGui::Text("Objects:               %d", m_scene->getObjectCount());
     }
     ImGui::End();
 }

@@ -87,6 +87,12 @@ public:
     // Get the current mesh pointer index from MeshListHandler
     int getMeshPointer();
 
+    // Get camera position
+    glm::vec3& getCameraPosition();
+
+    // Get cursor's world position
+    glm::vec2& getCursorWorldPos();
+
 private:
 
     // Render a single mesh object

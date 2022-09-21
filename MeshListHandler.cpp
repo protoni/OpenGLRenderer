@@ -278,6 +278,8 @@ bool MeshListHandler::updateObjectMesh(int idx)
     else
         m_meshList->at(idx)->mesh->update();
 
+    m_meshList->at(idx)->mesh->printState();
+
     std::cout << "Triangle count: " << getTriangleCount() << std::endl;
 
     return true;

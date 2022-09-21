@@ -2,6 +2,9 @@
 #include "stb_image.h"
 #include "DebugMacros.h"
 
+//#include "imgui.h"
+//#include "imgui_impl_glfw.h"
+//#include "imgui_impl_opengl3.h"
 
 Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_camera(camera), m_screenSettings(screenSettings)
@@ -323,6 +326,16 @@ void Scene::updateMeshMaterial(int selected, const std::string& newMaterial)
 int Scene::getMeshPointer()
 {
     return m_meshListHandler->getMeshPointer();
+}
+
+glm::vec3& Scene::getCameraPosition()
+{
+    return m_camera->Position;
+}
+
+glm::vec2& Scene::getCursorWorldPos()
+{
+    return m_camera->getMouseWorldPos();
 }
 
 void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)

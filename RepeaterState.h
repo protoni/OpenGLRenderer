@@ -46,6 +46,9 @@ struct MeshTransformations
     float yPos;
     float zPos;
 
+    // Has the x, y, z coordinates already calculated once
+    bool positionInitialized;
+
     MeshTransformations()
         : scaleX(0.5)
         , scaleY(0.5)

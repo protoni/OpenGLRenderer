@@ -75,6 +75,11 @@ void Window::mouseCallback(GLFWwindow* window, double xposIn, double yposIn)
 {
     Window* windowObject = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
+    // Save old mouse position
+    windowObject->m_mousePosX = (float)xposIn;
+    windowObject->m_mousePosY = (float)yposIn;
+    windowObject->m_camera->setMousePos((float)xposIn, (float)yposIn);
+
     if (windowObject->m_debugModeOn) {
         windowObject->m_firstMouse = true;
         return;
@@ -161,4 +166,11 @@ void Window::setWireframeMode(bool state)
     else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
+}
+
+glm::vec2& Window::getCursorPosition()
+{
+    glm::vec2 pos = glm::vec2(m_mousePosX, m_mousePosY);
+
+    return pos;
 }
