@@ -481,7 +481,7 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         }
     }
 
-    m_meshList->at(idx)->mesh->draw(m_physics);
+    m_meshList->at(idx)->mesh->draw(m_physics, m_mousePicker);
 }
 
 void Scene::renderScene()
@@ -508,12 +508,18 @@ void Scene::renderScene()
             draw(i, projection, view);
     }
 
+    // Update mouse-over
+    m_mousePicker->update(projection, view);
+    //if (m_mousePicker->testRayIntersection(projection)) {
+    //    std::cout << "Intersect ptr: " << std::endl;
+    //}
+
     // Update physics
     m_physics->update(projection, view);
-    glm::vec3 ray_origin = m_mousePicker->getRayOrigin();
-    glm::vec3 ray_direction = m_mousePicker->getRayDirection();
-    glm::vec3 ray_end = ray_origin + ray_direction * 1000.0f;
-    m_physics->hasHit(ray_origin, ray_end);
+    //glm::vec3 ray_origin = m_mousePicker->getRayOrigin();
+    //glm::vec3 ray_direction = m_mousePicker->getRayDirection();
+    //glm::vec3 ray_end = ray_origin + ray_direction * 1000.0f;
+    //m_physics->hasHit(ray_origin, ray_end);
 }
 
 void Scene::deleteObject(int idx)

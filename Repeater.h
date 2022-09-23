@@ -4,10 +4,12 @@
 #include "Mesh.h"
 #include "RepeaterState.h"
 #include "Physics.h"
+#include "MousePicker.h"
 
 #include <vector>
 
-
+// Limit updating physic collision box scaling to every 10th frame
+#define PHYSICS_UPDATE_LIMIT 20
 
 class Repeater : public Mesh
 {
@@ -32,9 +34,9 @@ public:
 
     ~Repeater();
 
-    void drawNonInstanced(Physics* physics);
+    void drawNonInstanced(Physics* physics, MousePicker* picker);
     void drawInstanced();
-    void draw(Physics* physics);
+    void draw(Physics* physics, MousePicker* picker);
     void setIndiceCount(unsigned int count);
 
     void update();
@@ -65,6 +67,9 @@ private:
     bool m_useNormals;
 
     bool m_cleared = true;
+
+    // Physics limiter
+    int m_physicsUpdateLimiter = 0;
 };
 
 #endif // REPEATER_H

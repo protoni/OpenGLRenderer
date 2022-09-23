@@ -41,6 +41,12 @@ public:
     // Enable/Disable debug mode
     void setDebugModeOn(bool state) { m_debugMode = state;  }
 
+    // Check if the mesh is being mouseovered
+    bool isMouseOvered(int ptr);
+
+    // Clear all physics objects
+    void deleteObjects();
+
 private:
 
     // Initialize Bullet physics engine
@@ -71,6 +77,9 @@ private:
 
     // Do we want to draw the borders of physics collision shapes
     bool m_debugMode = false;
+
+    // Currently mouseovered object
+    int m_mouseOveredObject = -1;
 };
 
 #endif // PHYSICS_H

@@ -75,23 +75,35 @@ bool Physics::init()
     
     m_mydebugdrawer = new BulletDebugDrawer_DeprecatedOpenGL();
     m_dynamicsWorld->setDebugDrawer(m_mydebugdrawer);
+    m_dynamicsWorld->stepSimulation(1.f / 60.f);
 
     return true; // TODO: validate objects
 }
 
+bool Physics::isMouseOvered(int ptr)
+{
+    if (ptr == m_mouseOveredObject)
+        return true;
+
+    return false;
+}
+
 bool Physics::hasHit(glm::vec3& ray_origin, glm::vec3& ray_end)
 {
-    std::cout << "ray_origin x: " << ray_origin.x << ", y: " << ray_origin.y << ", z: " << ray_origin.z << std::endl;
-    std::cout << "ray_end x: " << ray_end.x << ", y: " << ray_end.y << ", z: " << ray_end.z << std::endl;
+    //std::cout << "ray_origin x: " << ray_origin.x << ", y: " << ray_origin.y << ", z: " << ray_origin.z << std::endl;
+    //std::cout << "ray_end x: " << ray_end.x << ", y: " << ray_end.y << ", z: " << ray_end.z << std::endl;
 
     btCollisionWorld::ClosestRayResultCallback RayCallback(btVector3(ray_origin.x, ray_origin.y, ray_origin.z), btVector3(ray_end.x, ray_end.y, ray_end.z));
     m_dynamicsWorld->rayTest(btVector3(ray_origin.x, ray_origin.y, ray_origin.z), btVector3(ray_end.x, ray_end.y, ray_end.z), RayCallback);
 
     if (RayCallback.hasHit()) {
-        std::cout << "mesh hit: " << (size_t)RayCallback.m_collisionObject->getUserPointer() << std::endl;
+        //std::cout << "mesh hit: " << (size_t)RayCallback.m_collisionObject->getUserPointer() << std::endl;
+        m_mouseOveredObject = (size_t)RayCallback.m_collisionObject->getUserPointer();
         return true;
     }
-
+    else {
+        m_mouseOveredObject = -1;
+    }
     return false;
 }
 
@@ -124,7 +136,7 @@ bool Physics::addObject(glm::quat orientation, glm::vec3 position, int ptr)
     // Add rigid body to the physics world
     m_dynamicsWorld->addRigidBody(rigidBody);
 
-    // Set repeater position as the object's ID
+    // Set repeater position as the object's ID // TODO: multiple repeater objects breaks this model
     rigidBody->setUserPointer((void*)ptr);
 
     return true; // TODO: validate
@@ -144,6 +156,9 @@ bool Physics::updateObject(glm::quat orientation, glm::vec3 size, glm::vec3 posi
 
         // Update size
         m_boxCollisionShape->setLocalScaling(btVector3(size.x * 4, size.y * 4, size.z * 4)); // TODO: why * 4 ?
+    
+        // Update dynamics world
+        m_dynamicsWorld->updateAabbs();
     }
     else
         std::cout << "Failed to update rigid body with index: " << ptr << std::endl;
@@ -161,6 +176,13 @@ void Physics::update(glm::mat4& projection, glm::mat4& view)
 
         // Draw debug view
         m_dynamicsWorld->debugDrawWorld();
+    }
+}
+
+void Physics::deleteObjects()
+{
+    for (int i = 0; i < m_rigidBodies.size(); i++) {
+        m_dynamicsWorld->removeRigidBody(m_rigidBodies.at(i));
     }
 }
 

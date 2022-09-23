@@ -62,6 +62,9 @@ in vec2 TexCoord;
 in vec3 Normal;
 in vec3 FragPos;
 
+// Is the current mesh selected, highlight it if so
+uniform bool selectedNonInstanced;
+
 flat in highp int instanceID;
 flat in highp int selectedMesh;
 
@@ -271,7 +274,7 @@ void main()
             result += calculateSpotLight(spotLights[i], viewPos, materialOverride);
 
     // If currently selected, set selected color, else set lights and material colors
-    if(selected) {
+    if(selected || selectedNonInstanced) {
         FragColor = vec4(1.0, 1.0, 0.1, 1.0);
         //FragColor = vec4(result, 1.0) * vec4(1.0, 1.0, 0.1, 0.7);
     }

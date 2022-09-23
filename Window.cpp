@@ -79,9 +79,9 @@ void Window::mouseCallback(GLFWwindow* window, double xposIn, double yposIn)
     Window* windowObject = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
     // Save old mouse position
-    windowObject->m_mousePosX = (float)xposIn;
-    windowObject->m_mousePosY = (float)yposIn;
-    windowObject->m_camera->setMousePos((float)xposIn, (float)yposIn);
+    windowObject->m_mousePosX = static_cast<float>(xposIn);
+    windowObject->m_mousePosY = static_cast<float>(yposIn);
+    windowObject->m_camera->setMousePos(static_cast<float>(xposIn), static_cast<float>(yposIn));
 
     if (windowObject->m_debugModeOn) {
         windowObject->m_firstMouse = true;

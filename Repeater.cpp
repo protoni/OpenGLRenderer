@@ -215,7 +215,7 @@ void Repeater::update()
         createBuffer();
 }
 
-void Repeater::drawNonInstanced(Physics* physics)
+void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker)
 {
     if (getIsLight())
         activateLight();
@@ -244,6 +244,11 @@ void Repeater::drawNonInstanced(Physics* physics)
         }
         m_state->modified->clear();
         m_cleared = true;
+
+        // If count has reduces, clear all objects and re-create them
+        if (getObjCount() < m_oldObjectCount) {
+            physics->deleteObjects();
+        }
     }
 
     for (int y = 0; y < m_state->stackCount; y++) {          // stacks  ( y-axis )
@@ -269,7 +274,10 @@ void Repeater::drawNonInstanced(Physics* physics)
                 }
 
                 // Update all physics objects if the repeater state has been updated. TODO: Limit update time ?
-                //if (m_state->orientationUpdated) {
+                if (m_state->orientationUpdated || m_physicsUpdateLimiter > 0) {
+                //if(m_physicsUpdateLimiter++ >= PHYSICS_UPDATE_LIMIT) {
+                    if(m_physicsUpdateLimiter == 0)
+                        m_physicsUpdateLimiter = 2;
                     glm::vec3 position = glm::vec3(
                         m_state->modified->at(ptr)->transformations->xPos,
                         m_state->modified->at(ptr)->transformations->yPos,
@@ -282,11 +290,11 @@ void Repeater::drawNonInstanced(Physics* physics)
                         position,
                         ptr
                     );
-                    //std::cout << "Updated physics object: " << ptr << std::endl;
+                    std::cout << "Updated physics object: " << ptr << std::endl;
 
-                //}
+                }
 
-                render(x, y, z, m_state, ptr, physics, m_cleared);
+                render(x, y, z, m_state, ptr, physics, m_cleared, picker);
 
                 ptr++;
             }
@@ -298,6 +306,10 @@ void Repeater::drawNonInstanced(Physics* physics)
     // Reset updated state
     m_state->countUpdated = false;
     m_state->orientationUpdated = false;
+    m_physicsUpdateLimiter--;
+
+    // All objects should have re-created their physics so clear the flag
+    m_cleared = false;
 
     deactivate();
 }
@@ -318,12 +330,12 @@ void Repeater::setInstanced(bool instanced)
     m_state->instanced = instanced;
 }
         
-void Repeater::draw(Physics* physics)
+void Repeater::draw(Physics* physics, MousePicker* picker)
 {
     if (m_state->instanced)
         drawInstanced();
     else {
-        drawNonInstanced(physics);
+        drawNonInstanced(physics, picker);
     }
 }
 

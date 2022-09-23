@@ -45,8 +45,8 @@ private:
     glm::mat4 m_view;
 
     // Ray size
-    glm::vec3 m_aabb_min = glm::vec3(-0.5f, -0.5f, -0.5f);
-    glm::vec3 m_aabb_max = glm::vec3(0.5f, 0.5f, 0.5f);
+    glm::vec3 m_aabb_min = glm::vec3(-0.033f, -0.033f, -0.033f);
+    glm::vec3 m_aabb_max = glm::vec3( 0.033f,  0.033f,  0.033f);
 
     // Ray
     glm::vec3 m_ray_origin;

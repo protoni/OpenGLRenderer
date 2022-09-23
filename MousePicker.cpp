@@ -16,94 +16,38 @@ MousePicker::~MousePicker()
 //glm::vec3& MousePicker::calculateMouseRay()
 void MousePicker::calculateMouseRay()
 {
+    // Get mouse position and screen size
     glm::vec2 mousePos = m_camera->getMousePos();
-    //float mouseX = (float)mousePos.x;
-    //float mouseY = (float)mousePos.y;
     glm::vec2 windowSize = m_camera->getWindowSize();
-
-    float mouseX = windowSize.x / 2.0;
-    float mouseY = windowSize.y / 2.0;
-
+    float mouseX = (float)mousePos.x;
+    float mouseY = (float)mousePos.y;
     
-
-    //std::cout << "mouseX: " << mouseX << ", mouseY: " << mouseY << std::endl;
-    //std::cout << "windowSize.x: " << windowSize.x << ", windowSize.y: " << windowSize.y << std::endl;
-
-    // The ray Start and End positions, in Normalized Device Coordinates (Have you read Tutorial 4 ?)
+    // Ray start position ( normalized device coordinates )
     glm::vec4 lRayStart_NDC(
-        ((float)mouseX / (float)windowSize.x - 0.5f) * 2.0f, // [0,1024] -> [-1,1]
-        ((float)mouseY / (float)windowSize.y - 0.5f) * 2.0f, // [0, 768] -> [-1,1]
+        ((float)mouseX / (float)windowSize.x - 0.5f) * 2.0f,
+        -((float)mouseY / (float)windowSize.y - 0.5f) * 2.0f, // Inverted y-axis
         -1.0, // The near plane maps to Z=-1 in Normalized Device Coordinates
         1.0f
     );
-    //std::cout << "lRayStart_NDC x: " << lRayStart_NDC.x << ", y: " << lRayStart_NDC.y << ", z: " << lRayStart_NDC.z << std::endl;
 
+    // Ray end position ( normalized device coordinates )
     glm::vec4 lRayEnd_NDC(
         ((float)mouseX / (float)windowSize.x - 0.5f) * 2.0f,
-        ((float)mouseY / (float)windowSize.y - 0.5f) * 2.0f,
+        -((float)mouseY / (float)windowSize.y - 0.5f) * 2.0f, // Inverted y-axis
         0.0,
         1.0f
     );
-    //std::cout << "lRayEnd_NDC x: " << lRayEnd_NDC.x << ", y: " << lRayEnd_NDC.y << ", z: " << lRayEnd_NDC.z << std::endl;
 
-    // The Projection matrix goes from Camera Space to NDC.
-    // So inverse(ProjectionMatrix) goes from NDC to Camera Space.
-    glm::mat4 InverseProjectionMatrix = glm::inverse(m_projection);
-
-    // The View Matrix goes from World Space to Camera Space.
-    // So inverse(ViewMatrix) goes from Camera Space to World Space.
-    glm::mat4 InverseViewMatrix = glm::inverse(m_view);
-
-    glm::vec4 lRayStart_camera = InverseProjectionMatrix * lRayStart_NDC;    lRayStart_camera /= lRayStart_camera.w;
-    glm::vec4 lRayStart_world = InverseViewMatrix * lRayStart_camera; lRayStart_world /= lRayStart_world.w;
-    glm::vec4 lRayEnd_camera = InverseProjectionMatrix * lRayEnd_NDC;      lRayEnd_camera /= lRayEnd_camera.w;
-    glm::vec4 lRayEnd_world = InverseViewMatrix * lRayEnd_camera;   lRayEnd_world /= lRayEnd_world.w;
-
-
-    // Faster way (just one inverse)
-    //glm::mat4 M = glm::inverse(ProjectionMatrix * ViewMatrix);
-    //glm::vec4 lRayStart_world = M * lRayStart_NDC; lRayStart_world/=lRayStart_world.w;
-    //glm::vec4 lRayEnd_world   = M * lRayEnd_NDC  ; lRayEnd_world  /=lRayEnd_world.w;
-
+    // Calculate ray start and end positions in the world
+    glm::mat4 M = glm::inverse(m_projection * m_view);
+    glm::vec4 lRayStart_world = M * lRayStart_NDC; lRayStart_world/=lRayStart_world.w;
+    glm::vec4 lRayEnd_world   = M * lRayEnd_NDC  ; lRayEnd_world  /=lRayEnd_world.w;
 
     glm::vec3 lRayDir_world(lRayEnd_world - lRayStart_world);
     lRayDir_world = glm::normalize(lRayDir_world);
 
-
     m_ray_origin = glm::vec3(lRayStart_world);
     m_ray_direction = glm::normalize(lRayDir_world);
-
-    ///// Get screen coordinates
-    ///float mouseX = m_camera->getMousePos().x;
-    ///float mouseY = m_camera->getMousePos().y;
-    ///
-    ///// Convert to OpenGL coordinate system
-    ///float x = (2.0f * mouseX) / m_camera->getWindowSize().x;
-    ///float y = -((2.0f * mouseY) / m_camera->getWindowSize().y); // invert y axis value
-    ///
-    ///// Create clip coordinates and flip z direction to point towards the screen
-    ///glm::vec4 clipCoords = glm::vec4(x, y, -1.0f, 1.0f);
-    ///
-    ///// Convert from clip-space to eye-space
-    /////std::cout << "m_projection[0] x: " << m_projection[0].x << ", y: " << m_projection[0].y << ", z: " << m_projection[0].z << std::endl;
-    /////std::cout << "m_projection[1] x: " << m_projection[1].x << ", y: " << m_projection[1].y << ", z: " << m_projection[1].z << std::endl;
-    ///auto invertedProjection = glm::inverse(m_projection);
-    ///auto eyeCoords = invertedProjection * clipCoords;
-    ///eyeCoords = glm::vec4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
-    /////std::cout << "eyeCoords x: " << eyeCoords.x << ", y: " << eyeCoords.y << ", z: " << eyeCoords.z << std::endl;
-    ///
-    ///// Convert to world coordinates
-    ///glm::highp_mat4 invertedView = glm::inverse(m_view);
-    ///glm::vec4 rayWorld = invertedView * eyeCoords;
-    ///
-    ///// Get mouse ray
-    ///glm::vec3 mouseRay = glm::vec3(rayWorld.x, rayWorld.y, rayWorld.z); // origin
-    /////std::cout << "Ray x: " << mouseRay.x << ", y: " << mouseRay.y << ", z: " << mouseRay.z << std::endl;
-    ///glm::highp_vec3 mouseRayNorm = glm::normalize(mouseRay); // direction
-    ///std::cout << "mouseRayNorm x: " << mouseRayNorm.x << ", y: " << mouseRayNorm.y << ", z: " << mouseRayNorm.z << std::endl;
-    
-    //return mouseRay;
-
 }
 
 void MousePicker::update(glm::mat4& projection, glm::mat4& view)
@@ -127,8 +71,8 @@ bool MousePicker::testRayIntersection(glm::mat4& modelMatrix)
     //glm::vec3 ray_origin = m_currentRay;
     //glm::vec3 ray_direction = glm::normalize(m_currentRay);
 
-    std::cout << "m_ray_origin x: " << m_ray_origin.x << ", y: " << m_ray_origin.y << ", z: " << m_ray_origin.z << std::endl;
-    std::cout << "m_ray_direction x: " << m_ray_direction.x << ", y: " << m_ray_direction.y << ", z: " << m_ray_direction.z << std::endl;
+    //std::cout << "m_ray_origin x: " << m_ray_origin.x << ", y: " << m_ray_origin.y << ", z: " << m_ray_origin.z << std::endl;
+    //std::cout << "m_ray_direction x: " << m_ray_direction.x << ", y: " << m_ray_direction.y << ", z: " << m_ray_direction.z << std::endl;
     
 
     float tMin = 0.0f;
@@ -137,7 +81,7 @@ bool MousePicker::testRayIntersection(glm::mat4& modelMatrix)
     glm::vec3 OBBposition_worldspace(modelMatrix[3].x, modelMatrix[3].y, modelMatrix[3].z);
 
     glm::vec3 delta = OBBposition_worldspace - m_ray_origin;
-    std::cout << "delta x: " << delta.x << ", y: " << delta.y << ", z: " << delta.z << std::endl;
+    //std::cout << "delta x: " << delta.x << ", y: " << delta.y << ", z: " << delta.z << std::endl;
 
     // Test intersection with the 2 planes perpendicular to the OBB's X axis
     {

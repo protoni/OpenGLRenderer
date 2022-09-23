@@ -209,7 +209,7 @@ void Mesh::setShader(Shader* shader)
     m_shader = shader;
 }
 
-void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned int ptr, Physics* physics, bool& cleared)
+void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned int ptr, Physics* physics, bool& cleared, MousePicker* picker)
 {
     if (xPos < 1)
         xPos = 1;
@@ -221,9 +221,13 @@ void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned i
     glm::mat4 model = *getMesh(xPos, yPos, zPos, state, ptr);
 
     // Check if mouse interacts with the mesh
-    //if (mousePicker->testRayIntersection(model)) {
-    //    std::cout << "Intersect ptr: " << ptr << std::endl;
-    //}
+    if (picker->testRayIntersection(model)) {
+        //std::cout << "Intersect ptr: " << ptr << std::endl;
+        m_shader->setBool("selectedNonInstanced", true);
+    }
+    else {
+        m_shader->setBool("selectedNonInstanced", false);
+    }
 
     //glm::quat orientation = state->modified->at(ptr)->transformations->orientation;
     //glm::quat orientation = glm::normalize(glm::vec3(360, 0, 0));
@@ -233,13 +237,22 @@ void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned i
         state->modified->at(ptr)->transformations->zPos
     );
 
-    //if (cleared) {
+    // Mark all physics enabled object to be re-created
+    if (cleared && state->modified->at(ptr)->physics) {
+        state->modified->at(ptr)->physics = false;
+    }
+
+    // Create physics object
     if (!state->modified->at(ptr)->physics) {
-        cleared = false;
         physics->addObject(state->modified->at(ptr)->transformations->orientation, position, ptr);
         std::cout << "Added new physics object!" << std::endl;
         state->modified->at(ptr)->physics = true;
     }
+
+    //if (physics->isMouseOvered(ptr))
+    //    m_shader->setBool("selectedNonInstanced", true);
+    //else
+    //    m_shader->setBool("selectedNonInstanced", false);
 
     //btDefaultMotionState* motionstate = new btDefaultMotionState(btTransform(
     //    btQuaternion(orientation.x, orientation.y, orientation.z, orientation.w),
