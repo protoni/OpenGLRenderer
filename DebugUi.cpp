@@ -605,6 +605,8 @@ void DebugUi::draw()
         ImGui::Checkbox("Wireframe Mode", &m_wireframeModeOn);
         ImGui::Text("");
         ImGui::Checkbox("Info Window", &m_infoWindowOn);
+        ImGui::Text("");
+        ImGui::Checkbox("Physics debug mode", &m_physicsDebugOn);
 
         bool open;
         objectLayout(&open);
@@ -644,6 +646,13 @@ void DebugUi::updateWireframeMode()
     }
 }
 
+void DebugUi::updatePhysicsDebugMode()
+{
+    if (m_physicsDebugOn != m_scene->getPhysicsDebugMode()) {
+        m_scene->setPhysicsDebugMode(m_physicsDebugOn);
+    }
+}
+
 void DebugUi::update(double deltaTime, double fps)
 {
     m_debounceCounter += (float)deltaTime;
@@ -652,4 +661,5 @@ void DebugUi::update(double deltaTime, double fps)
     draw();
     render();
     updateWireframeMode();
+    updatePhysicsDebugMode();
 }

@@ -51,8 +51,11 @@ struct MeshTransformations
     // Has the x, y, z coordinates already calculated once
     bool positionInitialized;
 
-    // Orientation
+    // Mesh orientation
     glm::quat orientation;
+
+    // Mesh size
+    glm::vec3 size;
 
     MeshTransformations()
         : scaleX(0.5)
@@ -65,13 +68,14 @@ struct MeshTransformations
         , yOffset(0.0)
         , zOffset(0.0)
         , angle(0.0)
-        , xRotation(0.0001)
-        , yRotation(0.0001)
-        , zRotation(0.0001)
+        , xRotation(0.000001)
+        , yRotation(0.000001)
+        , zRotation(0.000001)
         , xPos(0.0)
         , yPos(0.0)
         , zPos(0.0)
         , orientation(glm::quat())
+        , size(glm::vec3(scaleX, scaleY, scaleZ))
     {}
 };
 

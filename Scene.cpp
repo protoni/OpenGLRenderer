@@ -355,6 +355,16 @@ glm::vec2& Scene::getCursorWorldPos()
     return m_camera->getMouseWorldPos();
 }
 
+bool Scene::getPhysicsDebugMode()
+{
+    return m_physics->getDebugModeOn();
+}
+
+void Scene::setPhysicsDebugMode(bool state)
+{
+    m_physics->setDebugModeOn(state);
+}
+
 void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)
 {
     Model* model = m_meshList->at(idx)->model;

@@ -276,7 +276,12 @@ void Repeater::drawNonInstanced(Physics* physics)
                         m_state->modified->at(ptr)->transformations->zPos
                     );
 
-                    physics->updateObject(m_state->modified->at(ptr)->transformations->orientation, position, ptr);
+                    physics->updateObject(
+                        m_state->modified->at(ptr)->transformations->orientation,
+                        m_state->modified->at(ptr)->transformations->size,
+                        position,
+                        ptr
+                    );
                     //std::cout << "Updated physics object: " << ptr << std::endl;
 
                 //}

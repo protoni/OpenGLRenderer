@@ -72,7 +72,7 @@ bool Physics::init()
 
     // Create a collision box
     m_boxCollisionShape = new btBoxShape(btVector3(0.125f, 0.125f, 0.125f));
-
+    
     m_mydebugdrawer = new BulletDebugDrawer_DeprecatedOpenGL();
     m_dynamicsWorld->setDebugDrawer(m_mydebugdrawer);
 
@@ -130,15 +130,20 @@ bool Physics::addObject(glm::quat orientation, glm::vec3 position, int ptr)
     return true; // TODO: validate
 }
 
-bool Physics::updateObject(glm::quat orientation, glm::vec3 position, int ptr)
+bool Physics::updateObject(glm::quat orientation, glm::vec3 size, glm::vec3 position, int ptr)
 {
     bool ret = false;
 
     if (ptr >= 0 && ptr < m_rigidBodies.size()) {
+        
+        // Update position
         m_rigidBodies.at(ptr)->proceedToTransform(btTransform(
             btQuaternion(orientation.x, orientation.y, orientation.z, orientation.w),
             btVector3(position.x, position.y, position.z)
         ));
+
+        // Update size
+        m_boxCollisionShape->setLocalScaling(btVector3(size.x * 4, size.y * 4, size.z * 4)); // TODO: why * 4 ?
     }
     else
         std::cout << "Failed to update rigid body with index: " << ptr << std::endl;
@@ -148,10 +153,14 @@ bool Physics::updateObject(glm::quat orientation, glm::vec3 position, int ptr)
 
 void Physics::update(glm::mat4& projection, glm::mat4& view)
 {
-    // Update debug view
-    m_mydebugdrawer->SetMatrices(view, projection);
+    // Handle collision box debug drawing
+    if (m_debugMode) {
 
-    // Draw debug view
-    m_dynamicsWorld->debugDrawWorld();
+        // Update debug view
+        m_mydebugdrawer->SetMatrices(view, projection);
+
+        // Draw debug view
+        m_dynamicsWorld->debugDrawWorld();
+    }
 }
 

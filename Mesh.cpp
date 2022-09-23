@@ -352,17 +352,29 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int
 
     // Set scaling
     if (ptr < state->modified->size()) {
-        model = glm::scale(
-            model,
-            glm::vec3(
-                0.5f * ((state->transformations->scaleX - state->modified->at(ptr)->transformations->scaleX) + 0.5),
-                0.5f * ((state->transformations->scaleY - state->modified->at(ptr)->transformations->scaleY) + 0.5),
-                0.5f * ((state->transformations->scaleZ - state->modified->at(ptr)->transformations->scaleZ) + 0.5)
-                //0.5f * state->transformations->scaleX * state->modified->at(ptr)->transformations->scaleX,
-                //0.5f * state->transformations->scaleY * state->modified->at(ptr)->transformations->scaleY,
-                //0.5f * state->transformations->scaleZ * state->modified->at(ptr)->transformations->scaleZ
-            )
-        );
+
+        // Calculate scaling
+        float scaleX = 0.5f * ((state->transformations->scaleX - state->modified->at(ptr)->transformations->scaleX) + 0.5);
+        float scaleY = 0.5f * ((state->transformations->scaleY - state->modified->at(ptr)->transformations->scaleY) + 0.5);
+        float scaleZ = 0.5f * ((state->transformations->scaleZ - state->modified->at(ptr)->transformations->scaleZ) + 0.5);
+
+        // Apply scaling
+        model = glm::scale(model, glm::vec3(scaleX, scaleY, scaleZ));
+
+        //model = glm::scale(
+        //    model,
+        //    glm::vec3(
+        //        0.5f * ((state->transformations->scaleX - state->modified->at(ptr)->transformations->scaleX) + 0.5),
+        //        0.5f * ((state->transformations->scaleY - state->modified->at(ptr)->transformations->scaleY) + 0.5),
+        //        0.5f * ((state->transformations->scaleZ - state->modified->at(ptr)->transformations->scaleZ) + 0.5)
+        //        //0.5f * state->transformations->scaleX * state->modified->at(ptr)->transformations->scaleX,
+        //        //0.5f * state->transformations->scaleY * state->modified->at(ptr)->transformations->scaleY,
+        //        //0.5f * state->transformations->scaleZ * state->modified->at(ptr)->transformations->scaleZ
+        //    )
+        //);
+
+        // Update mesh state size
+        state->modified->at(ptr)->transformations->size = glm::vec3(scaleX, scaleY, scaleZ);
     }
     else { // Shouldn't execute. Modified state should always exist
         model = glm::scale(

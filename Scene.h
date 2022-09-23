@@ -95,6 +95,12 @@ public:
     // Get cursor's world position
     glm::vec2& getCursorWorldPos();
 
+    // Get the physics debug mode state
+    bool getPhysicsDebugMode();
+
+    // Set physics debug mode state on/off
+    void setPhysicsDebugMode(bool state);
+
 private:
 
     // Render a single mesh object

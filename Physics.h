@@ -33,7 +33,13 @@ public:
     void update(glm::mat4& projection, glm::mat4& view);
 
     // Update single physics object with index ptr ID
-    bool updateObject(glm::quat orientation, glm::vec3 position, int ptr);
+    bool updateObject(glm::quat orientation, glm::vec3 size, glm::vec3 position, int ptr);
+
+    // Get the current debug state
+    bool getDebugModeOn() { return m_debugMode; }
+
+    // Enable/Disable debug mode
+    void setDebugModeOn(bool state) { m_debugMode = state;  }
 
 private:
 
@@ -62,6 +68,9 @@ private:
 
     // Debug drawer
     BulletDebugDrawer_DeprecatedOpenGL* m_mydebugdrawer;
+
+    // Do we want to draw the borders of physics collision shapes
+    bool m_debugMode = false;
 };
 
 #endif // PHYSICS_H
