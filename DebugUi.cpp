@@ -357,8 +357,25 @@ bool DebugUi::objectSettings(int selected)
 
             if (m_planeState->columnCount != state->columnCount ||
                 m_planeState->rowCount != state->rowCount ||
-                m_planeState->stackCount != state->stackCount ||
-                m_planeState->transformations->scaleX != state->transformations->scaleX ||
+                m_planeState->stackCount != state->stackCount) {
+
+                state->columnCount = m_planeState->columnCount;
+                state->rowCount = m_planeState->rowCount;
+                state->stackCount = m_planeState->stackCount;
+
+                MeshObjectChange change;
+                change.selectedMesh = selected;
+                change.action = MeshObjectChangeAction::UpdateObject;
+                m_scene->updateMeshObjects(change);
+                state->countUpdated = true;
+
+                m_debounceCounter = 0;
+            }
+
+            //if (m_planeState->columnCount != state->columnCount ||
+            //    m_planeState->rowCount != state->rowCount ||
+            //    m_planeState->stackCount != state->stackCount ||
+            if (m_planeState->transformations->scaleX != state->transformations->scaleX ||
                 m_planeState->transformations->scaleY != state->transformations->scaleY ||
                 m_planeState->transformations->scaleZ != state->transformations->scaleZ ||
                 m_planeState->transformations->paddingX != state->transformations->paddingX ||
@@ -372,9 +389,9 @@ bool DebugUi::objectSettings(int selected)
                 m_planeState->transformations->yRotation != state->transformations->yRotation ||
                 m_planeState->transformations->zRotation != state->transformations->zRotation
                 ) {
-                state->columnCount = m_planeState->columnCount;
-                state->rowCount = m_planeState->rowCount;
-                state->stackCount = m_planeState->stackCount;
+                //state->columnCount = m_planeState->columnCount;
+                //state->rowCount = m_planeState->rowCount;
+                //state->stackCount = m_planeState->stackCount;
                 state->transformations->scaleX = m_planeState->transformations->scaleX;
                 state->transformations->scaleY = m_planeState->transformations->scaleY;
                 state->transformations->scaleZ = m_planeState->transformations->scaleZ;
@@ -395,6 +412,7 @@ bool DebugUi::objectSettings(int selected)
                 change.selectedMesh = selected;
                 change.action = MeshObjectChangeAction::UpdateObject;
                 m_scene->updateMeshObjects(change);
+                state->orientationUpdated = true;
 
                 m_debounceCounter = 0;
             }

@@ -65,9 +65,9 @@ struct MeshTransformations
         , yOffset(0.0)
         , zOffset(0.0)
         , angle(0.0)
-        , xRotation(0.001)
-        , yRotation(0.001)
-        , zRotation(0.001)
+        , xRotation(0.0001)
+        , yRotation(0.0001)
+        , zRotation(0.0001)
         , xPos(0.0)
         , yPos(0.0)
         , zPos(0.0)
@@ -88,11 +88,15 @@ struct ModifiedMesh
     // Has this mesh been deleted
     bool deleted;
 
+    // Has the physics been enabled on this object
+    bool physics;
+
     ModifiedMesh()
         : meshPointer(0)
         , transformations(nullptr)
         , deleted(false)
-        , position(nullptr) {}
+        , position(nullptr)
+        , physics(false) {}
 };
 
 struct RepeaterState
@@ -117,15 +121,23 @@ struct RepeaterState
     // Mesh transformations ( scale, padding, offset, rotations)
     MeshTransformations* transformations;
 
-    RepeaterState() :
-        rowCount(1),
-        columnCount(1),
-        stackCount(1),
-        deleted(nullptr),
-        position(nullptr),
-        transformations(nullptr),
-        modified(nullptr),
-        instanced(false) {}
+    // Has the repeater count state been updated
+    bool countUpdated;
+
+    // Has the repeater orientation state been updated
+    bool orientationUpdated;
+
+    RepeaterState()
+        : rowCount(1)
+        , columnCount(1)
+        , stackCount(1)
+        , deleted(nullptr)
+        , position(nullptr)
+        , transformations(nullptr)
+        , modified(nullptr)
+        , instanced(false)
+        , countUpdated(false)
+        , orientationUpdated(false) {}
 };
 
 #endif // #ifndef REPEATER_H

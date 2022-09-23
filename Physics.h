@@ -24,13 +24,16 @@ public:
     ~Physics();
 
     // Add new physics object
-    void addObject(glm::quat orientation, glm::vec3 position, int ptr);
+    bool addObject(glm::quat orientation, glm::vec3 position, int ptr);
 
     // Has object got hit
     bool hasHit(glm::vec3& ray_origin, glm::vec3& ray_end);
 
     // Update physics
     void update(glm::mat4& projection, glm::mat4& view);
+
+    // Update single physics object with index ptr ID
+    bool updateObject(glm::quat orientation, glm::vec3 position, int ptr);
 
 private:
 

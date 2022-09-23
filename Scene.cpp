@@ -476,20 +476,20 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 
 void Scene::renderScene()
 {
+    // Get the current projection matrix
     glm::mat4 projection = glm::perspective(
         glm::radians(m_camera->Zoom),
         (float)m_screenSettings->width / (float)m_screenSettings->height, 0.1f, 100.0f
     );
+
+    // Get the current view matrix
     glm::mat4 view = m_camera->GetViewMatrix();
 
-    // Handle object mouse-over
+    // Update mouse-over
     m_mousePicker->update(projection, view);
     //m_mousePicker->printRay();
 
-    // Test pick matrix
-    //glm::pickMatrix(glm::vec2(m_camera->getMousePos()), glm::vec2(m_camera->getWindowSize().x, m_camera->getWindowSize().y), );
-
-    int lastDrawn = 0;
+    // Draw all objects
     for (int i = 0; i < m_meshList->size(); i++) {
         RepeaterState* state;
         if (m_meshList->at(i)->type == MeshType::ModelType)

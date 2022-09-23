@@ -233,10 +233,12 @@ void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned i
         state->modified->at(ptr)->transformations->zPos
     );
 
-    if (cleared) {
+    //if (cleared) {
+    if (!state->modified->at(ptr)->physics) {
         cleared = false;
         physics->addObject(state->modified->at(ptr)->transformations->orientation, position, ptr);
         std::cout << "Added new physics object!" << std::endl;
+        state->modified->at(ptr)->physics = true;
     }
 
     //btDefaultMotionState* motionstate = new btDefaultMotionState(btTransform(

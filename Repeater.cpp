@@ -246,7 +246,6 @@ void Repeater::drawNonInstanced(Physics* physics)
         m_cleared = true;
     }
 
-
     for (int y = 0; y < m_state->stackCount; y++) {          // stacks  ( y-axis )
         for (int z = 0; z < m_state->rowCount; z++) {        // rows    ( z axis )
             for (int x = 0; x < m_state->columnCount; x++) { // columns ( x axis )
@@ -269,7 +268,18 @@ void Repeater::drawNonInstanced(Physics* physics)
                     m_state->modified->push_back(modifiedMesh);
                 }
 
-                
+                // Update all physics objects if the repeater state has been updated. TODO: Limit update time ?
+                //if (m_state->orientationUpdated) {
+                    glm::vec3 position = glm::vec3(
+                        m_state->modified->at(ptr)->transformations->xPos,
+                        m_state->modified->at(ptr)->transformations->yPos,
+                        m_state->modified->at(ptr)->transformations->zPos
+                    );
+
+                    physics->updateObject(m_state->modified->at(ptr)->transformations->orientation, position, ptr);
+                    //std::cout << "Updated physics object: " << ptr << std::endl;
+
+                //}
 
                 render(x, y, z, m_state, ptr, physics, m_cleared);
 
@@ -279,6 +289,10 @@ void Repeater::drawNonInstanced(Physics* physics)
     }
 
     m_oldObjectCount = getObjCount();
+
+    // Reset updated state
+    m_state->countUpdated = false;
+    m_state->orientationUpdated = false;
 
     deactivate();
 }
@@ -303,7 +317,8 @@ void Repeater::draw(Physics* physics)
 {
     if (m_state->instanced)
         drawInstanced();
-    else
+    else {
         drawNonInstanced(physics);
+    }
 }
 

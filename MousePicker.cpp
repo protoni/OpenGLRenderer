@@ -26,8 +26,8 @@ void MousePicker::calculateMouseRay()
 
     
 
-    std::cout << "mouseX: " << mouseX << ", mouseY: " << mouseY << std::endl;
-    std::cout << "windowSize.x: " << windowSize.x << ", windowSize.y: " << windowSize.y << std::endl;
+    //std::cout << "mouseX: " << mouseX << ", mouseY: " << mouseY << std::endl;
+    //std::cout << "windowSize.x: " << windowSize.x << ", windowSize.y: " << windowSize.y << std::endl;
 
     // The ray Start and End positions, in Normalized Device Coordinates (Have you read Tutorial 4 ?)
     glm::vec4 lRayStart_NDC(
@@ -117,7 +117,7 @@ void MousePicker::update(glm::mat4& projection, glm::mat4& view)
 void MousePicker::printRay()
 {
     glm::vec3 ray = getCurrentRay();
-    //std::cout << "Ray x: " << ray.x << ", y: " << ray.y << ", z: " << ray.z << std::endl;
+    std::cout << "Ray x: " << ray.x << ", y: " << ray.y << ", z: " << ray.z << std::endl;
 }
 
 bool MousePicker::testRayIntersection(glm::mat4& modelMatrix)

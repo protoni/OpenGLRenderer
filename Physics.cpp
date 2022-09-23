@@ -71,7 +71,7 @@ bool Physics::init()
     m_dynamicsWorld->setGravity(btVector3(0, -9.81f, 0));
 
     // Create a collision box
-    m_boxCollisionShape = new btBoxShape(btVector3(0.1f, 0.1f, 0.1f));
+    m_boxCollisionShape = new btBoxShape(btVector3(0.125f, 0.125f, 0.125f));
 
     m_mydebugdrawer = new BulletDebugDrawer_DeprecatedOpenGL();
     m_dynamicsWorld->setDebugDrawer(m_mydebugdrawer);
@@ -79,8 +79,28 @@ bool Physics::init()
     return true; // TODO: validate objects
 }
 
-void Physics::addObject(glm::quat orientation, glm::vec3 position, int ptr)
+bool Physics::hasHit(glm::vec3& ray_origin, glm::vec3& ray_end)
 {
+    std::cout << "ray_origin x: " << ray_origin.x << ", y: " << ray_origin.y << ", z: " << ray_origin.z << std::endl;
+    std::cout << "ray_end x: " << ray_end.x << ", y: " << ray_end.y << ", z: " << ray_end.z << std::endl;
+
+    btCollisionWorld::ClosestRayResultCallback RayCallback(btVector3(ray_origin.x, ray_origin.y, ray_origin.z), btVector3(ray_end.x, ray_end.y, ray_end.z));
+    m_dynamicsWorld->rayTest(btVector3(ray_origin.x, ray_origin.y, ray_origin.z), btVector3(ray_end.x, ray_end.y, ray_end.z), RayCallback);
+
+    if (RayCallback.hasHit()) {
+        std::cout << "mesh hit: " << (size_t)RayCallback.m_collisionObject->getUserPointer() << std::endl;
+        return true;
+    }
+
+    return false;
+}
+
+bool Physics::addObject(glm::quat orientation, glm::vec3 position, int ptr)
+{
+    if (ptr != m_rigidBodies.size()) {
+        return false;
+    }
+
     // Create new motion state
     btDefaultMotionState* motionstate = new btDefaultMotionState(btTransform(
         btQuaternion(orientation.x, orientation.y, orientation.z, orientation.w),
@@ -107,23 +127,23 @@ void Physics::addObject(glm::quat orientation, glm::vec3 position, int ptr)
     // Set repeater position as the object's ID
     rigidBody->setUserPointer((void*)ptr);
 
-    
+    return true; // TODO: validate
 }
 
-bool Physics::hasHit(glm::vec3& ray_origin, glm::vec3& ray_end)
+bool Physics::updateObject(glm::quat orientation, glm::vec3 position, int ptr)
 {
-    //std::cout << "ray_origin x: " << ray_origin.x << ", y: " << ray_origin.y << ", z: " << ray_origin.z << std::endl;
-    //std::cout << "ray_end x: " << ray_end.x << ", y: " << ray_end.y << ", z: " << ray_end.z << std::endl;
+    bool ret = false;
 
-    btCollisionWorld::ClosestRayResultCallback RayCallback(btVector3(ray_origin.x, ray_origin.y, ray_origin.z), btVector3(ray_end.x, ray_end.y, ray_end.z));
-    m_dynamicsWorld->rayTest(btVector3(ray_origin.x, ray_origin.y, ray_origin.z), btVector3(ray_end.x, ray_end.y, ray_end.z), RayCallback);
-
-    if (RayCallback.hasHit()) {
-        std::cout << "mesh hit: " << (size_t)RayCallback.m_collisionObject->getUserPointer() << std::endl;
-        return true;
+    if (ptr >= 0 && ptr < m_rigidBodies.size()) {
+        m_rigidBodies.at(ptr)->proceedToTransform(btTransform(
+            btQuaternion(orientation.x, orientation.y, orientation.z, orientation.w),
+            btVector3(position.x, position.y, position.z)
+        ));
     }
+    else
+        std::cout << "Failed to update rigid body with index: " << ptr << std::endl;
 
-    return false;
+    return ret;
 }
 
 void Physics::update(glm::mat4& projection, glm::mat4& view)
