@@ -3,6 +3,7 @@
 
 #include "Mesh.h"
 #include "RepeaterState.h"
+#include "Physics.h"
 
 #include <vector>
 
@@ -31,9 +32,9 @@ public:
 
     ~Repeater();
 
-    void drawNonInstanced();
+    void drawNonInstanced(Physics* physics);
     void drawInstanced();
-    void draw();
+    void draw(Physics* physics);
     void setIndiceCount(unsigned int count);
 
     void update();
@@ -62,6 +63,8 @@ private:
     int m_oldObjectCount;
 
     bool m_useNormals;
+
+    bool m_cleared = true;
 };
 
 #endif // REPEATER_H

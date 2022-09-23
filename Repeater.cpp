@@ -6,6 +6,7 @@
 
 #include "DebugMacros.h"
 
+
 Repeater::Repeater(
     Shader* shader,
     bool instanced,
@@ -214,7 +215,7 @@ void Repeater::update()
         createBuffer();
 }
 
-void Repeater::drawNonInstanced()
+void Repeater::drawNonInstanced(Physics* physics)
 {
     if (getIsLight())
         activateLight();
@@ -242,6 +243,7 @@ void Repeater::drawNonInstanced()
             }
         }
         m_state->modified->clear();
+        m_cleared = true;
     }
 
 
@@ -267,7 +269,9 @@ void Repeater::drawNonInstanced()
                     m_state->modified->push_back(modifiedMesh);
                 }
 
-                render(x, y, z, m_state, ptr);
+                
+
+                render(x, y, z, m_state, ptr, physics, m_cleared);
 
                 ptr++;
             }
@@ -295,11 +299,11 @@ void Repeater::setInstanced(bool instanced)
     m_state->instanced = instanced;
 }
         
-void Repeater::draw()
+void Repeater::draw(Physics* physics)
 {
     if (m_state->instanced)
         drawInstanced();
     else
-        drawNonInstanced();
+        drawNonInstanced(physics);
 }
 

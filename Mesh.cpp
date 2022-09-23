@@ -6,9 +6,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "DebugMacros.h"
 
+//#include <btBulletDynamicsCommon.h>
 
 
 Mesh::Mesh(
@@ -206,7 +209,7 @@ void Mesh::setShader(Shader* shader)
     m_shader = shader;
 }
 
-void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned int ptr)
+void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned int ptr, Physics* physics, bool& cleared)
 {
     if (xPos < 1)
         xPos = 1;
@@ -216,6 +219,32 @@ void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned i
         zPos = 1;
 
     glm::mat4 model = *getMesh(xPos, yPos, zPos, state, ptr);
+
+    // Check if mouse interacts with the mesh
+    //if (mousePicker->testRayIntersection(model)) {
+    //    std::cout << "Intersect ptr: " << ptr << std::endl;
+    //}
+
+    //glm::quat orientation = state->modified->at(ptr)->transformations->orientation;
+    //glm::quat orientation = glm::normalize(glm::vec3(360, 0, 0));
+    glm::vec3 position = glm::vec3(
+        state->modified->at(ptr)->transformations->xPos,
+        state->modified->at(ptr)->transformations->yPos,
+        state->modified->at(ptr)->transformations->zPos
+    );
+
+    if (cleared) {
+        cleared = false;
+        physics->addObject(state->modified->at(ptr)->transformations->orientation, position, ptr);
+        std::cout << "Added new physics object!" << std::endl;
+    }
+
+    //btDefaultMotionState* motionstate = new btDefaultMotionState(btTransform(
+    //    btQuaternion(orientation.x, orientation.y, orientation.z, orientation.w),
+    //    btVector3(xPos, yPos, zPos)
+    //));
+
+    
 
     m_shader->setMat4("model", model);
 
@@ -296,6 +325,8 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int
 
             // Apply rotation
             model = glm::rotate(model, glm::radians(angle), glm::vec3(scaleX, scaleY, scaleZ));
+            
+            state->modified->at(ptr)->transformations->orientation = glm::normalize(glm::quat(glm::vec3(90 * scaleX, 90 * scaleY, 90 * scaleZ)));
         }
     }
     else { // Shouldn't execute. Modified state should always exist

@@ -2,6 +2,7 @@
 #include "stb_image.h"
 #include "DebugMacros.h"
 
+
 //#include "imgui.h"
 //#include "imgui_impl_glfw.h"
 //#include "imgui_impl_opengl3.h"
@@ -36,6 +37,12 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
         m_directionalLights,
         m_spotLights
     );
+
+    // Create a mouse picker
+    m_mousePicker = new MousePicker(m_camera);
+
+    // Initiate physics
+    m_physics = new Physics();
 }
 
 Scene::~Scene()
@@ -93,6 +100,16 @@ Scene::~Scene()
     if (m_lightHandler) {
         delete m_lightHandler;
         m_lightHandler = NULL;
+    }
+
+    if (m_mousePicker) {
+        delete m_mousePicker;
+        m_mousePicker = NULL;
+    }
+
+    if (m_physics) {
+        delete m_physics;
+        m_physics = NULL;
     }
 }
 
@@ -454,7 +471,7 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         }
     }
 
-    m_meshList->at(idx)->mesh->draw();
+    m_meshList->at(idx)->mesh->draw(m_physics);
 }
 
 void Scene::renderScene()
@@ -465,6 +482,13 @@ void Scene::renderScene()
     );
     glm::mat4 view = m_camera->GetViewMatrix();
 
+    // Handle object mouse-over
+    m_mousePicker->update(projection, view);
+    //m_mousePicker->printRay();
+
+    // Test pick matrix
+    //glm::pickMatrix(glm::vec2(m_camera->getMousePos()), glm::vec2(m_camera->getWindowSize().x, m_camera->getWindowSize().y), );
+
     int lastDrawn = 0;
     for (int i = 0; i < m_meshList->size(); i++) {
         RepeaterState* state;
@@ -473,6 +497,13 @@ void Scene::renderScene()
         else
             draw(i, projection, view);
     }
+
+    // Update physics
+    m_physics->update(projection, view);
+    glm::vec3 ray_origin = m_mousePicker->getRayOrigin();
+    glm::vec3 ray_direction = m_mousePicker->getRayDirection();
+    glm::vec3 ray_end = ray_origin + ray_direction * 1000.0f;
+    m_physics->hasHit(ray_origin, ray_end);
 }
 
 void Scene::deleteObject(int idx)

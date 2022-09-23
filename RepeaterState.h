@@ -2,6 +2,8 @@
 #define REPEATER_STATE_H
 
 #include <vector>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 struct MeshPointerPosition
 {
@@ -49,6 +51,9 @@ struct MeshTransformations
     // Has the x, y, z coordinates already calculated once
     bool positionInitialized;
 
+    // Orientation
+    glm::quat orientation;
+
     MeshTransformations()
         : scaleX(0.5)
         , scaleY(0.5)
@@ -66,6 +71,7 @@ struct MeshTransformations
         , xPos(0.0)
         , yPos(0.0)
         , zPos(0.0)
+        , orientation(glm::quat())
     {}
 };
 

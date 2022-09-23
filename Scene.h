@@ -22,6 +22,8 @@
 #include "MeshListHandler.h"
 #include "MeshObject.h"
 #include "LightHandler.h"
+#include "MousePicker.h"
+#include "Physics.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -114,6 +116,8 @@ private:
     MeshListHandler* m_meshListHandler;
     MaterialHandler* m_materialHandler;
     LightHandler* m_lightHandler;
+    MousePicker* m_mousePicker;
+    Physics* m_physics;
 
     // All of the meshes currently in the scene
     std::vector<MeshObject*>* m_meshList;
@@ -122,6 +126,9 @@ private:
     std::vector<MeshObject*> m_pointLights;
     std::vector<MeshObject*> m_directionalLights;
     std::vector<MeshObject*> m_spotLights;
+
+    // Projection matrix
+    glm::mat4 m_projection;
 };
 
 #endif // SCENE_H

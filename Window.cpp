@@ -25,7 +25,7 @@ bool Window::init()
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     // Create a window
@@ -69,6 +69,9 @@ bool Window::init()
 void Window::setCamera(Camera* camera)
 {
     m_camera = camera;
+
+    // Init windows size for camera
+    m_camera->setWindowSize(m_windowSettings->width, m_windowSettings->height);
 }
 
 void Window::mouseCallback(GLFWwindow* window, double xposIn, double yposIn)
@@ -131,6 +134,8 @@ void Window::framebufferSizeCallback(GLFWwindow* window, int width, int height)
     theWindow->m_windowSettings->width = width;
     theWindow->m_windowSettings->height = height;
 
+    theWindow->m_camera->setWindowSize(width, height);
+
     glViewport(0, 0, width, height);
 }
 
@@ -147,7 +152,7 @@ void Window::debugMode()
         glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
     else {
-        glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        //glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 }
 
