@@ -244,7 +244,8 @@ void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned i
 
     // Create physics object
     if (!state->modified->at(ptr)->physics) {
-        physics->addObject(state->modified->at(ptr)->transformations->orientation, position, ptr);
+        state->modified->at(ptr)->physicsPointer = physics->getObjectCount();
+        physics->addObject(state->modified->at(ptr)->transformations->orientation, position, state->modified->at(ptr)->physicsPointer, state->mass);
         std::cout << "Added new physics object!" << std::endl;
         state->modified->at(ptr)->physics = true;
     }

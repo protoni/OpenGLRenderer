@@ -50,6 +50,13 @@ Repeater::Repeater(Shader* shader, bool instanced, bool isLight, bool useNormals
     m_state = new RepeaterState();
     m_state->position = new MeshPointerPosition();
 
+    // Init modified state
+    ModifiedMesh* modifiedMesh = new ModifiedMesh();
+    MeshPointerPosition* meshPointerPosition = new MeshPointerPosition();
+    MeshTransformations* meshTransformations = new MeshTransformations();
+    modifiedMesh->transformations = meshTransformations;
+    m_state->modified->push_back(modifiedMesh);
+
     // Set initial instancing state
     m_state->instanced = instanced;
 
@@ -247,7 +254,11 @@ void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker)
 
         // If count has reduces, clear all objects and re-create them
         if (getObjCount() < m_oldObjectCount) {
-            physics->deleteObjects();
+            
+            // Clear all physics objects that are part of this repeater instance
+            for (int i = 0; i < m_state->modified->size(); i++) {
+                physics->deleteObject(m_state->modified->at(i)->physicsPointer);
+            }
         }
     }
 
@@ -288,30 +299,32 @@ void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker)
                         m_state->modified->at(ptr)->transformations->orientation,
                         m_state->modified->at(ptr)->transformations->size,
                         position,
-                        ptr
+                        m_state->modified->at(ptr)->physicsPointer
                     );
-                    std::cout << "Updated physics object: " << ptr << std::endl;
+                    std::cout << "Updated physics object: " << m_state->modified->at(ptr)->physicsPointer << std::endl;
 
                 }
 
                 glm::vec3 simulatedPos;
                 glm::quat simulatedRotation;
-                if (physics->getObjectPosition(simulatedPos, simulatedRotation, ptr)) {
+                if (m_state->mass > 0.0) { // Only apply simulated transformation in cases when the mesh has mass, otherwise it is a static object.
+                    if (physics->getObjectPosition(simulatedPos, simulatedRotation, m_state->modified->at(ptr)->physicsPointer)) {
 
-                    // Apply position
-                    m_state->modified->at(ptr)->transformations->position = simulatedPos;
-                    m_state->modified->at(ptr)->simulated = true;
-                    //m_state->modified->at(ptr)->transformations->xOffset = simulatedPos.x;
-                    //m_state->modified->at(ptr)->transformations->yOffset = simulatedPos.y;
-                    //m_state->modified->at(ptr)->transformations->zOffset = simulatedPos.z;
+                        // Apply position
+                        m_state->modified->at(ptr)->transformations->position = simulatedPos;
+                        m_state->modified->at(ptr)->simulated = true;
+                        //m_state->modified->at(ptr)->transformations->xOffset = simulatedPos.x;
+                        //m_state->modified->at(ptr)->transformations->yOffset = simulatedPos.y;
+                        //m_state->modified->at(ptr)->transformations->zOffset = simulatedPos.z;
 
-                    // Apply rotation
-                    //m_state->modified->at(ptr)->transformations->scaleX = simulatedRotation.x;
-                    //m_state->modified->at(ptr)->transformations->scaleY = simulatedRotation.y;
-                    //m_state->modified->at(ptr)->transformations->scaleZ = simulatedRotation.z;
-                    //m_state->modified->at(ptr)->transformations->angle = simulatedRotation.w;
+                        // Apply rotation
+                        //m_state->modified->at(ptr)->transformations->scaleX = simulatedRotation.x;
+                        //m_state->modified->at(ptr)->transformations->scaleY = simulatedRotation.y;
+                        //m_state->modified->at(ptr)->transformations->scaleZ = simulatedRotation.z;
+                        //m_state->modified->at(ptr)->transformations->angle = simulatedRotation.w;
 
-                    //std::cout << "rigid body #" << ptr << " x: " << simulatedRotation.x << ", y: " << simulatedRotation.y << ", z: " << simulatedRotation.z << ", w: " <<simulatedRotation.z << std::endl;
+                        //std::cout << "rigid body #" << ptr << " x: " << simulatedRotation.x << ", y: " << simulatedRotation.y << ", z: " << simulatedRotation.z << ", w: " <<simulatedRotation.z << std::endl;
+                    }
                 }
 
                 render(x, y, z, m_state, ptr, physics, m_cleared, picker);

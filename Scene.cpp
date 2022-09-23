@@ -43,6 +43,9 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
 
     // Initiate physics
     m_physics = new Physics();
+
+    // Create a physical ground plane and a pointlight for testing
+    createDefaultScene();
 }
 
 Scene::~Scene()
@@ -145,6 +148,7 @@ void Scene::addMeshObject(Repeater* mesh, MeshType type)
     case CubeType:
         object->name = std::string("Cube_") + std::to_string(m_meshList->size());
         object->lightsEnabled = true;
+        object->mesh->getState()->mass = 1.0;
         break;
     case CustomType:
         object->name = std::string("Custom_") + std::to_string(m_meshList->size());
@@ -363,6 +367,43 @@ bool Scene::getPhysicsDebugMode()
 void Scene::setPhysicsDebugMode(bool state)
 {
     m_physics->setDebugModeOn(state);
+}
+
+void Scene::addGround()
+{
+    addPlane();
+    RepeaterState* state = m_meshList->at(m_meshList->size() - 1)->mesh->getState();
+
+    // Set size
+    state->columnCount = 10;
+    state->rowCount = 10;
+
+    // Set position
+    state->transformations->xOffset = -1.0f;
+    state->transformations->yOffset = -1.0f;
+    state->transformations->zOffset = -1.0f;
+
+    // Set material
+    delete m_meshList->at(m_meshList->size() - 1)->material;
+    m_meshList->at(m_meshList->size() - 1)->material = new MaterialEmerald();
+
+    // Apply changes
+    m_meshList->at(m_meshList->size() - 1)->mesh->update();
+}
+
+void Scene::createDefaultScene()
+{
+    addGround();
+    addPointLight();
+
+    // Adjust light position
+    RepeaterState* state = m_meshList->at(m_meshList->size() - 1)->mesh->getState();
+    state->transformations->xOffset = 1.0f;
+    state->transformations->yOffset = 1.0f;
+    state->transformations->zOffset = 1.0f;
+
+    // Apply changes
+    m_meshList->at(m_meshList->size() - 1)->mesh->update();
 }
 
 void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)

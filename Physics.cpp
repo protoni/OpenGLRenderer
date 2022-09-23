@@ -108,7 +108,7 @@ bool Physics::hasHit(glm::vec3& ray_origin, glm::vec3& ray_end)
     return false;
 }
 
-bool Physics::addObject(glm::quat& orientation, glm::vec3& position, int ptr)
+bool Physics::addObject(glm::quat& orientation, glm::vec3& position, int ptr, float mass)
 {
     if (ptr != m_rigidBodies.size()) {
         return false;
@@ -122,7 +122,7 @@ bool Physics::addObject(glm::quat& orientation, glm::vec3& position, int ptr)
 
     // Set physics info
     btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
-        1.0,                  // mass, in kg. 0 -> Static object, will never move.
+        mass,                  // mass, in kg. 0 -> Static object, will never move.
         motionstate,
         m_boxCollisionShape,  // collision shape of body
         btVector3(0, 0, 0)    // local inertia
@@ -179,8 +179,8 @@ void Physics::update(glm::mat4& projection, glm::mat4& view)
         m_dynamicsWorld->debugDrawWorld();
     }
 
-    m_dynamicsWorld->stepSimulation(1.f / 60.f, 100);
-
+    m_dynamicsWorld->stepSimulation(1.f / 60.f, 1000);
+    
     // Print positions
     //for (int i = 0; i < m_rigidBodies.size(); i++) {
     //    float x = m_rigidBodies.at(0)->getWorldTransform().getOrigin().x();
@@ -217,4 +217,12 @@ void Physics::deleteObjects()
         m_dynamicsWorld->removeRigidBody(m_rigidBodies.at(i));
     }
 }
+
+void Physics::deleteObject(int idx)
+{
+    if (idx < m_rigidBodies.size()) {
+        m_rigidBodies.erase(m_rigidBodies.begin() + idx, m_rigidBodies.end());
+    }
+}
+
 

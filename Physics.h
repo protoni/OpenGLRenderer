@@ -24,7 +24,7 @@ public:
     ~Physics();
 
     // Add new physics object
-    bool addObject(glm::quat& orientation, glm::vec3& position, int ptr);
+    bool addObject(glm::quat& orientation, glm::vec3& position, int ptr, float mass);
 
     // Has object got hit
     bool hasHit(glm::vec3& ray_origin, glm::vec3& ray_end);
@@ -49,6 +49,12 @@ public:
 
     // Get physics simulated position
     bool getObjectPosition(glm::vec3& pos, glm::quat& orientation, int ptr);
+
+    // Get rigid body count
+    int getObjectCount() { return m_rigidBodies.size(); }
+
+    // Clear physic objects with a given rigid body vector index
+    void deleteObject(int idx);
 
 private:
 

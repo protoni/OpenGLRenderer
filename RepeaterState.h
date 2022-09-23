@@ -102,13 +102,17 @@ struct ModifiedMesh
     // Is the mesh being simulated by physics engine currently
     bool simulated;
 
+    // What is the index of the vector in physics world
+    int physicsPointer;
+
     ModifiedMesh()
         : meshPointer(0)
         , transformations(nullptr)
         , deleted(false)
         , position(nullptr)
         , physics(false)
-        , simulated(false) {}
+        , simulated(false)
+        , physicsPointer(-1) {}
 };
 
 struct RepeaterState
@@ -139,6 +143,11 @@ struct RepeaterState
     // Has the repeater orientation state been updated
     bool orientationUpdated;
 
+    // Mass of the mesh. Used in physics engine.
+    float mass;
+
+    
+
     RepeaterState()
         : rowCount(1)
         , columnCount(1)
@@ -149,7 +158,8 @@ struct RepeaterState
         , modified(nullptr)
         , instanced(false)
         , countUpdated(false)
-        , orientationUpdated(false) {}
+        , orientationUpdated(false)
+        , mass(0.0) {}
 };
 
 #endif // #ifndef REPEATER_H

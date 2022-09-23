@@ -101,6 +101,12 @@ public:
     // Set physics debug mode state on/off
     void setPhysicsDebugMode(bool state);
 
+    // Add ground plane
+    void addGround();
+
+    // Build a default scene
+    void createDefaultScene();
+
 private:
 
     // Render a single mesh object
