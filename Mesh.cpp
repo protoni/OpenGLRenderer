@@ -299,14 +299,21 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int
             (state->modified->at(ptr)->transformations->paddingZ * zPos) +
             (state->transformations->zOffset + state->modified->at(ptr)->transformations->zOffset)
             );
+            
+        // If the mesh is being simulated by physics engine, apply those position values
+        if (state->modified->at(ptr)->simulated) {
+            x = state->modified->at(ptr)->transformations->position.x;
+            y = state->modified->at(ptr)->transformations->position.y;
+            z = state->modified->at(ptr)->transformations->position.z;
+        }
 
-            // Update mesh coordinates
-            state->modified->at(ptr)->transformations->xPos = x;
-            state->modified->at(ptr)->transformations->yPos = y;
-            state->modified->at(ptr)->transformations->zPos = z;
+        // Update mesh coordinates
+        state->modified->at(ptr)->transformations->xPos = x;
+        state->modified->at(ptr)->transformations->yPos = y;
+        state->modified->at(ptr)->transformations->zPos = z;
 
-            // Apply coordinates
-            model = glm::translate(model, glm::vec3(x, y, z));
+        // Apply coordinates
+        model = glm::translate(model, glm::vec3(x, y, z));
     }
     else { // Shouldn't execute. Modified state should always exist
 

@@ -24,7 +24,7 @@ public:
     ~Physics();
 
     // Add new physics object
-    bool addObject(glm::quat orientation, glm::vec3 position, int ptr);
+    bool addObject(glm::quat& orientation, glm::vec3& position, int ptr);
 
     // Has object got hit
     bool hasHit(glm::vec3& ray_origin, glm::vec3& ray_end);
@@ -33,7 +33,7 @@ public:
     void update(glm::mat4& projection, glm::mat4& view);
 
     // Update single physics object with index ptr ID
-    bool updateObject(glm::quat orientation, glm::vec3 size, glm::vec3 position, int ptr);
+    bool updateObject(glm::quat& orientation, glm::vec3& size, glm::vec3& position, int ptr);
 
     // Get the current debug state
     bool getDebugModeOn() { return m_debugMode; }
@@ -46,6 +46,9 @@ public:
 
     // Clear all physics objects
     void deleteObjects();
+
+    // Get physics simulated position
+    bool getObjectPosition(glm::vec3& pos, glm::quat& orientation, int ptr);
 
 private:
 

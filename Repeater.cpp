@@ -277,7 +277,7 @@ void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker)
                 if (m_state->orientationUpdated || m_physicsUpdateLimiter > 0) {
                 //if(m_physicsUpdateLimiter++ >= PHYSICS_UPDATE_LIMIT) {
                     if(m_physicsUpdateLimiter == 0)
-                        m_physicsUpdateLimiter = 2;
+                        m_physicsUpdateLimiter = PHYSICS_UPDATE_LIMIT;
                     glm::vec3 position = glm::vec3(
                         m_state->modified->at(ptr)->transformations->xPos,
                         m_state->modified->at(ptr)->transformations->yPos,
@@ -292,6 +292,26 @@ void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker)
                     );
                     std::cout << "Updated physics object: " << ptr << std::endl;
 
+                }
+
+                glm::vec3 simulatedPos;
+                glm::quat simulatedRotation;
+                if (physics->getObjectPosition(simulatedPos, simulatedRotation, ptr)) {
+
+                    // Apply position
+                    m_state->modified->at(ptr)->transformations->position = simulatedPos;
+                    m_state->modified->at(ptr)->simulated = true;
+                    //m_state->modified->at(ptr)->transformations->xOffset = simulatedPos.x;
+                    //m_state->modified->at(ptr)->transformations->yOffset = simulatedPos.y;
+                    //m_state->modified->at(ptr)->transformations->zOffset = simulatedPos.z;
+
+                    // Apply rotation
+                    //m_state->modified->at(ptr)->transformations->scaleX = simulatedRotation.x;
+                    //m_state->modified->at(ptr)->transformations->scaleY = simulatedRotation.y;
+                    //m_state->modified->at(ptr)->transformations->scaleZ = simulatedRotation.z;
+                    //m_state->modified->at(ptr)->transformations->angle = simulatedRotation.w;
+
+                    //std::cout << "rigid body #" << ptr << " x: " << simulatedRotation.x << ", y: " << simulatedRotation.y << ", z: " << simulatedRotation.z << ", w: " <<simulatedRotation.z << std::endl;
                 }
 
                 render(x, y, z, m_state, ptr, physics, m_cleared, picker);

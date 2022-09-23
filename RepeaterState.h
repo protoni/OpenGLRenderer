@@ -51,6 +51,9 @@ struct MeshTransformations
     // Has the x, y, z coordinates already calculated once
     bool positionInitialized;
 
+    // Current position.
+    glm::vec3 position;
+
     // Mesh orientation
     glm::quat orientation;
 
@@ -76,6 +79,7 @@ struct MeshTransformations
         , zPos(0.0)
         , orientation(glm::quat())
         , size(glm::vec3(scaleX, scaleY, scaleZ))
+        , position(glm::vec3(0.0, 0.0, 0.0))
     {}
 };
 
@@ -95,12 +99,16 @@ struct ModifiedMesh
     // Has the physics been enabled on this object
     bool physics;
 
+    // Is the mesh being simulated by physics engine currently
+    bool simulated;
+
     ModifiedMesh()
         : meshPointer(0)
         , transformations(nullptr)
         , deleted(false)
         , position(nullptr)
-        , physics(false) {}
+        , physics(false)
+        , simulated(false) {}
 };
 
 struct RepeaterState

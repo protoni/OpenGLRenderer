@@ -68,14 +68,15 @@ bool Physics::init()
     m_solver = new btSequentialImpulseConstraintSolver;
     
     m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
-    m_dynamicsWorld->setGravity(btVector3(0, -9.81f, 0));
+    m_dynamicsWorld->setGravity(btVector3(0, -1.0f, 0)); // Default: -9.81f
 
     // Create a collision box
     m_boxCollisionShape = new btBoxShape(btVector3(0.125f, 0.125f, 0.125f));
     
     m_mydebugdrawer = new BulletDebugDrawer_DeprecatedOpenGL();
     m_dynamicsWorld->setDebugDrawer(m_mydebugdrawer);
-    m_dynamicsWorld->stepSimulation(1.f / 60.f);
+    
+    
 
     return true; // TODO: validate objects
 }
@@ -107,7 +108,7 @@ bool Physics::hasHit(glm::vec3& ray_origin, glm::vec3& ray_end)
     return false;
 }
 
-bool Physics::addObject(glm::quat orientation, glm::vec3 position, int ptr)
+bool Physics::addObject(glm::quat& orientation, glm::vec3& position, int ptr)
 {
     if (ptr != m_rigidBodies.size()) {
         return false;
@@ -121,7 +122,7 @@ bool Physics::addObject(glm::quat orientation, glm::vec3 position, int ptr)
 
     // Set physics info
     btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
-        0,                  // mass, in kg. 0 -> Static object, will never move.
+        1.0,                  // mass, in kg. 0 -> Static object, will never move.
         motionstate,
         m_boxCollisionShape,  // collision shape of body
         btVector3(0, 0, 0)    // local inertia
@@ -142,7 +143,7 @@ bool Physics::addObject(glm::quat orientation, glm::vec3 position, int ptr)
     return true; // TODO: validate
 }
 
-bool Physics::updateObject(glm::quat orientation, glm::vec3 size, glm::vec3 position, int ptr)
+bool Physics::updateObject(glm::quat& orientation, glm::vec3& size, glm::vec3& position, int ptr)
 {
     bool ret = false;
 
@@ -177,6 +178,37 @@ void Physics::update(glm::mat4& projection, glm::mat4& view)
         // Draw debug view
         m_dynamicsWorld->debugDrawWorld();
     }
+
+    m_dynamicsWorld->stepSimulation(1.f / 60.f, 100);
+
+    // Print positions
+    //for (int i = 0; i < m_rigidBodies.size(); i++) {
+    //    float x = m_rigidBodies.at(0)->getWorldTransform().getOrigin().x();
+    //    float y = m_rigidBodies.at(0)->getWorldTransform().getOrigin().y();
+    //    float z = m_rigidBodies.at(0)->getWorldTransform().getOrigin().z();
+    //    //std::cout << "rigid body #" << i << " x: " << x << ", y: " << y << ", z: " << z << std::endl;
+    //}
+}
+
+bool Physics::getObjectPosition(glm::vec3& pos, glm::quat& orientation, int ptr)
+{
+    if (ptr >= m_rigidBodies.size() || ptr < 0) {
+        std::cout << "Failed to get physics object position! Invalid index: " << ptr << std::endl;
+        return false;
+    }
+
+    // Apply position
+    pos.x = m_rigidBodies.at(ptr)->getWorldTransform().getOrigin().x();
+    pos.y = m_rigidBodies.at(ptr)->getWorldTransform().getOrigin().y();
+    pos.z = m_rigidBodies.at(ptr)->getWorldTransform().getOrigin().z();
+
+    // Apply rotation
+    orientation.x = m_rigidBodies.at(ptr)->getWorldTransform().getRotation().x();
+    orientation.y = m_rigidBodies.at(ptr)->getWorldTransform().getRotation().y();
+    orientation.z = m_rigidBodies.at(ptr)->getWorldTransform().getRotation().z();
+    orientation.w = m_rigidBodies.at(ptr)->getWorldTransform().getRotation().w();
+
+    return true;
 }
 
 void Physics::deleteObjects()
