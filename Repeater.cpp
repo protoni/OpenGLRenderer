@@ -222,8 +222,11 @@ void Repeater::update()
         createBuffer();
 }
 
-void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker)
+void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker, Camera* camera)
 {
+    // Limit amount of meshes that can be mouse-overed
+    bool mouseOvered = false;
+
     if (getIsLight())
         activateLight();
     else
@@ -299,7 +302,8 @@ void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker)
                         m_state->modified->at(ptr)->transformations->orientation,
                         m_state->modified->at(ptr)->transformations->size,
                         position,
-                        m_state->modified->at(ptr)->physicsPointer
+                        m_state->modified->at(ptr)->physicsPointer,
+                        m_state->mass
                     );
                     std::cout << "Updated physics object: " << m_state->modified->at(ptr)->physicsPointer << std::endl;
 
@@ -327,7 +331,7 @@ void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker)
                     }
                 }
 
-                render(x, y, z, m_state, ptr, physics, m_cleared, picker);
+                renderNonInstanced(x, y, z, m_state, ptr, physics, m_cleared, picker, mouseOvered, camera);
 
                 ptr++;
             }
@@ -340,11 +344,87 @@ void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker)
     m_state->countUpdated = false;
     m_state->orientationUpdated = false;
     m_physicsUpdateLimiter--;
+    m_mouseOveredPos = glm::vec3(0);
 
     // All objects should have re-created their physics so clear the flag
     m_cleared = false;
 
     deactivate();
+}
+
+void Repeater::renderNonInstanced(
+    int xPos, int yPos, int zPos,
+    RepeaterState* state,
+    unsigned int ptr,
+    Physics* physics,
+    bool& cleared,
+    MousePicker* picker,
+    bool& mouseOvered,
+    Camera* camera
+)
+{
+    if (xPos < 1)
+        xPos = 1;
+    if (yPos < 1)
+        yPos = 1;
+    if (zPos < 1)
+        zPos = 1;
+
+    glm::mat4 model = *getMesh(xPos, yPos, zPos, state, ptr);
+
+    // Check if mouse interacts with the mesh
+    if (!mouseOvered && picker->testRayIntersection(model)) {
+        /* Disable for now ( Mouse picking depth testing )
+        // Currently mouse-overed mesh position
+        glm::vec3 objectPosition = glm::vec3(
+            state->modified->at(ptr)->transformations->xPos,
+            state->modified->at(ptr)->transformations->yPos,
+            state->modified->at(ptr)->transformations->zPos
+        );
+
+        if (glm::length(camera->Position - objectPosition) < glm::length(camera->Position - m_mouseOveredPos)) {
+            m_mouseOveredPos = objectPosition;
+            m_shader->setBool("selectedNonInstanced", true);
+            mouseOvered = true;
+        }
+        else {
+            //std::cout << "m_mouseOveredPos length: " << m_mouseOveredPos.length << std::endl;
+            //std::cout << "camera->Position - objectPosition).length: " << glm::length(camera->Position - objectPosition) << std::endl;
+            //std::cout << "camera->Position - m_mouseOveredPos).length: " << glm::length(camera->Position - m_mouseOveredPos) << std::endl;
+            m_shader->setBool("selectedNonInstanced", false);
+        }
+        */
+        m_shader->setBool("selectedNonInstanced", true);
+        mouseOvered = true;
+    }
+    else {
+        m_shader->setBool("selectedNonInstanced", false);
+    }
+
+    //glm::quat orientation = state->modified->at(ptr)->transformations->orientation;
+    //glm::quat orientation = glm::normalize(glm::vec3(360, 0, 0));
+    glm::vec3 position = glm::vec3(
+        state->modified->at(ptr)->transformations->xPos,
+        state->modified->at(ptr)->transformations->yPos,
+        state->modified->at(ptr)->transformations->zPos
+    );
+
+    // Mark all physics enabled object to be re-created
+    if (cleared && state->modified->at(ptr)->physics) {
+        state->modified->at(ptr)->physics = false;
+    }
+
+    // Create physics object
+    if (!state->modified->at(ptr)->physics) {
+        state->modified->at(ptr)->physicsPointer = physics->getObjectCount();
+        physics->addObject(state->modified->at(ptr)->transformations->orientation, position, state->modified->at(ptr)->physicsPointer, state->mass);
+        std::cout << "Added new physics object!" << std::endl;
+        state->modified->at(ptr)->physics = true;
+    }
+
+    m_shader->setMat4("model", model);
+
+    glDrawElements(GL_TRIANGLES, m_indiceCount, GL_UNSIGNED_INT, 0);
 }
 
 void Repeater::drawInstanced()
@@ -363,12 +443,29 @@ void Repeater::setInstanced(bool instanced)
     m_state->instanced = instanced;
 }
         
-void Repeater::draw(Physics* physics, MousePicker* picker)
+void Repeater::draw(Physics* physics, MousePicker* picker, Camera* camera)
 {
     if (m_state->instanced)
         drawInstanced();
     else {
-        drawNonInstanced(physics, picker);
+        drawNonInstanced(physics, picker, camera);
     }
 }
 
+void Repeater::updateMeshPhysics(Physics* physics)
+{
+    for (int i = 0; i < m_state->modified->size(); i++) {
+        glm::vec3 position = glm::vec3(
+            m_state->modified->at(i)->transformations->xPos,
+            m_state->modified->at(i)->transformations->yPos,
+            m_state->modified->at(i)->transformations->zPos
+        );
+        physics->updateObject(
+            m_state->modified->at(i)->transformations->orientation,
+            m_state->modified->at(i)->transformations->size,
+            position,
+            m_state->modified->at(i)->physicsPointer,
+            m_state->mass
+        );
+    }
+}

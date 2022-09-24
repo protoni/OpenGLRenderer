@@ -51,6 +51,7 @@ private:
     // Ray
     glm::vec3 m_ray_origin;
     glm::vec3 m_ray_direction;
+
 };
 
 #endif // MOUSE_PICKER_H

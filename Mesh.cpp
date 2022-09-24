@@ -209,7 +209,7 @@ void Mesh::setShader(Shader* shader)
     m_shader = shader;
 }
 
-void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned int ptr, Physics* physics, bool& cleared, MousePicker* picker)
+void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned int ptr, Physics* physics, bool& cleared, MousePicker* picker, bool& mouseOvered)
 {
     if (xPos < 1)
         xPos = 1;
@@ -221,9 +221,10 @@ void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned i
     glm::mat4 model = *getMesh(xPos, yPos, zPos, state, ptr);
 
     // Check if mouse interacts with the mesh
-    if (picker->testRayIntersection(model)) {
+    if (!mouseOvered && picker->testRayIntersection(model)) {
         //std::cout << "Intersect ptr: " << ptr << std::endl;
         m_shader->setBool("selectedNonInstanced", true);
+        mouseOvered = true;
     }
     else {
         m_shader->setBool("selectedNonInstanced", false);

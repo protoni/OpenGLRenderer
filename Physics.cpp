@@ -143,7 +143,7 @@ bool Physics::addObject(glm::quat& orientation, glm::vec3& position, int ptr, fl
     return true; // TODO: validate
 }
 
-bool Physics::updateObject(glm::quat& orientation, glm::vec3& size, glm::vec3& position, int ptr)
+bool Physics::updateObject(glm::quat& orientation, glm::vec3& size, glm::vec3& position, int ptr, float mass)
 {
     bool ret = false;
 
@@ -157,7 +157,10 @@ bool Physics::updateObject(glm::quat& orientation, glm::vec3& size, glm::vec3& p
 
         // Update size
         m_boxCollisionShape->setLocalScaling(btVector3(size.x * 4, size.y * 4, size.z * 4)); // TODO: why * 4 ?
-    
+        
+        // Update mass
+        m_rigidBodies.at(ptr)->setMassProps(mass, btVector3(0, 0, 0));
+
         // Update dynamics world
         m_dynamicsWorld->updateAabbs();
     }

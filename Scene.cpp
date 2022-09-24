@@ -148,7 +148,6 @@ void Scene::addMeshObject(Repeater* mesh, MeshType type)
     case CubeType:
         object->name = std::string("Cube_") + std::to_string(m_meshList->size());
         object->lightsEnabled = true;
-        object->mesh->getState()->mass = 1.0;
         break;
     case CustomType:
         object->name = std::string("Custom_") + std::to_string(m_meshList->size());
@@ -195,6 +194,13 @@ void Scene::addCube()
 {
     Cube* cube = new Cube(m_lightMeshShader, false, false, true);
     addMeshObject(cube, MeshType::CubeType);
+}
+
+void Scene::addPhysicsCube()
+{
+    Cube* cube = new Cube(m_lightMeshShader, false, false, true);
+    addMeshObject(cube, MeshType::CubeType);
+    m_meshList->at(m_meshList->size() - 1)->mesh->getState()->mass = 1.0;
 }
 
 void Scene::addPlane()
@@ -375,8 +381,8 @@ void Scene::addGround()
     RepeaterState* state = m_meshList->at(m_meshList->size() - 1)->mesh->getState();
 
     // Set size
-    state->columnCount = 10;
-    state->rowCount = 10;
+    state->columnCount = 20;
+    state->rowCount = 20;
 
     // Set position
     state->transformations->xOffset = -1.0f;
@@ -404,6 +410,11 @@ void Scene::createDefaultScene()
 
     // Apply changes
     m_meshList->at(m_meshList->size() - 1)->mesh->update();
+}
+
+void Scene::updateObjectPhysics(int selected)
+{
+    m_meshList->at(selected)->mesh->updateMeshPhysics(m_physics);
 }
 
 void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)
@@ -522,7 +533,7 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         }
     }
 
-    m_meshList->at(idx)->mesh->draw(m_physics, m_mousePicker);
+    m_meshList->at(idx)->mesh->draw(m_physics, m_mousePicker, m_camera);
 }
 
 void Scene::renderScene()

@@ -93,7 +93,6 @@ int main(int argc, char** argv)
 
     // Enable depth buffer
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
 
     // Enable blending ( transparency )
     glEnable(GL_BLEND);

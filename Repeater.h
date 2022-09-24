@@ -34,9 +34,9 @@ public:
 
     ~Repeater();
 
-    void drawNonInstanced(Physics* physics, MousePicker* picker);
+    void drawNonInstanced(Physics* physics, MousePicker* picker, Camera* camera);
     void drawInstanced();
-    void draw(Physics* physics, MousePicker* picker);
+    void draw(Physics* physics, MousePicker* picker, Camera* camera);
     void setIndiceCount(unsigned int count);
 
     void update();
@@ -49,7 +49,23 @@ public:
     // Print information about mesh state
     void printState();
 
+    // Update physics of all meshes inside the repeater object
+    void updateMeshPhysics(Physics* physics);
+
 private:
+
+    // Render all non instanced meshes
+    void renderNonInstanced(
+        int xPos, int yPos, int zPos,
+        RepeaterState* state,
+        unsigned int ptr,
+        Physics* physics,
+        bool& cleared,
+        MousePicker* picker,
+        bool& mouseOvered,
+        Camera* camera
+    );
+
     bool meshDeleted(int meshPointer);
 
     Shader* m_shader;
@@ -70,6 +86,10 @@ private:
 
     // Physics limiter
     int m_physicsUpdateLimiter = 0;
+
+    // Store the currently mouse-overed meshes Z-axis value
+    float m_mouseOveredZ = 0.0f;
+    glm::vec3 m_mouseOveredPos = glm::vec3(0);
 };
 
 #endif // REPEATER_H

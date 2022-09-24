@@ -23,7 +23,7 @@ void Model::RenderModel()
         }
 
         //meshList[i]->RenderMesh();
-        meshList[i]->drawNonInstanced(nullptr, nullptr); // TODO: fix parameter
+        meshList[i]->drawNonInstanced(nullptr, nullptr, nullptr); // TODO: fix parameters
         
         Texture::deactivate();
     }

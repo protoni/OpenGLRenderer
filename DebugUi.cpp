@@ -310,6 +310,9 @@ bool DebugUi::objectSettings(int selected)
         m_planeState->transformations->yRotation = state->transformations->yRotation;
         m_planeState->transformations->zRotation = state->transformations->zRotation;
 
+        // Physics
+        m_planeState->mass = state->mass;
+
         // Set current values and draw settings
         ImGui::Checkbox("Instanced", &m_planeState->instanced);
         if (ImGui::CollapsingHeader("Repeater")) {
@@ -317,6 +320,9 @@ bool DebugUi::objectSettings(int selected)
             ImGui::SliderInt("Rows", &m_planeState->rowCount, 1, 100);
             ImGui::SliderInt("Stacks", &m_planeState->stackCount, 1, 100);
         }
+
+        // Physics
+        ImGui::SliderFloat("Mass", &m_planeState->mass, 0.1f, 10.0f);
 
         //ImGui::Separator();
         if (ImGui::CollapsingHeader("Scale")) {
@@ -352,6 +358,14 @@ bool DebugUi::objectSettings(int selected)
             if (m_planeState->instanced != state->instanced) {
                 state->instanced = m_planeState->instanced;
                 m_scene->updateMeshShader(m_planeState->instanced, selected);
+                m_debounceCounter = 0;
+            }
+
+            // Check physics settings
+            if (m_planeState->mass != state->mass) {
+                std::cout << "Mass changed!" << std::endl;
+                state->mass = m_planeState->mass;
+                m_scene->updateObjectPhysics(selected);
                 m_debounceCounter = 0;
             }
 
@@ -434,6 +448,12 @@ void DebugUi::objectLayout(bool* p_open)
             m_scene->addCube();
 
         ImGui::SameLine();
+
+        if (ImGui::Button("Add Physics Cube", ImVec2(100, 0)))
+            m_scene->addPhysicsCube();
+
+        ImGui::SameLine();
+
 
         if (ImGui::Button("Add Plane", ImVec2(100, 0)))
             m_scene->addPlane();

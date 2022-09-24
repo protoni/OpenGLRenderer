@@ -49,6 +49,7 @@ public:
 
     // Add different type of objects to the screen
     void addCube();
+    void addPhysicsCube();
     void addPlane();
     void addTriangle();
     void addSphere();
@@ -106,6 +107,9 @@ public:
 
     // Build a default scene
     void createDefaultScene();
+
+    // Update the physics of all of the meshes inside an repeater object
+    void updateObjectPhysics(int selected);
 
 private:
 
