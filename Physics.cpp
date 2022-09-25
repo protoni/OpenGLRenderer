@@ -10,11 +10,11 @@ Physics::Physics()
 Physics::~Physics()
 {
     // Clean rigid bodies before dynamic world
-    for (int i = 0; i < m_rigidBodies.size(); i++) {
-        m_dynamicsWorld->removeRigidBody(m_rigidBodies.at(i));
-        delete m_rigidBodies.at(i)->getMotionState();
-        delete m_rigidBodies.at(i);
-    }
+    //for (int i = 0; i < m_rigidBodies.size(); i++) {
+    //    m_dynamicsWorld->removeRigidBody(m_rigidBodies.at(i));
+    //    delete m_rigidBodies.at(i)->getMotionState();
+    //    delete m_rigidBodies.at(i);
+    //}
 
     if (m_collisionConfiguration) {
         delete m_collisionConfiguration;
@@ -76,8 +76,6 @@ bool Physics::init()
     m_mydebugdrawer = new BulletDebugDrawer_DeprecatedOpenGL();
     m_dynamicsWorld->setDebugDrawer(m_mydebugdrawer);
     
-    
-
     return true; // TODO: validate objects
 }
 
@@ -91,9 +89,6 @@ bool Physics::isMouseOvered(int ptr)
 
 bool Physics::hasHit(glm::vec3& ray_origin, glm::vec3& ray_end)
 {
-    //std::cout << "ray_origin x: " << ray_origin.x << ", y: " << ray_origin.y << ", z: " << ray_origin.z << std::endl;
-    //std::cout << "ray_end x: " << ray_end.x << ", y: " << ray_end.y << ", z: " << ray_end.z << std::endl;
-
     btCollisionWorld::ClosestRayResultCallback RayCallback(btVector3(ray_origin.x, ray_origin.y, ray_origin.z), btVector3(ray_end.x, ray_end.y, ray_end.z));
     m_dynamicsWorld->rayTest(btVector3(ray_origin.x, ray_origin.y, ray_origin.z), btVector3(ray_end.x, ray_end.y, ray_end.z), RayCallback);
 
@@ -108,21 +103,30 @@ bool Physics::hasHit(glm::vec3& ray_origin, glm::vec3& ray_end)
     return false;
 }
 
-bool Physics::addObject(glm::quat& orientation, glm::vec3& position, int ptr, float mass)
+bool Physics::addObject(RepeaterState* state, int ptr)
 {
-    if (ptr != m_rigidBodies.size()) {
+    if (state->modified->at(ptr)->physicsPointer != state->physicsObjects->size()) {
+        std::cout << "Physics object exists already!" << std::endl;
         return false;
     }
 
     // Create new motion state
     btDefaultMotionState* motionstate = new btDefaultMotionState(btTransform(
-        btQuaternion(orientation.x, orientation.y, orientation.z, orientation.w),
-        btVector3(position.x, position.y, position.z)
+        btQuaternion(
+            state->modified->at(ptr)->transformations->orientation.x,
+            state->modified->at(ptr)->transformations->orientation.y,
+            state->modified->at(ptr)->transformations->orientation.z,
+            state->modified->at(ptr)->transformations->orientation.w
+        ),
+        btVector3(
+            state->modified->at(ptr)->transformations->xPos,
+            state->modified->at(ptr)->transformations->yPos,
+            state->modified->at(ptr)->transformations->zPos)
     ));
 
     // Set physics info
     btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
-        mass,                  // mass, in kg. 0 -> Static object, will never move.
+        state->mass,                  // mass, in kg. 0 -> Static object, will never move.
         motionstate,
         m_boxCollisionShape,  // collision shape of body
         btVector3(0, 0, 0)    // local inertia
@@ -132,34 +136,47 @@ bool Physics::addObject(glm::quat& orientation, glm::vec3& position, int ptr, fl
     btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
 
     // Add rigid body to physics object list
-    m_rigidBodies.push_back(rigidBody);
+    state->physicsObjects->push_back(rigidBody);
 
     // Add rigid body to the physics world
     m_dynamicsWorld->addRigidBody(rigidBody);
 
     // Set repeater position as the object's ID // TODO: multiple repeater objects breaks this model
-    rigidBody->setUserPointer((void*)ptr);
+    rigidBody->setUserPointer((void*)state->modified->at(ptr)->physicsPointer);
 
     return true; // TODO: validate
 }
 
-bool Physics::updateObject(glm::quat& orientation, glm::vec3& size, glm::vec3& position, int ptr, float mass)
+bool Physics::updateObject(RepeaterState* state, int ptr)
 {
     bool ret = false;
 
-    if (ptr >= 0 && ptr < m_rigidBodies.size()) {
+    if (state->modified->at(ptr)->physicsPointer >= 0 && state->modified->at(ptr)->physicsPointer < state->physicsObjects->size()) {
         
         // Update position
-        m_rigidBodies.at(ptr)->proceedToTransform(btTransform(
-            btQuaternion(orientation.x, orientation.y, orientation.z, orientation.w),
-            btVector3(position.x, position.y, position.z)
+        state->physicsObjects->at(ptr)->proceedToTransform(btTransform(
+            btQuaternion(
+                state->modified->at(ptr)->transformations->orientation.x,
+                state->modified->at(ptr)->transformations->orientation.y,
+                state->modified->at(ptr)->transformations->orientation.z,
+                state->modified->at(ptr)->transformations->orientation.w
+            ),
+            btVector3(
+                state->modified->at(ptr)->transformations->xPos,
+                state->modified->at(ptr)->transformations->yPos,
+                state->modified->at(ptr)->transformations->zPos
+            )
         ));
 
         // Update size
-        m_boxCollisionShape->setLocalScaling(btVector3(size.x * 4, size.y * 4, size.z * 4)); // TODO: why * 4 ?
+        m_boxCollisionShape->setLocalScaling(btVector3(
+            state->modified->at(ptr)->transformations->size.x * 4,
+            state->modified->at(ptr)->transformations->size.y * 4,
+            state->modified->at(ptr)->transformations->size.z * 4
+        )); // TODO: why * 4 ?
         
         // Update mass
-        m_rigidBodies.at(ptr)->setMassProps(mass, btVector3(0, 0, 0));
+        state->physicsObjects->at(state->modified->at(ptr)->physicsPointer)->setMassProps(state->mass, btVector3(0, 0, 0));
 
         // Update dynamics world
         m_dynamicsWorld->updateAabbs();
@@ -183,49 +200,64 @@ void Physics::update(glm::mat4& projection, glm::mat4& view)
     }
 
     m_dynamicsWorld->stepSimulation(1.f / 60.f, 1000);
-    
-    // Print positions
-    //for (int i = 0; i < m_rigidBodies.size(); i++) {
-    //    float x = m_rigidBodies.at(0)->getWorldTransform().getOrigin().x();
-    //    float y = m_rigidBodies.at(0)->getWorldTransform().getOrigin().y();
-    //    float z = m_rigidBodies.at(0)->getWorldTransform().getOrigin().z();
-    //    //std::cout << "rigid body #" << i << " x: " << x << ", y: " << y << ", z: " << z << std::endl;
-    //}
 }
 
-bool Physics::getObjectPosition(glm::vec3& pos, glm::quat& orientation, int ptr)
+bool Physics::getObjectPosition(RepeaterState* state, int ptr)
 {
-    if (ptr >= m_rigidBodies.size() || ptr < 0) {
+    if (state->modified->at(ptr)->physicsPointer >= state->physicsObjects->size() || ptr < 0) {
         std::cout << "Failed to get physics object position! Invalid index: " << ptr << std::endl;
         return false;
     }
 
     // Apply position
-    pos.x = m_rigidBodies.at(ptr)->getWorldTransform().getOrigin().x();
-    pos.y = m_rigidBodies.at(ptr)->getWorldTransform().getOrigin().y();
-    pos.z = m_rigidBodies.at(ptr)->getWorldTransform().getOrigin().z();
+    state->modified->at(ptr)->transformations->position.x = 
+        state->physicsObjects->at(state->modified->at(ptr)->physicsPointer)->getWorldTransform().getOrigin().x();
+    state->modified->at(ptr)->transformations->position.y = 
+        state->physicsObjects->at(state->modified->at(ptr)->physicsPointer)->getWorldTransform().getOrigin().y();
+    state->modified->at(ptr)->transformations->position.z = 
+        state->physicsObjects->at(state->modified->at(ptr)->physicsPointer)->getWorldTransform().getOrigin().z();
+    state->modified->at(ptr)->simulated = true;
 
-    // Apply rotation
-    orientation.x = m_rigidBodies.at(ptr)->getWorldTransform().getRotation().x();
-    orientation.y = m_rigidBodies.at(ptr)->getWorldTransform().getRotation().y();
-    orientation.z = m_rigidBodies.at(ptr)->getWorldTransform().getRotation().z();
-    orientation.w = m_rigidBodies.at(ptr)->getWorldTransform().getRotation().w();
+    // Apply rotation // TODO: Fix. collider box rotation doesn't sync with actual mesh transformations
+    state->modified->at(ptr)->transformations->orientation.x = 
+        state->physicsObjects->at(state->modified->at(ptr)->physicsPointer)->getWorldTransform().getRotation().x();
+    state->modified->at(ptr)->transformations->orientation.y = 
+        state->physicsObjects->at(state->modified->at(ptr)->physicsPointer)->getWorldTransform().getRotation().y();
+    state->modified->at(ptr)->transformations->orientation.z = 
+        state->physicsObjects->at(state->modified->at(ptr)->physicsPointer)->getWorldTransform().getRotation().z();
+    state->modified->at(ptr)->transformations->orientation.w = 
+        state->physicsObjects->at(state->modified->at(ptr)->physicsPointer)->getWorldTransform().getRotation().w();
 
     return true;
 }
 
-void Physics::deleteObjects()
+void Physics::deleteObjects(RepeaterState* state)
 {
-    for (int i = 0; i < m_rigidBodies.size(); i++) {
-        m_dynamicsWorld->removeRigidBody(m_rigidBodies.at(i));
+    for (int i = 0; i < state->physicsObjects->size(); i++) {
+        m_dynamicsWorld->removeRigidBody(state->physicsObjects->at(i));
+        delete state->physicsObjects->at(i)->getMotionState();
+        delete state->physicsObjects->at(i);
+    }
+    state->physicsObjects->clear();
+}
+
+void Physics::deleteObject(RepeaterState* state, int idx)
+{
+    if (idx < state->physicsObjects->size()) {
+        m_dynamicsWorld->removeRigidBody(state->physicsObjects->at(idx));
+        delete state->physicsObjects->at(idx)->getMotionState();
+        delete state->physicsObjects->at(idx);
+        state->physicsObjects->erase(state->physicsObjects->begin() + idx, state->physicsObjects->end());
     }
 }
 
-void Physics::deleteObject(int idx)
+bool Physics::physicsObjectExists(RepeaterState* state, int ptr)
 {
-    if (idx < m_rigidBodies.size()) {
-        m_rigidBodies.erase(m_rigidBodies.begin() + idx, m_rigidBodies.end());
+    if (ptr >= 0 && ptr < state->physicsObjects->size()) {
+        return true;
     }
+
+    return false;
 }
 
 

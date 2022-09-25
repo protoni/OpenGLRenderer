@@ -34,6 +34,7 @@ Repeater::Repeater(
     m_state->position = new MeshPointerPosition();
     m_state->transformations = new MeshTransformations();
     m_state->modified = new std::vector<ModifiedMesh*>();
+    m_state->physicsObjects = new std::vector<btRigidBody*>();
 
     // Set initial instancing state
     m_state->instanced = instanced;
@@ -70,6 +71,17 @@ Repeater::Repeater(Shader* shader, bool instanced, bool isLight, bool useNormals
 Repeater::~Repeater()
 {
     std::cout << "Repeater destructor called!" << std::endl;
+
+    // Clear physics objects
+    m_physics->deleteObjects(m_state);
+    delete m_state->physicsObjects;
+    //for (int i = 0; i < m_state->physicsObjects->size(); i++) {
+    //    //m_dynamicsWorld->removeRigidBody(m_state->physicsObjects->at(i));
+    //    m_physics->deleteObject(m_state, m_state->modified->at(i)->physicsPointer);
+    //    delete m_state->physicsObjects->at(i)->getMotionState();
+    //    delete m_state->physicsObjects->at(i);
+    //}
+
     if(m_matrices)
         delete[] m_matrices;
 
@@ -173,13 +185,11 @@ void Repeater::createBuffer()
 
     m_oldObjectCount = getObjCount();
 
-    std::cout << "planes: " << (getObjCount()) << std::endl;
-
     glGenBuffers(1, &m_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
     glBufferData(GL_ARRAY_BUFFER, (getObjCount()) * sizeof(glm::mat4), &m_matrices[0], GL_STATIC_DRAW);
     
-    activate();
+   activate();
    glEnableVertexAttribArray(3);
    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
    glEnableVertexAttribArray(4);
@@ -236,8 +246,17 @@ void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker, Camera* c
 
     // Clear old mesh transformations if object count has changed
     if (m_oldObjectCount != getObjCount()) {
+
+        // Delete all physics objects that are part of this repeater instance
+        physics->deleteObjects(m_state);
+
         for (int i = 0; i < m_state->modified->size(); i++) {
             if (m_state->modified->at(i)) {
+
+                // Clear all physics objectstates
+                m_state->modified->at(i)->physics = false;
+                std::cout << "Cleared physics objects!" << std::endl;
+
                 if (m_state->modified->at(i)->position) {
                     delete m_state->modified->at(i)->position;
                     m_state->modified->at(i)->position = NULL;
@@ -252,17 +271,10 @@ void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker, Camera* c
                 }
             }
         }
-        m_state->modified->clear();
-        m_cleared = true;
 
-        // If count has reduces, clear all objects and re-create them
-        if (getObjCount() < m_oldObjectCount) {
-            
-            // Clear all physics objects that are part of this repeater instance
-            for (int i = 0; i < m_state->modified->size(); i++) {
-                physics->deleteObject(m_state->modified->at(i)->physicsPointer);
-            }
-        }
+        m_cleared = true;
+        m_state->physicsObjects->clear();
+        m_state->modified->clear();
     }
 
     for (int y = 0; y < m_state->stackCount; y++) {          // stacks  ( y-axis )
@@ -287,51 +299,39 @@ void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker, Camera* c
                     m_state->modified->push_back(modifiedMesh);
                 }
 
+
+                
+
+                renderNonInstanced(x, y, z, m_state, ptr, physics, m_cleared, picker, mouseOvered, camera);
+
+                // Create physics object
+                if (!m_state->modified->at(ptr)->physics) {
+                    if (!physics->physicsObjectExists(m_state, m_state->modified->at(ptr)->physicsPointer)) {
+                        m_state->modified->at(ptr)->physicsPointer = m_state->physicsObjects->size();//physics->getObjectCount();
+                        physics->addObject(m_state, ptr);
+                        m_state->modified->at(ptr)->physics = true;
+                    }
+                    else {
+                        std::cout << "Physics object already exists!" << std::endl;
+                    }
+                }
+
                 // Update all physics objects if the repeater state has been updated. TODO: Limit update time ?
                 if (m_state->orientationUpdated || m_physicsUpdateLimiter > 0) {
-                //if(m_physicsUpdateLimiter++ >= PHYSICS_UPDATE_LIMIT) {
-                    if(m_physicsUpdateLimiter == 0)
+                    if (m_physicsUpdateLimiter == 0)
                         m_physicsUpdateLimiter = PHYSICS_UPDATE_LIMIT;
-                    glm::vec3 position = glm::vec3(
-                        m_state->modified->at(ptr)->transformations->xPos,
-                        m_state->modified->at(ptr)->transformations->yPos,
-                        m_state->modified->at(ptr)->transformations->zPos
-                    );
 
-                    physics->updateObject(
-                        m_state->modified->at(ptr)->transformations->orientation,
-                        m_state->modified->at(ptr)->transformations->size,
-                        position,
-                        m_state->modified->at(ptr)->physicsPointer,
-                        m_state->mass
-                    );
+                    physics->updateObject(m_state, ptr);
                     std::cout << "Updated physics object: " << m_state->modified->at(ptr)->physicsPointer << std::endl;
 
                 }
 
-                glm::vec3 simulatedPos;
-                glm::quat simulatedRotation;
+                // Update simulated position
                 if (m_state->mass > 0.0) { // Only apply simulated transformation in cases when the mesh has mass, otherwise it is a static object.
-                    if (physics->getObjectPosition(simulatedPos, simulatedRotation, m_state->modified->at(ptr)->physicsPointer)) {
-
-                        // Apply position
-                        m_state->modified->at(ptr)->transformations->position = simulatedPos;
-                        m_state->modified->at(ptr)->simulated = true;
-                        //m_state->modified->at(ptr)->transformations->xOffset = simulatedPos.x;
-                        //m_state->modified->at(ptr)->transformations->yOffset = simulatedPos.y;
-                        //m_state->modified->at(ptr)->transformations->zOffset = simulatedPos.z;
-
-                        // Apply rotation
-                        //m_state->modified->at(ptr)->transformations->scaleX = simulatedRotation.x;
-                        //m_state->modified->at(ptr)->transformations->scaleY = simulatedRotation.y;
-                        //m_state->modified->at(ptr)->transformations->scaleZ = simulatedRotation.z;
-                        //m_state->modified->at(ptr)->transformations->angle = simulatedRotation.w;
-
-                        //std::cout << "rigid body #" << ptr << " x: " << simulatedRotation.x << ", y: " << simulatedRotation.y << ", z: " << simulatedRotation.z << ", w: " <<simulatedRotation.z << std::endl;
+                    if (!physics->getObjectPosition(m_state, ptr)) {
+                        std::cout << "Failed to apply simulated position!" << std::endl;
                     }
                 }
-
-                renderNonInstanced(x, y, z, m_state, ptr, physics, m_cleared, picker, mouseOvered, camera);
 
                 ptr++;
             }
@@ -403,24 +403,14 @@ void Repeater::renderNonInstanced(
 
     //glm::quat orientation = state->modified->at(ptr)->transformations->orientation;
     //glm::quat orientation = glm::normalize(glm::vec3(360, 0, 0));
-    glm::vec3 position = glm::vec3(
-        state->modified->at(ptr)->transformations->xPos,
-        state->modified->at(ptr)->transformations->yPos,
-        state->modified->at(ptr)->transformations->zPos
-    );
+
 
     // Mark all physics enabled object to be re-created
-    if (cleared && state->modified->at(ptr)->physics) {
-        state->modified->at(ptr)->physics = false;
-    }
+    //if (cleared && state->modified->at(ptr)->physics) {
+    //    state->modified->at(ptr)->physics = false;
+    //}
 
-    // Create physics object
-    if (!state->modified->at(ptr)->physics) {
-        state->modified->at(ptr)->physicsPointer = physics->getObjectCount();
-        physics->addObject(state->modified->at(ptr)->transformations->orientation, position, state->modified->at(ptr)->physicsPointer, state->mass);
-        std::cout << "Added new physics object!" << std::endl;
-        state->modified->at(ptr)->physics = true;
-    }
+    
 
     m_shader->setMat4("model", model);
 
@@ -445,6 +435,8 @@ void Repeater::setInstanced(bool instanced)
         
 void Repeater::draw(Physics* physics, MousePicker* picker, Camera* camera)
 {
+    m_physics = physics;
+
     if (m_state->instanced)
         drawInstanced();
     else {
@@ -455,17 +447,6 @@ void Repeater::draw(Physics* physics, MousePicker* picker, Camera* camera)
 void Repeater::updateMeshPhysics(Physics* physics)
 {
     for (int i = 0; i < m_state->modified->size(); i++) {
-        glm::vec3 position = glm::vec3(
-            m_state->modified->at(i)->transformations->xPos,
-            m_state->modified->at(i)->transformations->yPos,
-            m_state->modified->at(i)->transformations->zPos
-        );
-        physics->updateObject(
-            m_state->modified->at(i)->transformations->orientation,
-            m_state->modified->at(i)->transformations->size,
-            position,
-            m_state->modified->at(i)->physicsPointer,
-            m_state->mass
-        );
+        physics->updateObject(m_state, i);
     }
 }

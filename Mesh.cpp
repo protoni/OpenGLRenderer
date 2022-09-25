@@ -232,24 +232,14 @@ void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned i
 
     //glm::quat orientation = state->modified->at(ptr)->transformations->orientation;
     //glm::quat orientation = glm::normalize(glm::vec3(360, 0, 0));
-    glm::vec3 position = glm::vec3(
-        state->modified->at(ptr)->transformations->xPos,
-        state->modified->at(ptr)->transformations->yPos,
-        state->modified->at(ptr)->transformations->zPos
-    );
+    
 
     // Mark all physics enabled object to be re-created
-    if (cleared && state->modified->at(ptr)->physics) {
-        state->modified->at(ptr)->physics = false;
-    }
+    //if (cleared && state->modified->at(ptr)->physics) {
+    //    state->modified->at(ptr)->physics = false;
+    //}
 
-    // Create physics object
-    if (!state->modified->at(ptr)->physics) {
-        state->modified->at(ptr)->physicsPointer = physics->getObjectCount();
-        physics->addObject(state->modified->at(ptr)->transformations->orientation, position, state->modified->at(ptr)->physicsPointer, state->mass);
-        std::cout << "Added new physics object!" << std::endl;
-        state->modified->at(ptr)->physics = true;
-    }
+    
 
     //if (physics->isMouseOvered(ptr))
     //    m_shader->setBool("selectedNonInstanced", true);

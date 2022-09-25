@@ -4,6 +4,7 @@
 #include <vector>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include "btBulletDynamicsCommon.h"
 
 struct MeshPointerPosition
 {
@@ -131,6 +132,9 @@ struct RepeaterState
     // Modified meshes
     std::vector<ModifiedMesh*>* modified;
 
+    // Store all physics objects here
+    std::vector<btRigidBody*>* physicsObjects;
+
     // Currently selected mesh positions
     MeshPointerPosition* position;
 
@@ -146,8 +150,6 @@ struct RepeaterState
     // Mass of the mesh. Used in physics engine.
     float mass;
 
-    
-
     RepeaterState()
         : rowCount(1)
         , columnCount(1)
@@ -156,6 +158,7 @@ struct RepeaterState
         , position(nullptr)
         , transformations(nullptr)
         , modified(nullptr)
+        , physicsObjects(nullptr)
         , instanced(false)
         , countUpdated(false)
         , orientationUpdated(false)

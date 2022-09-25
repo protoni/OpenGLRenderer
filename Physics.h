@@ -4,6 +4,7 @@
 #include "btBulletDynamicsCommon.h"
 
 #include "PhysicsDebug.h"
+#include "RepeaterState.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -24,7 +25,7 @@ public:
     ~Physics();
 
     // Add new physics object
-    bool addObject(glm::quat& orientation, glm::vec3& position, int ptr, float mass);
+    bool addObject(RepeaterState* state, int ptr);
 
     // Has object got hit
     bool hasHit(glm::vec3& ray_origin, glm::vec3& ray_end);
@@ -33,7 +34,7 @@ public:
     void update(glm::mat4& projection, glm::mat4& view);
 
     // Update single physics object with index ptr ID
-    bool updateObject(glm::quat& orientation, glm::vec3& size, glm::vec3& position, int ptr, float mass);
+    bool updateObject(RepeaterState* state, int ptr);
 
     // Get the current debug state
     bool getDebugModeOn() { return m_debugMode; }
@@ -45,16 +46,17 @@ public:
     bool isMouseOvered(int ptr);
 
     // Clear all physics objects
-    void deleteObjects();
+    void deleteObjects(RepeaterState* state);
 
     // Get physics simulated position
-    bool getObjectPosition(glm::vec3& pos, glm::quat& orientation, int ptr);
-
-    // Get rigid body count
-    int getObjectCount() { return m_rigidBodies.size(); }
+    bool getObjectPosition(RepeaterState* state, int ptr);
 
     // Clear physic objects with a given rigid body vector index
-    void deleteObject(int idx);
+    void deleteObject(RepeaterState* state, int idx);
+
+    // Check if requested ptr already exists in rigid bodies list and return last index if not
+    bool physicsObjectExists(RepeaterState* state, int idx);
+
 
 private:
 
@@ -79,7 +81,7 @@ private:
     btCollisionShape* m_boxCollisionShape;
 
     // Store all physics objects here
-    std::vector<btRigidBody*> m_rigidBodies;
+    //std::vector<btRigidBody*> m_rigidBodies;
 
     // Debug drawer
     BulletDebugDrawer_DeprecatedOpenGL* m_mydebugdrawer;

@@ -70,6 +70,7 @@ private:
 
     Shader* m_shader;
     RepeaterState* m_state;
+    Physics* m_physics;
 
     unsigned int m_indiceCount;
     unsigned int m_buffer;
