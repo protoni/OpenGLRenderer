@@ -230,29 +230,6 @@ void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned i
         m_shader->setBool("selectedNonInstanced", false);
     }
 
-    //glm::quat orientation = state->modified->at(ptr)->transformations->orientation;
-    //glm::quat orientation = glm::normalize(glm::vec3(360, 0, 0));
-    
-
-    // Mark all physics enabled object to be re-created
-    //if (cleared && state->modified->at(ptr)->physics) {
-    //    state->modified->at(ptr)->physics = false;
-    //}
-
-    
-
-    //if (physics->isMouseOvered(ptr))
-    //    m_shader->setBool("selectedNonInstanced", true);
-    //else
-    //    m_shader->setBool("selectedNonInstanced", false);
-
-    //btDefaultMotionState* motionstate = new btDefaultMotionState(btTransform(
-    //    btQuaternion(orientation.x, orientation.y, orientation.z, orientation.w),
-    //    btVector3(xPos, yPos, zPos)
-    //));
-
-    
-
     m_shader->setMat4("model", model);
 
     glDrawElements(GL_TRIANGLES, m_indiceCount, GL_UNSIGNED_INT, 0);

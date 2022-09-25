@@ -253,15 +253,16 @@ void Scene::addSpotLight()
 
 void Scene::addModel()
 {
-    Model* model = new Model(m_lightMeshShader);
+    Model* model = new Model(m_lightMeshShader, m_physics, m_mousePicker, m_camera);
     model->LoadModel("Models/backpack/backpack.obj");
+    model->setMass(1.0f, false);
     MeshObject* object = new MeshObject();
     MaterialBase* material = new MaterialDefault();
     object->model = model;
     object->name = std::string("Model_") + std::to_string(m_meshList->size());
     object->type = MeshType::ModelType;
     object->material = material;
-
+    
     m_meshList->push_back(object);
 }
 

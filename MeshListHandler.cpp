@@ -275,10 +275,11 @@ bool MeshListHandler::updateObjectMesh(int idx)
     if (m_meshList->at(idx)->type == MeshType::ModelType) {
         m_meshList->at(idx)->model->update();
     }
-    else
+    else {
         m_meshList->at(idx)->mesh->update();
-
-    m_meshList->at(idx)->mesh->printState();
+        m_meshList->at(idx)->mesh->printState();
+    }
+    
 
     std::cout << "Triangle count: " << getTriangleCount() << std::endl;
 

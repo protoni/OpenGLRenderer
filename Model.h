@@ -13,11 +13,14 @@
 #include "Shapes/ModelMesh.h"
 #include "Texture.h"
 #include "Shader.h"
+#include "Physics.h"
+#include "MousePicker.h"
+#include "Camera.h"
 
 class Model
 {
 public:
-    Model(Shader* shader);
+    Model(Shader* shader, Physics* physics, MousePicker* picker, Camera* camera);
 
     void LoadModel(const std::string& fileName);
     void RenderModel();
@@ -31,6 +34,10 @@ public:
     int getTriangleCount();
     void update();
 
+    // Set model mass for physics
+    // Parameter - separate: Loop through all the meshes and set their mass, otherwise set mass for only the first mesh
+    void setMass(float mass, bool separate);
+
 private:
 
     void LoadNode(aiNode* node, const aiScene* scene);
@@ -41,6 +48,10 @@ private:
     std::vector<Texture*> textureList;
     std::vector<unsigned int> meshToTex;
 
+    // Objects
     Shader* m_shader;
+    Physics* m_physics;
+    MousePicker* m_mousePicker;
+    Camera* m_camera;
 };
 

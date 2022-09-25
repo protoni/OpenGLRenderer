@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-Model::Model(Shader* shader) : m_shader(shader)
+Model::Model(Shader* shader, Physics* physics, MousePicker* picker, Camera* camera)
+    : m_shader(shader), m_physics(physics), m_mousePicker(picker), m_camera(camera)
 {
 }
 
@@ -23,7 +24,7 @@ void Model::RenderModel()
         }
 
         //meshList[i]->RenderMesh();
-        meshList[i]->drawNonInstanced(nullptr, nullptr, nullptr); // TODO: fix parameters
+        meshList[i]->drawNonInstanced(m_physics, m_mousePicker, m_camera); // TODO: fix parameters
         
         Texture::deactivate();
     }
@@ -200,5 +201,17 @@ void Model::update()
             meshList.at(i)->getState()->transformations->paddingX = meshList.at(0)->getState()->transformations->paddingX;
             meshList.at(i)->getState()->transformations->paddingY = meshList.at(0)->getState()->transformations->paddingY;
             meshList.at(i)->getState()->transformations->paddingZ = meshList.at(0)->getState()->transformations->paddingZ;
+    }
+}
+
+void Model::setMass(float mass, bool separate)
+{
+    if(!separate)
+        meshList.at(0)->getState()->mass = mass;
+    else {
+        for (size_t i = 0; i < meshList.size(); i++)
+        {
+            meshList.at(i)->getState()->mass = mass;
+        }
     }
 }

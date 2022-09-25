@@ -218,7 +218,7 @@ bool Physics::getObjectPosition(RepeaterState* state, int ptr)
         state->physicsObjects->at(state->modified->at(ptr)->physicsPointer)->getWorldTransform().getOrigin().z();
     state->modified->at(ptr)->simulated = true;
 
-    // Apply rotation // TODO: Fix. collider box rotation doesn't sync with actual mesh transformations
+    // Apply rotation // TODO: Fix. collider box rotation doesn't sync with actual mesh rotation
     state->modified->at(ptr)->transformations->orientation.x = 
         state->physicsObjects->at(state->modified->at(ptr)->physicsPointer)->getWorldTransform().getRotation().x();
     state->modified->at(ptr)->transformations->orientation.y = 

@@ -75,12 +75,6 @@ Repeater::~Repeater()
     // Clear physics objects
     m_physics->deleteObjects(m_state);
     delete m_state->physicsObjects;
-    //for (int i = 0; i < m_state->physicsObjects->size(); i++) {
-    //    //m_dynamicsWorld->removeRigidBody(m_state->physicsObjects->at(i));
-    //    m_physics->deleteObject(m_state, m_state->modified->at(i)->physicsPointer);
-    //    delete m_state->physicsObjects->at(i)->getMotionState();
-    //    delete m_state->physicsObjects->at(i);
-    //}
 
     if(m_matrices)
         delete[] m_matrices;
@@ -234,6 +228,8 @@ void Repeater::update()
 
 void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker, Camera* camera)
 {
+    m_physics = physics;
+
     // Limit amount of meshes that can be mouse-overed
     bool mouseOvered = false;
 
@@ -435,8 +431,7 @@ void Repeater::setInstanced(bool instanced)
         
 void Repeater::draw(Physics* physics, MousePicker* picker, Camera* camera)
 {
-    m_physics = physics;
-
+    
     if (m_state->instanced)
         drawInstanced();
     else {
