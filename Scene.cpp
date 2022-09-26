@@ -3,10 +3,6 @@
 #include "DebugMacros.h"
 
 
-//#include "imgui.h"
-//#include "imgui_impl_glfw.h"
-//#include "imgui_impl_opengl3.h"
-
 Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_camera(camera), m_screenSettings(screenSettings)
 {
@@ -17,7 +13,8 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_lightShader = new Shader("./shader.vs", "./lightShader.fs");
     m_lightMeshShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
     m_modelLoadingShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
-    
+    m_terrainShader = new Shader("./terrain.vs", "./terrain.fs");
+
     // Load texture
     m_container_texture = new Texture("container2.png", true);
     m_container_texture_specular = new Texture("container2_specular.png", true);
@@ -46,6 +43,10 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
 
     // Create a physical ground plane and a pointlight for testing
     createDefaultScene();
+
+    // Generate terrain
+    m_terrain = new Terrain(0, 0);
+    m_terrain2 = new Terrain(1, 0);
 }
 
 Scene::~Scene()
@@ -113,6 +114,16 @@ Scene::~Scene()
     if (m_physics) {
         delete m_physics;
         m_physics = NULL;
+    }
+    
+    if (m_terrain) {
+        delete m_terrain;
+        m_terrain = NULL;
+    }
+
+    if (m_terrainShader) {
+        delete m_terrainShader;
+        m_terrainShader = NULL;
     }
 }
 
@@ -565,7 +576,22 @@ void Scene::renderScene()
 
     // Update mouse-over
     m_mousePicker->update(projection, view);
-    //m_mousePicker->printRay();
+
+    // Draw terrain
+    m_terrainShader->use();
+    m_terrainShader->setMat4("projection", projection);
+    m_terrainShader->setMat4("view", view);
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0, 0.0, 0.0));
+    model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
+    m_container_texture->use(0);
+    m_terrainShader->setMat4("aInstanceMatrix", model);
+    m_terrain->render();
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(m_terrain2->getX() / 2, 0.0, m_terrain2->getZ() / 2));
+    model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
+    m_terrainShader->setMat4("aInstanceMatrix", model);
+    m_terrain2->render();
 
     // Draw all objects
     for (int i = 0; i < m_meshList->size(); i++) {
