@@ -25,7 +25,7 @@ bool Window::init()
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     // Create a window
@@ -69,11 +69,19 @@ bool Window::init()
 void Window::setCamera(Camera* camera)
 {
     m_camera = camera;
+
+    // Init windows size for camera
+    m_camera->setWindowSize(m_windowSettings->width, m_windowSettings->height);
 }
 
 void Window::mouseCallback(GLFWwindow* window, double xposIn, double yposIn)
 {
     Window* windowObject = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+    // Save old mouse position
+    windowObject->m_mousePosX = static_cast<float>(xposIn);
+    windowObject->m_mousePosY = static_cast<float>(yposIn);
+    windowObject->m_camera->setMousePos(static_cast<float>(xposIn), static_cast<float>(yposIn));
 
     if (windowObject->m_debugModeOn) {
         windowObject->m_firstMouse = true;
@@ -126,6 +134,8 @@ void Window::framebufferSizeCallback(GLFWwindow* window, int width, int height)
     theWindow->m_windowSettings->width = width;
     theWindow->m_windowSettings->height = height;
 
+    theWindow->m_camera->setWindowSize(width, height);
+
     glViewport(0, 0, width, height);
 }
 
@@ -161,4 +171,11 @@ void Window::setWireframeMode(bool state)
     else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
+}
+
+glm::vec2& Window::getCursorPosition()
+{
+    glm::vec2 pos = glm::vec2(m_mousePosX, m_mousePosY);
+
+    return pos;
 }

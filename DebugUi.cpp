@@ -310,6 +310,9 @@ bool DebugUi::objectSettings(int selected)
         m_planeState->transformations->yRotation = state->transformations->yRotation;
         m_planeState->transformations->zRotation = state->transformations->zRotation;
 
+        // Physics
+        m_planeState->mass = state->mass;
+
         // Set current values and draw settings
         ImGui::Checkbox("Instanced", &m_planeState->instanced);
         if (ImGui::CollapsingHeader("Repeater")) {
@@ -317,6 +320,9 @@ bool DebugUi::objectSettings(int selected)
             ImGui::SliderInt("Rows", &m_planeState->rowCount, 1, 100);
             ImGui::SliderInt("Stacks", &m_planeState->stackCount, 1, 100);
         }
+
+        // Physics
+        ImGui::SliderFloat("Mass", &m_planeState->mass, 0.1f, 10.0f);
 
         //ImGui::Separator();
         if (ImGui::CollapsingHeader("Scale")) {
@@ -355,10 +361,35 @@ bool DebugUi::objectSettings(int selected)
                 m_debounceCounter = 0;
             }
 
+            // Check physics settings
+            if (m_planeState->mass != state->mass) {
+                std::cout << "Mass changed!" << std::endl;
+                state->mass = m_planeState->mass;
+                m_scene->updateObjectPhysics(selected);
+                m_debounceCounter = 0;
+            }
+
             if (m_planeState->columnCount != state->columnCount ||
                 m_planeState->rowCount != state->rowCount ||
-                m_planeState->stackCount != state->stackCount ||
-                m_planeState->transformations->scaleX != state->transformations->scaleX ||
+                m_planeState->stackCount != state->stackCount) {
+
+                state->columnCount = m_planeState->columnCount;
+                state->rowCount = m_planeState->rowCount;
+                state->stackCount = m_planeState->stackCount;
+
+                MeshObjectChange change;
+                change.selectedMesh = selected;
+                change.action = MeshObjectChangeAction::UpdateObject;
+                m_scene->updateMeshObjects(change);
+                state->countUpdated = true;
+
+                m_debounceCounter = 0;
+            }
+
+            //if (m_planeState->columnCount != state->columnCount ||
+            //    m_planeState->rowCount != state->rowCount ||
+            //    m_planeState->stackCount != state->stackCount ||
+            if (m_planeState->transformations->scaleX != state->transformations->scaleX ||
                 m_planeState->transformations->scaleY != state->transformations->scaleY ||
                 m_planeState->transformations->scaleZ != state->transformations->scaleZ ||
                 m_planeState->transformations->paddingX != state->transformations->paddingX ||
@@ -372,9 +403,9 @@ bool DebugUi::objectSettings(int selected)
                 m_planeState->transformations->yRotation != state->transformations->yRotation ||
                 m_planeState->transformations->zRotation != state->transformations->zRotation
                 ) {
-                state->columnCount = m_planeState->columnCount;
-                state->rowCount = m_planeState->rowCount;
-                state->stackCount = m_planeState->stackCount;
+                //state->columnCount = m_planeState->columnCount;
+                //state->rowCount = m_planeState->rowCount;
+                //state->stackCount = m_planeState->stackCount;
                 state->transformations->scaleX = m_planeState->transformations->scaleX;
                 state->transformations->scaleY = m_planeState->transformations->scaleY;
                 state->transformations->scaleZ = m_planeState->transformations->scaleZ;
@@ -395,6 +426,7 @@ bool DebugUi::objectSettings(int selected)
                 change.selectedMesh = selected;
                 change.action = MeshObjectChangeAction::UpdateObject;
                 m_scene->updateMeshObjects(change);
+                state->orientationUpdated = true;
 
                 m_debounceCounter = 0;
             }
@@ -416,6 +448,12 @@ void DebugUi::objectLayout(bool* p_open)
             m_scene->addCube();
 
         ImGui::SameLine();
+
+        if (ImGui::Button("Add Physics Cube", ImVec2(100, 0)))
+            m_scene->addPhysicsCube();
+
+        ImGui::SameLine();
+
 
         if (ImGui::Button("Add Plane", ImVec2(100, 0)))
             m_scene->addPlane();
@@ -444,6 +482,9 @@ void DebugUi::objectLayout(bool* p_open)
 
         if (ImGui::Button("Add Model", ImVec2(100, 0)))
             m_scene->addModel();
+
+        if (ImGui::Button("Add Model 2", ImVec2(100, 0)))
+            m_scene->addModel2();
 
         //if (ImGui::Button("Add Reflect Cube", ImVec2(100, 0)))
         //    m_scene->addReflectingCube();
@@ -557,15 +598,24 @@ void DebugUi::showInfoWindow(bool* p_open)
     ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
     if (ImGui::Begin("Info window", p_open, window_flags))
     {
+        // Show mouse cursor screen position
         if (ImGui::IsMousePosValid())
-            ImGui::Text("Mouse Position: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
+            ImGui::Text("Mouse Position:        (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
         else
-            ImGui::Text("Mouse Position: <invalid>");
+            ImGui::Text("Mouse Position:        <invalid>");
 
-        ImGui::Text("FPS:             %.1f", m_fps);
-        ImGui::Text("Delta time:      %.3f ms", m_deltaTime);
-        ImGui::Text("Indices:         %d", m_scene->getTriangleCount());
-        ImGui::Text("Objects:         %d", m_scene->getObjectCount());
+        // Show mouse cursor world position
+        glm::vec3& cameraPos = m_scene->getCameraPosition();
+        ImGui::Text(
+            "Mouse World Position:  (%.1f,%.1f)",
+            (m_scene->getCursorWorldPos().x),
+            (m_scene->getCursorWorldPos().y)
+        );
+
+        ImGui::Text("FPS:                   %.1f", m_fps);
+        ImGui::Text("Delta time:            %.3f ms", m_deltaTime);
+        ImGui::Text("Indices:               %d", m_scene->getTriangleCount());
+        ImGui::Text("Objects:               %d", m_scene->getObjectCount());
     }
     ImGui::End();
 }
@@ -578,6 +628,8 @@ void DebugUi::draw()
         ImGui::Checkbox("Wireframe Mode", &m_wireframeModeOn);
         ImGui::Text("");
         ImGui::Checkbox("Info Window", &m_infoWindowOn);
+        ImGui::Text("");
+        ImGui::Checkbox("Physics debug mode", &m_physicsDebugOn);
 
         bool open;
         objectLayout(&open);
@@ -617,6 +669,13 @@ void DebugUi::updateWireframeMode()
     }
 }
 
+void DebugUi::updatePhysicsDebugMode()
+{
+    if (m_physicsDebugOn != m_scene->getPhysicsDebugMode()) {
+        m_scene->setPhysicsDebugMode(m_physicsDebugOn);
+    }
+}
+
 void DebugUi::update(double deltaTime, double fps)
 {
     m_debounceCounter += (float)deltaTime;
@@ -625,4 +684,5 @@ void DebugUi::update(double deltaTime, double fps)
     draw();
     render();
     updateWireframeMode();
+    updatePhysicsDebugMode();
 }

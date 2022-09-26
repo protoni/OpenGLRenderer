@@ -43,6 +43,39 @@ public:
     float MouseSensitivity;
     float Zoom;
 
+    // Store current window size here
+    void setWindowSize(int width, int height) {
+        m_windowWidth = (float)width;
+        m_windowHeight = (float)height;
+    }
+
+    // Store mouse cursor screen coordinates here
+    void setMousePos(float mousePosX, float mousePosY)
+    {
+        m_mousePosX = mousePosX;
+        m_mousePosY = mousePosY;
+    }
+
+    glm::vec2& getWindowSize()
+    {
+        glm::vec2 size = glm::vec2(m_windowWidth, m_windowHeight);
+        return size;
+    }
+
+    // Get mouse cursor screen coordinates
+    glm::vec2& getMousePos()
+    {
+        glm::vec2 pos = glm::vec2(m_mousePosX, m_mousePosY);
+        return pos;
+    }
+
+    // Get mouse cursor world coordinates
+    glm::vec2& getMouseWorldPos()
+    {
+        glm::vec2 pos = glm::vec2(m_mousePosX + Position.x, m_mousePosY + Position.y);
+        return pos;
+    }
+
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
            glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
            float yaw = YAW, float pitch = PITCH)
@@ -128,6 +161,14 @@ private:
         Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         Up = glm::normalize(glm::cross(Right, Front));
     }
+
+    // Mouse screen coordinates
+    float m_mousePosX;
+    float m_mousePosY;
+
+    // Window size
+    float m_windowWidth;
+    float m_windowHeight;
 };
 
 #endif // CAMERA_H

@@ -3,6 +3,8 @@
 
 #include "RepeaterState.h"
 #include "Shader.h"
+#include "Physics.h"
+#include "MousePicker.h"
 #include <vector>
 
 class Mesh
@@ -30,7 +32,7 @@ public:
     void createVBO(std::vector<unsigned int>* indices, std::vector<float>* vertices);
     void createVBO(std::vector<unsigned int>& indices, std::vector<float>& vertices);
     void create();
-    void render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned int ptr);
+    void render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned int ptr, Physics* physics, bool& cleared, MousePicker* picker, bool& mouseOvered);
 
     glm::mat4* getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int ptr);
 

@@ -3,6 +3,10 @@
 #include "DebugMacros.h"
 
 
+//#include "imgui.h"
+//#include "imgui_impl_glfw.h"
+//#include "imgui_impl_opengl3.h"
+
 Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_camera(camera), m_screenSettings(screenSettings)
 {
@@ -33,6 +37,15 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
         m_directionalLights,
         m_spotLights
     );
+
+    // Create a mouse picker
+    m_mousePicker = new MousePicker(m_camera);
+
+    // Initiate physics
+    m_physics = new Physics();
+
+    // Create a physical ground plane and a pointlight for testing
+    createDefaultScene();
 }
 
 Scene::~Scene()
@@ -90,6 +103,16 @@ Scene::~Scene()
     if (m_lightHandler) {
         delete m_lightHandler;
         m_lightHandler = NULL;
+    }
+
+    if (m_mousePicker) {
+        delete m_mousePicker;
+        m_mousePicker = NULL;
+    }
+
+    if (m_physics) {
+        delete m_physics;
+        m_physics = NULL;
     }
 }
 
@@ -173,6 +196,13 @@ void Scene::addCube()
     addMeshObject(cube, MeshType::CubeType);
 }
 
+void Scene::addPhysicsCube()
+{
+    Cube* cube = new Cube(m_lightMeshShader, false, false, true);
+    addMeshObject(cube, MeshType::CubeType);
+    m_meshList->at(m_meshList->size() - 1)->mesh->getState()->mass = 1.0;
+}
+
 void Scene::addPlane()
 {
     Plane* plane = new Plane(m_lightMeshShader, false, false, true);
@@ -223,8 +253,24 @@ void Scene::addSpotLight()
 
 void Scene::addModel()
 {
-    Model* model = new Model(m_lightMeshShader);
+    Model* model = new Model(m_lightMeshShader, m_physics, m_mousePicker, m_camera);
     model->LoadModel("Models/backpack/backpack.obj");
+    model->setMass(1.0f, false);
+    MeshObject* object = new MeshObject();
+    MaterialBase* material = new MaterialDefault();
+    object->model = model;
+    object->name = std::string("Model_") + std::to_string(m_meshList->size());
+    object->type = MeshType::ModelType;
+    object->material = material;
+    
+    m_meshList->push_back(object);
+}
+
+void Scene::addModel2()
+{
+    Model* model = new Model(m_lightMeshShader, m_physics, m_mousePicker, m_camera);
+    model->LoadModel("Models/trollHotel/troll_hotel01.obj");
+    model->setMass(1.0f, true);
     MeshObject* object = new MeshObject();
     MaterialBase* material = new MaterialDefault();
     object->model = model;
@@ -323,6 +369,68 @@ void Scene::updateMeshMaterial(int selected, const std::string& newMaterial)
 int Scene::getMeshPointer()
 {
     return m_meshListHandler->getMeshPointer();
+}
+
+glm::vec3& Scene::getCameraPosition()
+{
+    return m_camera->Position;
+}
+
+glm::vec2& Scene::getCursorWorldPos()
+{
+    return m_camera->getMouseWorldPos();
+}
+
+bool Scene::getPhysicsDebugMode()
+{
+    return m_physics->getDebugModeOn();
+}
+
+void Scene::setPhysicsDebugMode(bool state)
+{
+    m_physics->setDebugModeOn(state);
+}
+
+void Scene::addGround()
+{
+    addPlane();
+    RepeaterState* state = m_meshList->at(m_meshList->size() - 1)->mesh->getState();
+
+    // Set size
+    state->columnCount = 20;
+    state->rowCount = 20;
+
+    // Set position
+    state->transformations->xOffset = -1.0f;
+    state->transformations->yOffset = -1.0f;
+    state->transformations->zOffset = -1.0f;
+
+    // Set material
+    delete m_meshList->at(m_meshList->size() - 1)->material;
+    m_meshList->at(m_meshList->size() - 1)->material = new MaterialEmerald();
+
+    // Apply changes
+    m_meshList->at(m_meshList->size() - 1)->mesh->update();
+}
+
+void Scene::createDefaultScene()
+{
+    addGround();
+    addPointLight();
+
+    // Adjust light position
+    RepeaterState* state = m_meshList->at(m_meshList->size() - 1)->mesh->getState();
+    state->transformations->xOffset = 1.0f;
+    state->transformations->yOffset = 1.0f;
+    state->transformations->zOffset = 1.0f;
+
+    // Apply changes
+    m_meshList->at(m_meshList->size() - 1)->mesh->update();
+}
+
+void Scene::updateObjectPhysics(int selected)
+{
+    m_meshList->at(selected)->mesh->updateMeshPhysics(m_physics);
 }
 
 void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)
@@ -441,18 +549,25 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
         }
     }
 
-    m_meshList->at(idx)->mesh->draw();
+    m_meshList->at(idx)->mesh->draw(m_physics, m_mousePicker, m_camera);
 }
 
 void Scene::renderScene()
 {
+    // Get the current projection matrix
     glm::mat4 projection = glm::perspective(
         glm::radians(m_camera->Zoom),
         (float)m_screenSettings->width / (float)m_screenSettings->height, 0.1f, 100.0f
     );
+
+    // Get the current view matrix
     glm::mat4 view = m_camera->GetViewMatrix();
 
-    int lastDrawn = 0;
+    // Update mouse-over
+    m_mousePicker->update(projection, view);
+    //m_mousePicker->printRay();
+
+    // Draw all objects
     for (int i = 0; i < m_meshList->size(); i++) {
         RepeaterState* state;
         if (m_meshList->at(i)->type == MeshType::ModelType)
@@ -460,6 +575,19 @@ void Scene::renderScene()
         else
             draw(i, projection, view);
     }
+
+    // Update mouse-over
+    m_mousePicker->update(projection, view);
+    //if (m_mousePicker->testRayIntersection(projection)) {
+    //    std::cout << "Intersect ptr: " << std::endl;
+    //}
+
+    // Update physics
+    m_physics->update(projection, view);
+    //glm::vec3 ray_origin = m_mousePicker->getRayOrigin();
+    //glm::vec3 ray_direction = m_mousePicker->getRayDirection();
+    //glm::vec3 ray_end = ray_origin + ray_direction * 1000.0f;
+    //m_physics->hasHit(ray_origin, ray_end);
 }
 
 void Scene::deleteObject(int idx)

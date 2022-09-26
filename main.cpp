@@ -1,3 +1,4 @@
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -15,7 +16,6 @@
 #include "Input.h"
 #include "Window.h"
 #include "DebugUi.h"
-
 
 #include "stb_image.h"
 
@@ -55,7 +55,6 @@ double frame_time = (1.0f / fpsLimit) * 1000;
 double sleep_time = 0.0f;
 double fps = 0.0f;
 
-
 int main(int argc, char** argv)
 {
     /* Auto dump memory leak info
@@ -64,6 +63,7 @@ int main(int argc, char** argv)
     */
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     
+    //btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
 
     // Take a snapshot of heap memory
     _CrtMemCheckpoint(&sOld); 
@@ -93,7 +93,6 @@ int main(int argc, char** argv)
 
     // Enable depth buffer
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
 
     // Enable blending ( transparency )
     glEnable(GL_BLEND);
@@ -156,7 +155,6 @@ int main(int argc, char** argv)
     delete scene;
     delete debugUi;
     delete input;
-
     
 
     std::cout << "Exiting.." << std::endl;

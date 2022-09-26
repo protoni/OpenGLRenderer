@@ -22,6 +22,8 @@
 #include "MeshListHandler.h"
 #include "MeshObject.h"
 #include "LightHandler.h"
+#include "MousePicker.h"
+#include "Physics.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -47,6 +49,7 @@ public:
 
     // Add different type of objects to the screen
     void addCube();
+    void addPhysicsCube();
     void addPlane();
     void addTriangle();
     void addSphere();
@@ -56,6 +59,7 @@ public:
     void addSpotLight();
     void addReflectingCube();
     void addModel();
+    void addModel2();
 
     // Add new objects to mesh list
     void addMeshObject(Repeater* mesh, MeshType type);
@@ -87,6 +91,27 @@ public:
     // Get the current mesh pointer index from MeshListHandler
     int getMeshPointer();
 
+    // Get camera position
+    glm::vec3& getCameraPosition();
+
+    // Get cursor's world position
+    glm::vec2& getCursorWorldPos();
+
+    // Get the physics debug mode state
+    bool getPhysicsDebugMode();
+
+    // Set physics debug mode state on/off
+    void setPhysicsDebugMode(bool state);
+
+    // Add ground plane
+    void addGround();
+
+    // Build a default scene
+    void createDefaultScene();
+
+    // Update the physics of all of the meshes inside an repeater object
+    void updateObjectPhysics(int selected);
+
 private:
 
     // Render a single mesh object
@@ -108,6 +133,8 @@ private:
     MeshListHandler* m_meshListHandler;
     MaterialHandler* m_materialHandler;
     LightHandler* m_lightHandler;
+    MousePicker* m_mousePicker;
+    Physics* m_physics;
 
     // All of the meshes currently in the scene
     std::vector<MeshObject*>* m_meshList;
@@ -116,6 +143,9 @@ private:
     std::vector<MeshObject*> m_pointLights;
     std::vector<MeshObject*> m_directionalLights;
     std::vector<MeshObject*> m_spotLights;
+
+    // Projection matrix
+    glm::mat4 m_projection;
 };
 
 #endif // SCENE_H

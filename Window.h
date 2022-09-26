@@ -33,6 +33,16 @@ public:
 
     Camera* m_camera;
 
+    // Get cursor position
+    glm::vec2& getCursorPosition();
+
+    // Get window size
+    glm::vec2& getSize()
+    {
+        glm::vec2 size = glm::vec2(m_windowSettings->width, m_windowSettings->height);
+        return size;
+    }
+
 private:
     // Callback functions
     static void mouseCallback(GLFWwindow* window, double xposIn, double yposIn);
@@ -49,6 +59,10 @@ private:
     bool m_firstMouse;
     double m_lastX;
     double m_lastY;
+
+    // Mouse screen position
+    float m_mousePosX;
+    float m_mousePosY;
 };
 
 #endif // WINDOW_H

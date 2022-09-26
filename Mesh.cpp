@@ -6,9 +6,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "DebugMacros.h"
 
+//#include <btBulletDynamicsCommon.h>
 
 
 Mesh::Mesh(
@@ -206,7 +209,7 @@ void Mesh::setShader(Shader* shader)
     m_shader = shader;
 }
 
-void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned int ptr)
+void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned int ptr, Physics* physics, bool& cleared, MousePicker* picker, bool& mouseOvered)
 {
     if (xPos < 1)
         xPos = 1;
@@ -216,6 +219,16 @@ void Mesh::render(int xPos, int yPos, int zPos, RepeaterState* state, unsigned i
         zPos = 1;
 
     glm::mat4 model = *getMesh(xPos, yPos, zPos, state, ptr);
+
+    // Check if mouse interacts with the mesh
+    if (!mouseOvered && picker->testRayIntersection(model)) {
+        //std::cout << "Intersect ptr: " << ptr << std::endl;
+        m_shader->setBool("selectedNonInstanced", true);
+        mouseOvered = true;
+    }
+    else {
+        m_shader->setBool("selectedNonInstanced", false);
+    }
 
     m_shader->setMat4("model", model);
 
@@ -231,10 +244,10 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int
 
     glm::mat4 model = glm::mat4(1.0f);
 
-    
-
     // Set positions
     if (ptr < state->modified->size()) {
+
+        // Calculate coordinates
         float x = (
             ((0.5f * state->transformations->scaleX) * xPos) +
             (state->transformations->paddingX * xPos) +
@@ -255,29 +268,38 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int
             (state->modified->at(ptr)->transformations->paddingZ * zPos) +
             (state->transformations->zOffset + state->modified->at(ptr)->transformations->zOffset)
             );
-
-        model = glm::translate(model, glm::vec3(x, y,z));
-
-        if (m_isLight) {
-            state->modified->at(ptr)->transformations->xPos = x;
-            state->modified->at(ptr)->transformations->yPos = y;
-            state->modified->at(ptr)->transformations->zPos = z;
-
-            //std::cout << "light pos: X=" << x << ", Y=" << y << ", Z=" << z << std::endl;
+            
+        // If the mesh is being simulated by physics engine, apply those position values
+        if (state->modified->at(ptr)->simulated) {
+            x = state->modified->at(ptr)->transformations->position.x;
+            y = state->modified->at(ptr)->transformations->position.y;
+            z = state->modified->at(ptr)->transformations->position.z;
         }
+
+        // Update mesh coordinates
+        state->modified->at(ptr)->transformations->xPos = x;
+        state->modified->at(ptr)->transformations->yPos = y;
+        state->modified->at(ptr)->transformations->zPos = z;
+
+        // Apply coordinates
+        model = glm::translate(model, glm::vec3(x, y, z));
     }
-    else {
-        model = glm::translate(model, glm::vec3(
-            ((0.5f * state->transformations->scaleX) * xPos) + (state->transformations->paddingX * xPos) + state->transformations->xOffset,
-            ((0.5f * state->transformations->scaleY) * yPos) + (state->transformations->paddingY * yPos) + state->transformations->yOffset,
-            ((0.5f * state->transformations->scaleZ) * zPos) + (state->transformations->paddingZ * zPos) + state->transformations->zOffset)
-        );
+    else { // Shouldn't execute. Modified state should always exist
+
+        // Calculate mesh coordinates
+        float x = ((0.5f * state->transformations->scaleX) * xPos) + (state->transformations->paddingX * xPos) + state->transformations->xOffset;
+        float y = ((0.5f * state->transformations->scaleY) * yPos) + (state->transformations->paddingY * yPos) + state->transformations->yOffset;
+        float z = ((0.5f * state->transformations->scaleZ) * zPos) + (state->transformations->paddingZ * zPos) + state->transformations->zOffset;
+
+        // Apply mesh coordinates
+        model = glm::translate(model, glm::vec3(x, y, z));
     }
     
-
     // Set rotation
     if (ptr < state->modified->size()) {
         if (
+
+            // TODO: Fix 0 rotation values messing up the calculation
             state->transformations->xRotation != 0 &&
             state->transformations->yRotation != 0 &&
             state->transformations->zRotation != 0 &&
@@ -285,19 +307,22 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int
             state->modified->at(ptr)->transformations->yRotation != 0 &&
             state->modified->at(ptr)->transformations->zRotation != 0
             ) {
-            model = glm::rotate(
-                model,
-                glm::radians(state->transformations->angle + state->modified->at(ptr)->transformations->angle),
-                glm::vec3(
-                    state->transformations->xRotation + state->modified->at(ptr)->transformations->xRotation,
-                    state->transformations->yRotation + state->modified->at(ptr)->transformations->yRotation,
-                    state->transformations->zRotation + state->modified->at(ptr)->transformations->zRotation
-                )
-            );
+
+            // Calculate rotation values
+            float angle = state->transformations->angle + state->modified->at(ptr)->transformations->angle;
+            float scaleX = state->transformations->xRotation + state->modified->at(ptr)->transformations->xRotation;
+            float scaleY = state->transformations->yRotation + state->modified->at(ptr)->transformations->yRotation;
+            float scaleZ = state->transformations->zRotation + state->modified->at(ptr)->transformations->zRotation;
+
+            // Apply rotation
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(scaleX, scaleY, scaleZ));
+            
+            state->modified->at(ptr)->transformations->orientation = glm::normalize(glm::quat(glm::vec3(90 * scaleX, 90 * scaleY, 90 * scaleZ)));
         }
     }
-    else {
+    else { // Shouldn't execute. Modified state should always exist
         if (
+            // TODO: Fix 0 rotation values messing up the calculation
             state->transformations->xRotation != 0 &&
             state->transformations->yRotation != 0 &&
             state->transformations->zRotation != 0
@@ -316,19 +341,31 @@ glm::mat4* Mesh::getMesh(int xPos, int yPos, int zPos, RepeaterState* state, int
 
     // Set scaling
     if (ptr < state->modified->size()) {
-        model = glm::scale(
-            model,
-            glm::vec3(
-                0.5f * ((state->transformations->scaleX - state->modified->at(ptr)->transformations->scaleX) + 0.5),
-                0.5f * ((state->transformations->scaleY - state->modified->at(ptr)->transformations->scaleY) + 0.5),
-                0.5f * ((state->transformations->scaleZ - state->modified->at(ptr)->transformations->scaleZ) + 0.5)
-                //0.5f * state->transformations->scaleX * state->modified->at(ptr)->transformations->scaleX,
-                //0.5f * state->transformations->scaleY * state->modified->at(ptr)->transformations->scaleY,
-                //0.5f * state->transformations->scaleZ * state->modified->at(ptr)->transformations->scaleZ
-            )
-        );
+
+        // Calculate scaling
+        float scaleX = 0.5f * ((state->transformations->scaleX - state->modified->at(ptr)->transformations->scaleX) + 0.5);
+        float scaleY = 0.5f * ((state->transformations->scaleY - state->modified->at(ptr)->transformations->scaleY) + 0.5);
+        float scaleZ = 0.5f * ((state->transformations->scaleZ - state->modified->at(ptr)->transformations->scaleZ) + 0.5);
+
+        // Apply scaling
+        model = glm::scale(model, glm::vec3(scaleX, scaleY, scaleZ));
+
+        //model = glm::scale(
+        //    model,
+        //    glm::vec3(
+        //        0.5f * ((state->transformations->scaleX - state->modified->at(ptr)->transformations->scaleX) + 0.5),
+        //        0.5f * ((state->transformations->scaleY - state->modified->at(ptr)->transformations->scaleY) + 0.5),
+        //        0.5f * ((state->transformations->scaleZ - state->modified->at(ptr)->transformations->scaleZ) + 0.5)
+        //        //0.5f * state->transformations->scaleX * state->modified->at(ptr)->transformations->scaleX,
+        //        //0.5f * state->transformations->scaleY * state->modified->at(ptr)->transformations->scaleY,
+        //        //0.5f * state->transformations->scaleZ * state->modified->at(ptr)->transformations->scaleZ
+        //    )
+        //);
+
+        // Update mesh state size
+        state->modified->at(ptr)->transformations->size = glm::vec3(scaleX, scaleY, scaleZ);
     }
-    else {
+    else { // Shouldn't execute. Modified state should always exist
         model = glm::scale(
             model,
             glm::vec3(

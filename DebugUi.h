@@ -22,6 +22,10 @@ private:
     void draw();
     void render();
     void updateWireframeMode();
+
+    // Handle physics debug mode selection tickbox
+    void updatePhysicsDebugMode();
+    
     void updatePlaneSize();
     void updateCubeCount();
     void updateInstancedPlaneMode();
@@ -54,6 +58,9 @@ private:
     int m_modifiedMesh;
 
     bool m_loadSelectedMesh;
+
+    // Is physics debug mode enabled
+    bool m_physicsDebugOn = false;
 };
 
 
