@@ -59,6 +59,7 @@ public:
     void addSpotLight();
     void addReflectingCube();
     void addModel();
+    void addModel2();
 
     // Add new objects to mesh list
     void addMeshObject(Repeater* mesh, MeshType type);

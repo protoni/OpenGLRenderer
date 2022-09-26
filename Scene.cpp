@@ -266,6 +266,21 @@ void Scene::addModel()
     m_meshList->push_back(object);
 }
 
+void Scene::addModel2()
+{
+    Model* model = new Model(m_lightMeshShader, m_physics, m_mousePicker, m_camera);
+    model->LoadModel("Models/trollHotel/troll_hotel01.obj");
+    model->setMass(1.0f, true);
+    MeshObject* object = new MeshObject();
+    MaterialBase* material = new MaterialDefault();
+    object->model = model;
+    object->name = std::string("Model_") + std::to_string(m_meshList->size());
+    object->type = MeshType::ModelType;
+    object->material = material;
+
+    m_meshList->push_back(object);
+}
+
 bool Scene::updateMeshObjects(MeshObjectChange& change)
 {
     bool ret = true;

@@ -483,6 +483,9 @@ void DebugUi::objectLayout(bool* p_open)
         if (ImGui::Button("Add Model", ImVec2(100, 0)))
             m_scene->addModel();
 
+        if (ImGui::Button("Add Model 2", ImVec2(100, 0)))
+            m_scene->addModel2();
+
         //if (ImGui::Button("Add Reflect Cube", ImVec2(100, 0)))
         //    m_scene->addReflectingCube();
 

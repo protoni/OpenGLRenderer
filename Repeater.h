@@ -91,6 +91,8 @@ private:
     // Store the currently mouse-overed meshes Z-axis value
     float m_mouseOveredZ = 0.0f;
     glm::vec3 m_mouseOveredPos = glm::vec3(0);
+
+    float m_height = 0.0f;
 };
 
 #endif // REPEATER_H
