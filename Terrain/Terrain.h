@@ -12,8 +12,8 @@
 class Terrain
 {
 public:
-    float SIZE = 800.0f;
-    float MAX_HEIGHT = 40.0f;
+    float SIZE = 200.0f;
+    float MAX_HEIGHT = 10.0f;
     float MAX_PIXEL_COLOR = 256 * 256 * 256;
     int VERTEX_COUNT = 128;
 
@@ -26,6 +26,9 @@ public:
     // Get coordinates
     float getX() { return m_x; }
     float getZ() { return m_z; }
+
+    // Get indice count
+    int getIndiceCount() { return m_indices.size(); }
 
 private:
 

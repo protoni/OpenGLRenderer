@@ -344,7 +344,7 @@ int Scene::getObjectCount()
 
 int Scene::getTriangleCount()
 {
-    return m_meshListHandler->getTriangleCount();
+    return m_meshListHandler->getTriangleCount() + (m_terrain->getIndiceCount() / 3);
 }
 
 std::vector<MeshObject*>* Scene::getMeshList()
@@ -589,14 +589,14 @@ void Scene::renderScene()
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0, 0.0, 0.0));
     model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
-    m_container_texture->use(0);
+    //m_container_texture->use(0);
     m_terrainShader->setMat4("aInstanceMatrix", model);
     m_terrain->render();
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(m_terrain2->getX() / 2, 0.0, m_terrain2->getZ() / 2));
-    model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
-    m_terrainShader->setMat4("aInstanceMatrix", model);
-    m_terrain2->render();
+    //model = glm::mat4(1.0f);
+    //model = glm::translate(model, glm::vec3(m_terrain2->getX(), 0.0, m_terrain2->getZ()));
+    //model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
+    //m_terrainShader->setMat4("aInstanceMatrix", model);
+    //m_terrain2->render();
 
     // Draw all objects
     for (int i = 0; i < m_meshList->size(); i++) {

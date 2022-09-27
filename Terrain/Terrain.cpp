@@ -20,7 +20,7 @@ unsigned int test_indcs[] = {
 Terrain::Terrain(int gridX, int gridZ) : m_x(gridX * SIZE), m_z(gridZ * SIZE)
 {
     // Load terrain texture
-    m_terrainTexture = new Texture("Textures/dirt.png", true);
+    m_terrainTexture = new Texture("Textures/grass.png", true);
 
     // Load terrain height map
     m_terrainHeightMap = new Texture("Textures/heightmap.png", true);
@@ -64,7 +64,6 @@ bool Terrain::generateTerrain()
             unsigned int z = (float)i / ((float)VERTEX_COUNT - 1) * SIZE;
             float y = getVertexYpos(j, i);
             m_vertices.push_back(x);
-            //m_vertices.push_back((rand() % 5) * 0.1);
             m_vertices.push_back(y);
             m_vertices.push_back(z);
 
@@ -180,6 +179,7 @@ bool Terrain::loadIndices()
 
 void Terrain::render()
 {
+    m_terrainTexture->use(0);
     glBindVertexArray(m_VAO);
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
     //glDrawArrays(GL_TRIANGLES, 0, VERTEX_COUNT * VERTEX_COUNT);
