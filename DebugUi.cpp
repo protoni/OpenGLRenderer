@@ -616,6 +616,7 @@ void DebugUi::showInfoWindow(bool* p_open)
         ImGui::Text("Delta time:            %.3f ms", m_deltaTime);
         ImGui::Text("Indices:               %d", m_scene->getTriangleCount());
         ImGui::Text("Objects:               %d", m_scene->getObjectCount());
+        ImGui::Text("Physics Objects:       %d", m_scene->getPhysicsObjectCount());
     }
     ImGui::End();
 }

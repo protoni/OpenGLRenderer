@@ -113,6 +113,9 @@ public:
     // Update the physics of all of the meshes inside an repeater object
     void updateObjectPhysics(int selected);
 
+    // Get the total count of physics object count inside all mesh objects
+    int getPhysicsObjectCount();
+
 private:
 
     // Render a single mesh object

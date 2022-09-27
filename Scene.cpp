@@ -449,6 +449,19 @@ void Scene::updateObjectPhysics(int selected)
     m_meshList->at(selected)->mesh->updateMeshPhysics(m_physics);
 }
 
+int Scene::getPhysicsObjectCount()
+{
+    int count = 0;
+    for (int i = 0; i < m_meshList->size(); i++) {
+        if (m_meshList->at(i)->type == MeshType::ModelType)
+            count += m_meshList->at(i)->model->getPhysicsObjectCount();
+        else
+            count += m_meshList->at(i)->mesh->getPhysicsObjectCount();
+    }
+
+    return count;
+}
+
 void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)
 {
     Model* model = m_meshList->at(idx)->model;

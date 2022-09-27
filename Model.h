@@ -38,6 +38,9 @@ public:
     // Parameter - separate: Loop through all the meshes and set their mass, otherwise set mass for only the first mesh
     void setMass(float mass, bool separate);
 
+    // Get the count of physics object count from all meshes
+    int getPhysicsObjectCount();
+
 private:
 
     void LoadNode(aiNode* node, const aiScene* scene);

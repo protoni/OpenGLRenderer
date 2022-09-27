@@ -215,3 +215,14 @@ void Model::setMass(float mass, bool separate)
         }
     }
 }
+
+int Model::getPhysicsObjectCount()
+{
+    int count = 0;
+    for (size_t i = 0; i < meshList.size(); i++)
+    {
+        count += meshList.at(i)->getPhysicsObjectCount();
+    }
+
+    return count;
+}
