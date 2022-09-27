@@ -537,7 +537,7 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 
             m_lightHandler->renderAllLightTypes(m_lightMeshShader, false);
 
-            m_lightMeshShader->setBool("materialOverride", true);
+            m_lightMeshShader->setBool("materialOverride", false);
             // Set material
             if (m_meshList->at(idx)->material) {
                 
@@ -583,15 +583,16 @@ void Scene::renderScene()
     m_mousePicker->update(projection, view);
 
     // Draw terrain
-    m_terrainShader->use();
-    m_terrainShader->setMat4("projection", projection);
-    m_terrainShader->setMat4("view", view);
+    m_lightMeshShader->use();
+    m_lightMeshShader->setMat4("projection", projection);
+    m_lightMeshShader->setMat4("view", view);
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0, 0.0, 0.0));
     model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
     //m_container_texture->use(0);
-    m_terrainShader->setMat4("aInstanceMatrix", model);
+    m_lightMeshShader->setMat4("model", model);
     m_terrain->render();
+
     //model = glm::mat4(1.0f);
     //model = glm::translate(model, glm::vec3(m_terrain2->getX(), 0.0, m_terrain2->getZ()));
     //model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));

@@ -30,6 +30,9 @@ public:
     // Get indice count
     int getIndiceCount() { return m_indices.size(); }
 
+    // Calculate normals
+    glm::vec3& getNormal(int x, int z);
+
 private:
 
     // Generate terrain data

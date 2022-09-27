@@ -24,7 +24,11 @@ void main()
     FragPos = vec3(model * vec4(aPos, 1.0));
     
     gl_Position = projection * view * vec4(FragPos, 1.0);
-    TexCoord = aTexCoord;
+    
+    // Multiply texture coordinates by 40 to trick OpenGL to repeat the texture instead
+    // of stretching it
+    TexCoord = aTexCoord * 40.0;
+    
     instanceID = gl_InstanceID;
     //Normal = aNormal;
     //Normal = mat3(transpose(inverse(model))) * vec3(vec4(aNormal, 0.0) * model);

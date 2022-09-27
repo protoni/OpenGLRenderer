@@ -68,9 +68,10 @@ bool Terrain::generateTerrain()
             m_vertices.push_back(z);
 
             // Calculate terrain normals
-            m_normals.push_back(0);
-            m_normals.push_back(1);
-            m_normals.push_back(0);
+            glm::vec3 normal = getNormal(j, i);
+            m_normals.push_back(normal.x);
+            m_normals.push_back(normal.y);
+            m_normals.push_back(normal.z);
 
             // Calculate terrain texture coordinates
             m_texCoords.push_back((float)j / ((float)VERTEX_COUNT - 1));
@@ -198,6 +199,20 @@ float Terrain::getVertexYpos(int x, int z)
     height += MAX_PIXEL_COLOR / 2.0f;
     height /= MAX_PIXEL_COLOR / 2.0f;
     height *= MAX_HEIGHT;
+    height -= 20;
 
     return height;
+}
+
+glm::vec3& Terrain::getNormal(int x, int z)
+{
+    // Get neighboring vertex y values
+    float heightL = getVertexYpos(x - 1, z);
+    float heightR = getVertexYpos(x + 1, z);
+    float heightD = getVertexYpos(x, z - 1);
+    float heightU = getVertexYpos(x, z + 1);
+
+    glm::vec3 normal = glm::normalize(glm::vec3(heightL - heightR, 2.0f, heightD - heightU));
+
+    return normal;
 }
