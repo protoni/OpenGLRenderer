@@ -2,9 +2,11 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "stb_image.h"
+
 
 #include "DebugMacros.h"
+
+#include <iostream>
 
 Texture::Texture(const char* path, bool useRGBA) : m_path(path), m_texture(0), m_useRGBA(useRGBA)
 {
@@ -13,7 +15,7 @@ Texture::Texture(const char* path, bool useRGBA) : m_path(path), m_texture(0), m
 
 Texture::~Texture()
 {
-
+    stbi_image_free(m_data);
 }
 
 bool Texture::load()
@@ -28,27 +30,27 @@ bool Texture::load()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    int width, height, nrChannels;
+    //int width, height, nrChannels;
 
     // Flip y-axis
     stbi_set_flip_vertically_on_load(true);
 
-    unsigned char* data;
+    //unsigned char* data;
 
     int desiredChannels = 0;
     if (m_useRGBA)
         desiredChannels = 4;
 
-    data = stbi_load(m_path, &width, &height, &nrChannels, desiredChannels);
+    m_data = stbi_load(m_path, &m_width, &m_height, &m_nrChannels, desiredChannels);
 
-    if (data) {
+    if (m_data) {
         if(m_useRGBA)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_data);
         else
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, m_data);
 
         glGenerateMipmap(GL_TEXTURE_2D);
-        stbi_image_free(data);
+        //stbi_image_free(data);
         ret = true;
     }
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -67,7 +69,18 @@ void Texture::deactivate()
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+float Texture::getRGB(int x, int y)
+{
+    const stbi_uc* p = m_data + (4 * (y + m_width * x));
+
+    int rgb = (p[0] << 16) | (p[1] << 8) | p[2];
+
+    return (float)rgb;
+}
+
 unsigned int Texture::getTexture()
 {
     return m_texture;
 }
+
+

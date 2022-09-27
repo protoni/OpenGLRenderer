@@ -7,10 +7,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 
+#include "../Texture.h"
+
 class Terrain
 {
 public:
-    float SIZE = 10.0f;
+    float SIZE = 800.0f;
+    float MAX_HEIGHT = 40.0f;
+    float MAX_PIXEL_COLOR = 256 * 256 * 256;
     int VERTEX_COUNT = 128;
 
     Terrain(int gridX, int gridZ);
@@ -20,14 +24,8 @@ public:
     void render();
 
     // Get coordinates
-    float getX()
-    {
-        return m_x;
-    }
-    float getZ()
-    {
-        return m_z;
-    }
+    float getX() { return m_x; }
+    float getZ() { return m_z; }
 
 private:
 
@@ -43,16 +41,18 @@ private:
     // Load index data to VBOs
     bool loadIndices();
 
+    // Read heightmap pixel value and get the height
+    float getVertexYpos(int x, int z);
+
     // Terrain data
-    //float* m_vertices;
     std::vector<float> m_vertices;
     std::vector<float> m_normals;
     std::vector<float> m_texCoords;
-    //float* m_normals;
-    //float* m_texCoords;
-    //int*   m_indices;
     std::vector<int> m_indices;
-    //unsigned int m_indexCount;
+
+    // Textures
+    Texture* m_terrainTexture;
+    Texture* m_terrainHeightMap;
 
     // Buffer objects
     std::vector<unsigned int> m_VBOs;

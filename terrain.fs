@@ -12,5 +12,5 @@ void main(void)
     vec3 unitNormal = normalize(surfaceNormal);
     
     
-    out_Color = vec4(0.0, 0.7, 0.0, 1.0) * texture(modelTexture,pass_textureCoordinates);
+    out_Color = vec4(1.0, 1.0, 1.0, 1.0) * texture(modelTexture,pass_textureCoordinates);
 }

@@ -16,7 +16,7 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_terrainShader = new Shader("./terrain.vs", "./terrain.fs");
 
     // Load texture
-    m_container_texture = new Texture("container2.png", true);
+    m_container_texture = new Texture("Textures/dirt.png", true);
     m_container_texture_specular = new Texture("container2_specular.png", true);
 
     // Create mesh vector
@@ -119,6 +119,11 @@ Scene::~Scene()
     if (m_terrain) {
         delete m_terrain;
         m_terrain = NULL;
+    }
+
+    if (m_terrain2) {
+        delete m_terrain2;
+        m_terrain2 = NULL;
     }
 
     if (m_terrainShader) {

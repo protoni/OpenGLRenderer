@@ -19,6 +19,13 @@ unsigned int test_indcs[] = {
 
 Terrain::Terrain(int gridX, int gridZ) : m_x(gridX * SIZE), m_z(gridZ * SIZE)
 {
+    // Load terrain texture
+    m_terrainTexture = new Texture("Textures/dirt.png", true);
+
+    // Load terrain height map
+    m_terrainHeightMap = new Texture("Textures/heightmap.png", true);
+
+    // Generate terrain
     if (!generateTerrain()) {
         std::cout << "Failed to generate terrain!" << std::endl;
     }
@@ -34,68 +41,41 @@ Terrain::~Terrain()
         glDeleteBuffers(1, &m_VBOs.at(i));
     }
 
-    //if (m_vertices) {
-    //    delete[] m_vertices;
-    //}
+    if (m_terrainTexture) {
+        delete m_terrainTexture;
+        m_terrainTexture = NULL;
+    }
 
-    //if (m_normals) {
-    //    delete[] m_normals;
-    //}
-    //
-    //if (m_texCoords) {
-    //    delete[] m_texCoords;
-    //}
-
-    //if (m_indices) {
-    //    delete[] m_indices;
-    //}
+    if (m_terrainHeightMap) {
+        delete m_terrainHeightMap;
+        m_terrainHeightMap = NULL;
+    }
 }
 
 bool Terrain::generateTerrain()
 {
     int count = VERTEX_COUNT * VERTEX_COUNT;
-    //m_vertices  = new float[count * 3]();
-    //m_normals   = new float[count * 3]();
-    //m_texCoords = new float[count * 2]();
 
-    //m_indexCount = 6 * ((VERTEX_COUNT - 1) * (VERTEX_COUNT * 1));
-    //m_indices = new int[m_indexCount]();
-    int vertexPointer = 0;
-    //for (int i = 0; i < VERTEX_COUNT; i++) {
-    //    for (int j = 0; j < VERTEX_COUNT; j++) {
-    //        m_vertices[vertexPointer   * 3     ] = -(float)j / ((float)VERTEX_COUNT - 1) * SIZE;
-    //        m_vertices[vertexPointer   * 3 + 1 ] =  0;
-    //        m_vertices[vertexPointer   * 3 + 2 ] = -(float)i / ((float)VERTEX_COUNT - 1) * SIZE;
-    //        m_normals[vertexPointer   * 3     ] =  0;
-    //        m_normals[vertexPointer   * 3 + 1 ] =  1;
-    //        m_normals[vertexPointer   * 3 + 2 ] =  0;
-    //        m_texCoords[vertexPointer   * 2     ] =  (float)j / ((float)VERTEX_COUNT - 1);
-    //        m_texCoords[vertexPointer   * 2 + 1 ] =  (float)i / ((float)VERTEX_COUNT - 1);
-    //        vertexPointer++;
-    //    }
-    //}
     for (int i = 0; i < VERTEX_COUNT; i++) {
         for (int j = 0; j < VERTEX_COUNT; j++) {
-            //m_vertices[vertexPointer * 3] = (float)j / ((float)VERTEX_COUNT - 1) * SIZE;
-            //m_vertices[(vertexPointer * 3) + 1] = 0;
-            //m_vertices[(vertexPointer * 3) + 2] = (float)i / ((float)VERTEX_COUNT - 1) * SIZE;
-            m_vertices.push_back((float)j / ((float)VERTEX_COUNT - 1) * SIZE);
-            m_vertices.push_back((rand() % 5) * 0.1);
-            m_vertices.push_back((float)i / ((float)VERTEX_COUNT - 1) * SIZE);
 
+            // Calculate terrain position
+            unsigned int x = (float)j / ((float)VERTEX_COUNT - 1) * SIZE;
+            unsigned int z = (float)i / ((float)VERTEX_COUNT - 1) * SIZE;
+            float y = getVertexYpos(j, i);
+            m_vertices.push_back(x);
+            //m_vertices.push_back((rand() % 5) * 0.1);
+            m_vertices.push_back(y);
+            m_vertices.push_back(z);
+
+            // Calculate terrain normals
             m_normals.push_back(0);
             m_normals.push_back(1);
             m_normals.push_back(0);
 
+            // Calculate terrain texture coordinates
             m_texCoords.push_back((float)j / ((float)VERTEX_COUNT - 1));
             m_texCoords.push_back((float)i / ((float)VERTEX_COUNT - 1));
-
-            //m_normals[vertexPointer * 3] = 0;
-            //m_normals[vertexPointer * 3 + 1] = 1;
-            //m_normals[vertexPointer * 3 + 2] = 0;
-            //m_texCoords[vertexPointer * 2] = (float)j / ((float)VERTEX_COUNT - 1);
-            //m_texCoords[vertexPointer * 2 + 1] = (float)i / ((float)VERTEX_COUNT - 1);
-            vertexPointer++;
         }
     }
     
@@ -105,21 +85,6 @@ bool Terrain::generateTerrain()
     //    modelMatrices[i] = glm::mat4(1.0f);
     //}
 
-    int pointer = 0;
-    //for (int gz = 0; gz < VERTEX_COUNT - 1; gz++) {
-    //    for (int gx = 0; gx < VERTEX_COUNT - 1; gx++) {
-    //        int topLeft = (gz * VERTEX_COUNT) + gx;
-    //        int topRight = topLeft + 1;
-    //        int bottomLeft = ((gz + 1) * VERTEX_COUNT) + gx;
-    //        int bottomRight = bottomLeft + 1;
-    //        m_indices[pointer++] = topLeft;
-    //        m_indices[pointer++] = bottomLeft;
-    //        m_indices[pointer++] = topRight;
-    //        m_indices[pointer++] = topRight;
-    //        m_indices[pointer++] = bottomLeft;
-    //        m_indices[pointer++] = bottomRight;
-    //    }
-    //}
 
     for (int gz = 0; gz < VERTEX_COUNT - 1; gz++) {
         for (int gx = 0; gx < VERTEX_COUNT - 1; gx++) {
@@ -127,12 +92,6 @@ bool Terrain::generateTerrain()
             int topRight = topLeft + 1;
             int bottomLeft = ((gz + 1) * VERTEX_COUNT) + gx;
             int bottomRight = bottomLeft + 1;
-            //m_indices[pointer++] = topLeft;
-            //m_indices[pointer++] = bottomLeft;
-            //m_indices[pointer++] = topRight;
-            //m_indices[pointer++] = topRight;
-            //m_indices[pointer++] = bottomLeft;
-            //m_indices[pointer++] = bottomRight;
             m_indices.push_back(topLeft);
             m_indices.push_back(bottomLeft);
             m_indices.push_back(topRight);
@@ -225,6 +184,20 @@ void Terrain::render()
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
     //glDrawArrays(GL_TRIANGLES, 0, VERTEX_COUNT * VERTEX_COUNT);
     //glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, m_indices.size() / 6);
-    std::cout << "m_indexCount: " << m_indices.size() << std::endl;
+    //std::cout << "m_indexCount: " << m_indices.size() << std::endl;
     glBindVertexArray(0);
+}
+
+float Terrain::getVertexYpos(int x, int z)
+{
+    if (x < 0 || x >= m_terrainHeightMap->getWidth() || z < 0 || z >= m_terrainHeightMap->getHeight())
+        return 0.0f;
+
+    float height = m_terrainHeightMap->getRGB(x, z);
+
+    height += MAX_PIXEL_COLOR / 2.0f;
+    height /= MAX_PIXEL_COLOR / 2.0f;
+    height *= MAX_HEIGHT;
+
+    return height;
 }

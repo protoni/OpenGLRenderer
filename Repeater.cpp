@@ -295,9 +295,6 @@ void Repeater::drawNonInstanced(Physics* physics, MousePicker* picker, Camera* c
                     m_state->modified->push_back(modifiedMesh);
                 }
 
-
-                
-
                 renderNonInstanced(x, y, z, m_state, ptr, physics, m_cleared, picker, mouseOvered, camera);
 
                 // Create physics object
