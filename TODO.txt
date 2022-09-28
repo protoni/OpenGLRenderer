@@ -1,0 +1,57 @@
+
+
+
+Todo:
+
+- Create a launcher that loads models in the background
+- Create a model loader class and run it in it's own thread
+- Create separate render thread
+- Cleanup Scene.cpp
+- Fix model lighting shader
+- Figure out if both Mesh/Model types are supported or have just Models. For example a plane
+would actually be a model that holds just one mesh; the plane mesh itself
+- Remove 2 separete model loading classes ( Model and Model2, MeshModel and MeshModel2 )
+- Separate engine code, gameplay code and editor code
+- Clean and re-structure Models/Textures folders
+- Add Models/Textures to Git LFS
+- Add Model asset view to Debug Ui / Editor
+- Prevent Model class from loading the same asset every time
+
+- Design coordinate system
+  - World coordinates and object instance coordinates
+- Translate screen coordinates to world coordinates
+- Save object's x, y, and z positions inside mesh's modified struct
+- Select objects by clicking them instead of clicking the list item
+- Select multiple objects at once and combine them to the same instance
+- Interactable move, scale and rotation arrow for objects
+- Change mesh colors from the debug UI
+- Add adjustable fps limit to debug UI settings
+- Add debugUi intervals to debug UI
+- Add separate colos for highlighted current mesh and selected meshes
+- Add lighting parameters to light's parameters in debug UI
+  - specular strength
+  - specular shininess
+  - ambient strength
+  - Fadeout options:
+    - linear
+    - quadratic
+    
+  - spotlight options
+    - cutOff
+    - outerCutOff
+    
+- Add Gouraud/Phong lighting option to light's parameters in debug UI
+- Add fragment shader's default ambience to system wide settings in debug UI
+
+Bugs:
+- When selecting an object, highlight color doesn't show up
+  - Selected object needs to be moved to the end of the meshlist vector show that it will be drawn last
+- Object mesh pointer is a bit buggy. Sometimes doesn't move up, goes beyond the object bounds.
+
+
+Done:
+- Draw FPS and other info to the screen
+- Select multiple objects at once
+
+Fixed bugs:
+- Moving objects in Z axis doesn't work
