@@ -199,7 +199,7 @@ void Physics::update(glm::mat4& projection, glm::mat4& view)
         m_dynamicsWorld->debugDrawWorld();
     }
 
-    m_dynamicsWorld->stepSimulation(1.f / 60.f, 1000);
+    m_dynamicsWorld->stepSimulation(1.f / 60.f, 0.1f);
 }
 
 bool Physics::getObjectPosition(RepeaterState* state, int ptr)

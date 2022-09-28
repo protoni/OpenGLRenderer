@@ -3,10 +3,6 @@
 #include "DebugMacros.h"
 
 
-//#include "imgui.h"
-//#include "imgui_impl_glfw.h"
-//#include "imgui_impl_opengl3.h"
-
 Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_camera(camera), m_screenSettings(screenSettings)
 {
@@ -17,9 +13,10 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_lightShader = new Shader("./shader.vs", "./lightShader.fs");
     m_lightMeshShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
     m_modelLoadingShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
-    
+    m_terrainShader = new Shader("./terrain.vs", "./terrain.fs");
+
     // Load texture
-    m_container_texture = new Texture("container2.png", true);
+    m_container_texture = new Texture("Textures/dirt.png", true);
     m_container_texture_specular = new Texture("container2_specular.png", true);
 
     // Create mesh vector
@@ -46,6 +43,10 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
 
     // Create a physical ground plane and a pointlight for testing
     createDefaultScene();
+
+    // Generate terrain
+    m_terrain = new Terrain(0, 0);
+    m_terrain2 = new Terrain(1, 0);
 }
 
 Scene::~Scene()
@@ -113,6 +114,21 @@ Scene::~Scene()
     if (m_physics) {
         delete m_physics;
         m_physics = NULL;
+    }
+    
+    if (m_terrain) {
+        delete m_terrain;
+        m_terrain = NULL;
+    }
+
+    if (m_terrain2) {
+        delete m_terrain2;
+        m_terrain2 = NULL;
+    }
+
+    if (m_terrainShader) {
+        delete m_terrainShader;
+        m_terrainShader = NULL;
     }
 }
 
@@ -328,7 +344,7 @@ int Scene::getObjectCount()
 
 int Scene::getTriangleCount()
 {
-    return m_meshListHandler->getTriangleCount();
+    return m_meshListHandler->getTriangleCount() + (m_terrain->getIndiceCount() / 3);
 }
 
 std::vector<MeshObject*>* Scene::getMeshList()
@@ -433,6 +449,19 @@ void Scene::updateObjectPhysics(int selected)
     m_meshList->at(selected)->mesh->updateMeshPhysics(m_physics);
 }
 
+int Scene::getPhysicsObjectCount()
+{
+    int count = 0;
+    for (int i = 0; i < m_meshList->size(); i++) {
+        if (m_meshList->at(i)->type == MeshType::ModelType)
+            count += m_meshList->at(i)->model->getPhysicsObjectCount();
+        else
+            count += m_meshList->at(i)->mesh->getPhysicsObjectCount();
+    }
+
+    return count;
+}
+
 void Scene::drawModel(int idx, glm::mat4& projection, glm::mat4& view)
 {
     Model* model = m_meshList->at(idx)->model;
@@ -521,7 +550,7 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 
             m_lightHandler->renderAllLightTypes(m_lightMeshShader, false);
 
-            m_lightMeshShader->setBool("materialOverride", true);
+            m_lightMeshShader->setBool("materialOverride", false);
             // Set material
             if (m_meshList->at(idx)->material) {
                 
@@ -565,7 +594,23 @@ void Scene::renderScene()
 
     // Update mouse-over
     m_mousePicker->update(projection, view);
-    //m_mousePicker->printRay();
+
+    // Draw terrain
+    m_lightMeshShader->use();
+    m_lightMeshShader->setMat4("projection", projection);
+    m_lightMeshShader->setMat4("view", view);
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0, 0.0, 0.0));
+    model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
+    //m_container_texture->use(0);
+    m_lightMeshShader->setMat4("model", model);
+    m_terrain->render();
+
+    //model = glm::mat4(1.0f);
+    //model = glm::translate(model, glm::vec3(m_terrain2->getX(), 0.0, m_terrain2->getZ()));
+    //model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
+    //m_terrainShader->setMat4("aInstanceMatrix", model);
+    //m_terrain2->render();
 
     // Draw all objects
     for (int i = 0; i < m_meshList->size(); i++) {

@@ -24,6 +24,7 @@
 #include "LightHandler.h"
 #include "MousePicker.h"
 #include "Physics.h"
+#include "Terrain/Terrain.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -112,6 +113,9 @@ public:
     // Update the physics of all of the meshes inside an repeater object
     void updateObjectPhysics(int selected);
 
+    // Get the total count of physics object count inside all mesh objects
+    int getPhysicsObjectCount();
+
 private:
 
     // Render a single mesh object
@@ -127,6 +131,7 @@ private:
     Shader* m_lightMeshShader;
     Shader* m_ourShaderInstanced;
     Shader* m_modelLoadingShader;
+    Shader* m_terrainShader;
     Texture* m_container_texture;
     Texture* m_container_texture_specular;
     ScreenSettings* m_screenSettings;
@@ -135,6 +140,8 @@ private:
     LightHandler* m_lightHandler;
     MousePicker* m_mousePicker;
     Physics* m_physics;
+    Terrain* m_terrain;
+    Terrain* m_terrain2;
 
     // All of the meshes currently in the scene
     std::vector<MeshObject*>* m_meshList;

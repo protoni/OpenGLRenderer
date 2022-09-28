@@ -52,6 +52,9 @@ public:
     // Update physics of all meshes inside the repeater object
     void updateMeshPhysics(Physics* physics);
 
+    // Get the count of physics objects inside the repeater instance
+    int getPhysicsObjectCount() { return m_state->physicsObjects->size(); }
+
 private:
 
     // Render all non instanced meshes

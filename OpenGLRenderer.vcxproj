@@ -191,6 +191,7 @@
     <ClCompile Include="Shapes\Sphere.cpp" />
     <ClCompile Include="Shapes\Triangle.cpp" />
     <ClCompile Include="stb_image.cpp" />
+    <ClCompile Include="Terrain\Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -228,6 +229,7 @@
     <ClInclude Include="Shapes\Plane.h" />
     <ClInclude Include="Shapes\Sphere.h" />
     <ClInclude Include="Shapes\Triangle.h" />
+    <ClInclude Include="Terrain\Terrain.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
