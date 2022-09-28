@@ -93,8 +93,8 @@ artifacts/
 StyleCopReport.xml
 
 # Custom
-Textures/
-Models/
+#Textures/
+#Models/
 
 # Files built by Visual Studio
 *_i.c
