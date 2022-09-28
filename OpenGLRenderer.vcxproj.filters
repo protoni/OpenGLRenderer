@@ -25,11 +25,17 @@
     <Filter Include="Header Files\Shapes">
       <UniqueIdentifier>{74deccab-3770-436a-a85c-09cf593c0ba4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Terrain">
+      <UniqueIdentifier>{e18cff6f-c5d0-4fad-82db-379f4f2602ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\dependencies">
+      <UniqueIdentifier>{97219c46-4037-4880-aaae-ea494bf5c594}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\dependencies">
+      <UniqueIdentifier>{f43f8748-496f-4c6a-a90c-36cb55217530}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Downloads\glad(1)\src\glad.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -114,11 +120,11 @@
     <ClCompile Include="PhysicsDebug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="glad.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Terrain\Terrain.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\glad\glad.c">
+      <Filter>Source Files\dependencies</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -224,11 +230,11 @@
     <ClInclude Include="PhysicsDebug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="glad.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Terrain\Terrain.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="dependencies\glad\glad.h">
+      <Filter>Header Files\dependencies</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -7,17 +7,12 @@ Scene::Scene(Camera *camera, ScreenSettings* screenSettings) :
     m_camera(camera), m_screenSettings(screenSettings)
 {
     // Create and build shaders
-    //m_ourShaderInstanced = new Shader("./shaderInstanced.vs", "./shader.fs");
-    m_ourShaderInstanced = new Shader("./lightMeshShaderInstanced.vs", "./lightMeshShader.fs");
-    m_ourShader = new Shader("./shader.vs", "./shader.fs");
-    m_lightShader = new Shader("./shader.vs", "./lightShader.fs");
-    m_lightMeshShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
-    m_modelLoadingShader = new Shader("./lightMeshShader.vs", "./lightMeshShader.fs");
-    m_terrainShader = new Shader("./terrain.vs", "./terrain.fs");
-
-    // Load texture
-    m_container_texture = new Texture("Textures/dirt.png", true);
-    m_container_texture_specular = new Texture("container2_specular.png", true);
+    m_ourShaderInstanced = new Shader("Shaders/lightMeshShaderInstanced.vs", "Shaders/lightMeshShader.fs");
+    m_ourShader = new Shader("Shaders/shader.vs", "Shaders/shader.fs");
+    m_lightShader = new Shader("Shaders/shader.vs", "Shaders/lightShader.fs");
+    m_lightMeshShader = new Shader("Shaders/lightMeshShader.vs", "Shaders/lightMeshShader.fs");
+    m_modelLoadingShader = new Shader("Shaders/lightMeshShader.vs", "Shaders/lightMeshShader.fs");
+    m_terrainShader = new Shader("Shaders/terrain.vs", "Shaders/terrain.fs");
 
     // Create mesh vector
     m_meshList = new std::vector<MeshObject*>;
@@ -54,16 +49,6 @@ Scene::~Scene()
     if (m_meshList) {
         delete m_meshList;
         m_meshList = NULL;
-    }
-
-    if (m_container_texture) {
-        delete m_container_texture;
-        m_container_texture = NULL;
-    }
-
-    if (m_container_texture_specular) {
-        delete m_container_texture_specular;
-        m_container_texture_specular = NULL;
     }
 
     if (m_ourShaderInstanced) {
@@ -510,11 +495,6 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
 
         // Set textures
         m_ourShaderInstanced->setBool("materialOverride", true);
-        //m_ourShaderInstanced->setInt("material.diffuse", 0);
-        //m_container_texture->use(0);
-        //
-        //m_ourShaderInstanced->setInt("material.specular", 1);
-        //m_container_texture_specular->use(1);
 
         m_lightHandler->renderAllLightTypes(m_ourShaderInstanced, false);
 
@@ -540,13 +520,6 @@ void Scene::draw(int idx, glm::mat4& projection, glm::mat4& view)
             m_lightMeshShader->setMat4("projection", projection);
             m_lightMeshShader->setMat4("view", view);
             m_lightMeshShader->setVec3("viewPos", m_camera->Position);
-
-            // Set textures
-            //m_lightMeshShader->setInt("material.diffuse", 0);
-            //m_container_texture->use(0);
-            //
-            //m_lightMeshShader->setInt("material.specular", 1);
-            //m_container_texture_specular->use(1);
 
             m_lightHandler->renderAllLightTypes(m_lightMeshShader, false);
 
@@ -602,7 +575,6 @@ void Scene::renderScene()
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0, 0.0, 0.0));
     model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
-    //m_container_texture->use(0);
     m_lightMeshShader->setMat4("model", model);
     m_terrain->render();
 

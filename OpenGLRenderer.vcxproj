@@ -163,9 +163,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Downloads\glad(1)\src\glad.c" />
     <ClCompile Include="DebugUi.cpp" />
-    <ClCompile Include="glad.c" />
+    <ClCompile Include="dependencies\glad\glad.c" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
@@ -199,7 +198,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DebugMacros.h" />
     <ClInclude Include="DebugUi.h" />
-    <ClInclude Include="glad.h" />
+    <ClInclude Include="dependencies\glad\glad.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_glfw.h" />

@@ -1,7 +1,6 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-//#include <glad/glad.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -132,8 +131,6 @@ private:
     Shader* m_ourShaderInstanced;
     Shader* m_modelLoadingShader;
     Shader* m_terrainShader;
-    Texture* m_container_texture;
-    Texture* m_container_texture_specular;
     ScreenSettings* m_screenSettings;
     MeshListHandler* m_meshListHandler;
     MaterialHandler* m_materialHandler;
