@@ -73,22 +73,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>C:\OpenGL\GLFW\lib-vc2019;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;dependencies/imgui;include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;dependencies/imgui;include;dependencies/assimp;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>C:\OpenGL\GLFW\lib-vc2019;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;dependencies/imgui;include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;dependencies/imgui;include;dependencies/assimp;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>C:\OpenGL\GLFW\lib-vc2019;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;dependencies/imgui;include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;dependencies/imgui;include;dependencies/assimp;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>C:\OpenGL\GLFW\lib-vc2019;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;dependencies/imgui;include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;dependencies/imgui;include;dependencies/assimp;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -96,7 +96,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>dependencies/imgui;Shapes;include/assimp;C:\work\git\bullet3\src;include/;dependencies/stb_image;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>dependencies/imgui;Shapes;C:\work\git\bullet3\src;include/;dependencies/stb_image;src;dependencies/assimp;dependencies;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -114,7 +114,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>dependencies/imgui;Shapes;include/assimp;C:\work\git\bullet3\src;include/;dependencies/stb_image;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>dependencies/imgui;Shapes;C:\work\git\bullet3\src;include/;dependencies/stb_image;src;dependencies/assimp;dependencies;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -132,7 +132,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>dependencies/imgui;Shapes;include/assimp;C:\work\git\bullet3\src;include/;dependencies/stb_image;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>dependencies/imgui;Shapes;C:\work\git\bullet3\src;include/;dependencies/stb_image;src;dependencies/assimp;dependencies;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -150,7 +150,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>dependencies/imgui;Shapes;include/assimp;C:\work\git\bullet3\src;include/;dependencies/stb_image;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>dependencies/imgui;Shapes;C:\work\git\bullet3\src;include/;dependencies/stb_image;src;dependencies/assimp;dependencies;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
