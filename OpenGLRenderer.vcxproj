@@ -73,22 +73,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>C:\OpenGL\GLFW\lib-vc2019;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;$(IncludePath)</IncludePath>
+    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;dependencies/imgui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>C:\OpenGL\GLFW\lib-vc2019;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;$(IncludePath)</IncludePath>
+    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;dependencies/imgui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>C:\OpenGL\GLFW\lib-vc2019;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;$(IncludePath)</IncludePath>
+    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;dependencies/imgui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>C:\OpenGL\GLFW\lib-vc2019;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;$(IncludePath)</IncludePath>
+    <IncludePath>C:\OpenGL\include\glm;C:\Users\tonik\source\repos\OpenGLRenderer\include;C:\OpenGL\include;C:\OpenGL\include\glad;dependencies/imgui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -96,7 +96,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>imgui;Shapes;include/assimp;C:\work\git\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>dependencies/imgui;Shapes;include/assimp;C:\work\git\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -114,7 +114,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>imgui;Shapes;include/assimp;C:\work\git\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>dependencies/imgui;Shapes;include/assimp;C:\work\git\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -132,7 +132,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>imgui;Shapes;include/assimp;C:\work\git\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>dependencies/imgui;Shapes;include/assimp;C:\work\git\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -150,7 +150,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>imgui;Shapes;include/assimp;C:\work\git\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>dependencies/imgui;Shapes;include/assimp;C:\work\git\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -165,13 +165,13 @@
   <ItemGroup>
     <ClCompile Include="DebugUi.cpp" />
     <ClCompile Include="dependencies\glad\glad.c" />
-    <ClCompile Include="imgui\imgui.cpp" />
-    <ClCompile Include="imgui\imgui_demo.cpp" />
-    <ClCompile Include="imgui\imgui_draw.cpp" />
-    <ClCompile Include="imgui\imgui_impl_glfw.cpp" />
-    <ClCompile Include="imgui\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="imgui\imgui_tables.cpp" />
-    <ClCompile Include="imgui\imgui_widgets.cpp" />
+    <ClCompile Include="dependencies\imgui\imgui.cpp" />
+    <ClCompile Include="dependencies\imgui\imgui_demo.cpp" />
+    <ClCompile Include="dependencies\imgui\imgui_draw.cpp" />
+    <ClCompile Include="dependencies\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="dependencies\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="dependencies\imgui\imgui_tables.cpp" />
+    <ClCompile Include="dependencies\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="LightHandler.cpp" />
     <ClCompile Include="main.cpp" />
@@ -199,15 +199,15 @@
     <ClInclude Include="DebugMacros.h" />
     <ClInclude Include="DebugUi.h" />
     <ClInclude Include="dependencies\glad\glad.h" />
-    <ClInclude Include="imgui\imconfig.h" />
-    <ClInclude Include="imgui\imgui.h" />
-    <ClInclude Include="imgui\imgui_impl_glfw.h" />
-    <ClInclude Include="imgui\imgui_impl_opengl3.h" />
-    <ClInclude Include="imgui\imgui_impl_opengl3_loader.h" />
-    <ClInclude Include="imgui\imgui_internal.h" />
-    <ClInclude Include="imgui\imstb_rectpack.h" />
-    <ClInclude Include="imgui\imstb_textedit.h" />
-    <ClInclude Include="imgui\imstb_truetype.h" />
+    <ClInclude Include="dependencies\imgui\imconfig.h" />
+    <ClInclude Include="dependencies\imgui\imgui.h" />
+    <ClInclude Include="dependencies\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="dependencies\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="dependencies\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="dependencies\imgui\imgui_internal.h" />
+    <ClInclude Include="dependencies\imgui\imstb_rectpack.h" />
+    <ClInclude Include="dependencies\imgui\imstb_textedit.h" />
+    <ClInclude Include="dependencies\imgui\imstb_truetype.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="LightHandler.h" />
     <ClInclude Include="MaterialBase.h" />
