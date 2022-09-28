@@ -4,18 +4,19 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "Shapes/Sphere.h"
+#include "Shapes/Custom.h"
+#include "Shapes/Triangle.h"
+#include "Shapes/Plane.h"
+#include "Shapes/Cube.h"
+
 #include "Shader.h"
 #include "Camera.h"
 #include "Mesh.h"
 #include "Texture.h"
-#include "Plane.h"
-#include "Cube.h"
 #include "Window.h"
 #include "Repeater.h"
 #include "RepeaterState.h"
-#include "Triangle.h"
-#include "Sphere.h"
-#include "Custom.h"
 #include "MaterialBase.h"
 #include "Model.h"
 #include "MeshListHandler.h"

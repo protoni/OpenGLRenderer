@@ -40,74 +40,17 @@
     <Filter Include="Header Files\dependencies\glad">
       <UniqueIdentifier>{93ea5431-8e7e-4b14-a8fa-d340ce64f190}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Terrain">
+      <UniqueIdentifier>{d5cbed93-4b8b-4463-ab9f-e6b03877a22f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\dependencies\stb_image">
+      <UniqueIdentifier>{c6881340-2b96-4d5e-bfb2-6c708cd5d055}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\dependencies\stb_image">
+      <UniqueIdentifier>{462b5c4a-b39f-441f-a9b5-b955d7cff564}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stb_image.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Input.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DebugUi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Repeater.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Shapes\Cube.cpp">
-      <Filter>Source Files\Shapes</Filter>
-    </ClCompile>
-    <ClCompile Include="Shapes\Plane.cpp">
-      <Filter>Source Files\Shapes</Filter>
-    </ClCompile>
-    <ClCompile Include="Shapes\Triangle.cpp">
-      <Filter>Source Files\Shapes</Filter>
-    </ClCompile>
-    <ClCompile Include="Shapes\Sphere.cpp">
-      <Filter>Source Files\Shapes</Filter>
-    </ClCompile>
-    <ClCompile Include="Shapes\Custom.cpp">
-      <Filter>Source Files\Shapes</Filter>
-    </ClCompile>
-    <ClCompile Include="Model.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Shapes\ModelMesh.cpp">
-      <Filter>Source Files\Shapes</Filter>
-    </ClCompile>
-    <ClCompile Include="MeshListHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LightHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MousePicker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Physics.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PhysicsDebug.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Terrain\Terrain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="dependencies\glad\glad.c">
       <Filter>Source Files\dependencies\glad</Filter>
     </ClCompile>
@@ -132,86 +75,74 @@
     <ClCompile Include="dependencies\imgui\imgui_tables.cpp">
       <Filter>Source Files\dependencies\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="src\DebugUi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LightHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshListHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MousePicker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsDebug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Repeater.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shapes\Cube.cpp">
+      <Filter>Source Files\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shapes\Custom.cpp">
+      <Filter>Source Files\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shapes\ModelMesh.cpp">
+      <Filter>Source Files\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shapes\Plane.cpp">
+      <Filter>Source Files\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shapes\Sphere.cpp">
+      <Filter>Source Files\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shapes\Triangle.cpp">
+      <Filter>Source Files\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Terrain\Terrain.cpp">
+      <Filter>Source Files\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\stb_image\stb_image.cpp">
+      <Filter>Source Files\dependencies\stb_image</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Input.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugUi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Repeater.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugMacros.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shapes\Cube.h">
-      <Filter>Header Files\Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="Shapes\Plane.h">
-      <Filter>Header Files\Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="Shapes\Triangle.h">
-      <Filter>Header Files\Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="RepeaterState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shapes\Sphere.h">
-      <Filter>Header Files\Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="Shapes\Custom.h">
-      <Filter>Header Files\Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="MaterialBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Model.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shapes\ModelMesh.h">
-      <Filter>Header Files\Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshListHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LightHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MousePicker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Physics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PhysicsDebug.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Terrain\Terrain.h">
-      <Filter>Header Files\Terrain</Filter>
-    </ClInclude>
     <ClInclude Include="dependencies\glad\glad.h">
       <Filter>Header Files\dependencies\glad</Filter>
     </ClInclude>
@@ -241,6 +172,87 @@
     </ClInclude>
     <ClInclude Include="dependencies\imgui\imstb_textedit.h">
       <Filter>Header Files\dependencies\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="dependencies\stb_image\stb_image.h">
+      <Filter>Header Files\dependencies\stb_image</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shapes\Triangle.h">
+      <Filter>Header Files\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shapes\Cube.h">
+      <Filter>Header Files\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shapes\Custom.h">
+      <Filter>Header Files\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shapes\ModelMesh.h">
+      <Filter>Header Files\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shapes\Plane.h">
+      <Filter>Header Files\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shapes\Sphere.h">
+      <Filter>Header Files\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Terrain\Terrain.h">
+      <Filter>Header Files\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DebugMacros.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DebugUi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LightHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MaterialBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MeshListHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MeshObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MousePicker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsDebug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Repeater.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RepeaterState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
